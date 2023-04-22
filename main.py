@@ -1,5 +1,6 @@
-#hallo dit is heel cool
 import numpy
+
+# appelsap
 
 from func import *
 import pygame
