@@ -273,12 +273,10 @@ class Player:
             pygame.K_e] and self.inventory.can_fill:
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 125
             self.inventory.add_item("tomato ")
-            print("fill")
         if self.on_interact and self.interact_message == "Harvest flower" and keys[
             pygame.K_e] and self.inventory.can_fill:
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
             self.inventory.add_item("flower ")
-            print("fill")
         if self.on_interact and self.interact_message == "Mine stone (only with pickaxe)" and self.inventory.holding_pickaxe:
             pygame.draw.rect(screen, pygame.Color("#212529"), self.stone_rect3, border_radius=26)
             pygame.draw.rect(screen, pygame.Color("#c1121f"), self.stone_rect2, border_radius=20)
@@ -569,15 +567,13 @@ class CraftingTable:
                 else:
                     recipe += " "
 
-            try:
+            if recipe in self.recipes:
                 self.inventory.add_item(self.recipes[recipe])
                 self.block_fill = {
 
                     0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: ""
 
                 }
-            except KeyError:
-                pass
 
             time.sleep(0.1)
 
