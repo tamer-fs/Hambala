@@ -1,3 +1,4 @@
+#hallo dit is heel cool
 import numpy
 
 from func import *
