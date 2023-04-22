@@ -1,7 +1,5 @@
 import numpy
 
-# appelsap
-
 from func import *
 import pygame
 
