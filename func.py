@@ -6,6 +6,7 @@ import random
 import os
 import time
 import matplotlib
+import json
 
 pygame.mixer.init()
 
@@ -882,7 +883,7 @@ def load_img():
 def create_world(map_w, map_h, chance_index):
     from perlin_noise import PerlinNoise
 
-    noise = PerlinNoise(seed=random.randint(1, 1000), octaves=10)
+    noise = PerlinNoise(seed=1, octaves=10)
 
     world_gen = numpy.zeros((map_w, map_h))
     for x in range(map_w):
@@ -974,6 +975,36 @@ def create_world(map_w, map_h, chance_index):
 
                         if gen_code in convert_dict:
                             world[y, x] = convert_dict[gen_code]
+
+    with open("convert_tiles.json") as f:
+        convert_dict = json.load(f)
+
+    world_copy_copy = world
+    for x in range(world.shape[1]):
+        for y in range(world.shape[0]):
+            if world_copy_copy[y, x] in [5, 6, 7]:
+                if not (x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1):  # rand van wereld
+                    generated_tiles = 0
+                    gen_code = ""
+                    for c in [world_copy_copy[y - 1, x], world_copy_copy[y, x + 1], world_copy_copy[y + 1, x],
+                              world_copy_copy[y, x - 1]]:
+                        if c in [15, 21, 23, 35, 16, 17, 20, 19, 26, 28, 25, 34]:
+                            generated_tiles += 1
+                        if c in [5, 6, 7]:
+                            gen_code += f"5-"
+                        else:
+                            gen_code += f"{c}-"
+
+                    if generated_tiles > 2:  # boven, rechts, onder, links
+                        gen_code = gen_code[:-1]
+
+                        if gen_code in convert_dict:
+                            world[y, x] = convert_dict[gen_code]
+                            if convert_dict[gen_code] == -1: #temp
+                                world[y, x] = 18
+                                print(gen_code, x, y)
+                        else:
+                            world[y, x] = 12
 
     tree_spawn_attempts = 1000
 
