@@ -912,11 +912,17 @@ def create_world(map_w, map_h, chance_index):
         for y in range(world.shape[0]):
             if world_copy[y, x] in [5, 6, 7]:
                 if not (x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1):  # rand van wereld
+                    grass_code = ""
                     grass_count = 0
                     for c in [world_copy[y - 1, x], world_copy[y, x + 1], world_copy[y + 1, x], world_copy[y, x - 1]]:
                         if c == 14:
                             grass_count += 1
+                            grass_code += "g"
+                        else:
+                            grass_code += "s"
                     if grass_count > 2:
+                        world[y, x] = 14
+                    if grass_code in ["gsgs", "sgsg"]:
                         world[y, x] = 14
 
     world_copy = world
