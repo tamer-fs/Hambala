@@ -881,6 +881,8 @@ def load_img():
 
 
 def create_world(map_w, map_h, chance_index):
+    map_w, map_h = map_w + 4, map_h + 4 #add four to width and height to cut it out later, easier world generation with no edges
+
     from perlin_noise import PerlinNoise
 
     noise = PerlinNoise(seed=1, octaves=10)
@@ -1006,17 +1008,18 @@ def create_world(map_w, map_h, chance_index):
 
                         if gen_code in convert_dict:
                             world[y, x] = convert_dict[gen_code]
-                            if convert_dict[gen_code] == -1: #temp
-                                world[y, x] = 18
-                                print(gen_code, x, y)
-                        else:
-                            world[y, x] = 12
+                            # if convert_dict[gen_code] == -1: #temp
+                            #     world[y, x] = 18
+                            #     print(gen_code, x, y)
+                        # else:
+                        #     world[y, x] = 12
+
 
     tree_spawn_attempts = 1000
 
     for _ in range(tree_spawn_attempts):  # grass = 14
-        x = random.randint(1, map_w - 3)
-        y = random.randint(1, map_h - 3)
+        x = random.randint(2, map_w - 6)
+        y = random.randint(2, map_h - 6)
 
         spawn_tree = True
         for sec_x in [x - 1, x, x + 1, x + 2]:
@@ -1030,6 +1033,8 @@ def create_world(map_w, map_h, chance_index):
             plants[y + 1, x] = 61
             plants[y + 1, x + 1] = 62
 
+    world = world[2:map_w-2, 2:map_h-2]
+    plants = plants[2:map_w-2, 2:map_h-2]
     return plants, world, world_rotation
 
 
