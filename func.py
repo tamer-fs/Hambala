@@ -578,6 +578,95 @@ class CraftingTable:
 
             time.sleep(0.1)
 
+class Animal:
+    def __init__(self, max_spawn):
+        self.max_spawn = max_spawn
+        self.animal_list = []
+        self.update_frame = time.perf_counter()
+        self.animal_frame = 1
+        self.update_move = time.perf_counter()
+        self.animal_walk_plan = []
+
+        self.pic_dict = {}
+        self.load_images = ["sheep"]
+        for load_image in self.load_images:
+            for direction in ["front", "right", "back", "left"]:
+                for frame in range(1, 5):
+                    print(f"assets/sheep/{load_image}{direction}{str(frame)}.png")
+                    if not direction == "left":
+                        image = pygame.image.load(f"assets/sheep/{load_image}{direction}{str(frame)}.png").convert_alpha()
+                    else:
+                        image = pygame.image.load(f"assets/sheep/{load_image}right{str(frame)}.png").convert_alpha()
+                        image = pygame.transform.flip(image, True, False)
+                    self.pic_dict[f"{load_image}{direction}{str(frame)}"] = image
+
+        self.rect = None
+        self.animal_dict = {}
+        for x in range(self.max_spawn):
+            self.rect = self.pic_dict["sheepright1"].get_rect(topleft=(random.randint(0, 150*16), random.randint(0, 150*16)))
+            self.animal_dict[x] = [self.rect, "sheep", random.choice(["left", "right", "front", "back"]), 1, False, 0, 0, [], time.perf_counter()]
+
+    def draw(self, screen, scrollx, scrolly):
+        for animal_key in self.animal_dict:
+            animal = self.animal_dict[animal_key]
+            animal_rect = animal[0]
+            animal_type = animal[1]
+            animal_direction = animal[2]
+            animal_walking = animal[4]
+            if animal_walking:
+                if time.perf_counter() - self.update_frame > 0.2:
+                    self.animal_frame = (self.animal_frame + 1) % 4
+                    self.update_frame = time.perf_counter()
+            else:
+                self.animal_frame = 0
+            screen.blit(self.pic_dict[f"{animal_type}{animal_direction}{self.animal_frame+1}"], (animal_rect.x - scrollx, animal_rect.y - scrolly))
+
+    @staticmethod
+    def create_walk_plan(max_steps):
+        return_list = []
+        waypoint = random.choice(["tl", "tr", "l", "r"])
+        for x in range(max_steps):
+            if waypoint == "tl":
+                return_list.append((-4, -4))
+            elif waypoint == "tr":
+                return_list.append((4, -4))
+            elif waypoint == "r":
+                return_list.append((4, 0))
+            elif waypoint == "l":
+                return_list.append((-4, 0))
+        return return_list
+
+    def update(self):
+        for animal_key in self.animal_dict:
+            animal = self.animal_dict[animal_key]
+            animal_rect = animal[0]
+            animal_type = animal[1]
+            animal_direction = animal[2]
+            animal_walking = animal[4]
+            animal_path = animal[5]
+            animal_set_steps = animal[6]
+            animal_walk_plan = animal[7]
+            animal_perf = animal[8]
+            if time.perf_counter() - animal_perf > random.randint(6, 20):
+                if animal_walking:
+                    animal[4] = False
+                else:
+                    animal[4] = True
+                    animal[6] = random.randint(5, 20)
+                    animal[7] = self.create_walk_plan(animal_set_steps)
+                animal[8] = time.perf_counter()
+            if animal_walking:
+                if animal_path < animal_set_steps:
+                    animal_rect.x += animal_walk_plan[animal_path][0]
+                    animal_rect.y += animal_walk_plan[animal_path][0]
+                    animal[5] += 1
+                else:
+                    animal[4] = False
+                    animal[6] = []
+                    animal[5] = 0
+            print(animal_walking)
+
+
 
 class Inventory:
     def __init__(self, size, pos):
@@ -885,7 +974,7 @@ def create_world(map_w, map_h, chance_index):
 
     from perlin_noise import PerlinNoise
 
-    noise = PerlinNoise(seed=1, octaves=10)
+    noise = PerlinNoise(seed=random.randint(1, 1000000), octaves=10)
 
     world_gen = numpy.zeros((map_w, map_h))
     for x in range(map_w):

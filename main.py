@@ -48,6 +48,7 @@ main_inventory = Inventory((50, 400), (8, screenHeight / 2 - 200))
 main_crafting_table = CraftingTable()
 main_crafting_table.set_inventory(main_inventory)
 main_inventory.set_crafting_table(main_crafting_table)
+animals = Animal(100)
 
 images = load_img()
 
@@ -94,6 +95,13 @@ while playing:
     screen.fill((0, 0, 0))
     render_world(screen, world, plants, world_rotation, images,
                  scrollx, scrolly, screenWidth, screenHeight)
+
+    animals.draw(
+        screen,
+        scrollx,
+        scrolly
+    )
+    animals.update()
 
     player_sprint_bar.draw(
         screen, pygame.Color("#212529"),
