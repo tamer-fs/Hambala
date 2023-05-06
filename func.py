@@ -636,6 +636,8 @@ class Animal:
                 return_list.append((-4, 0))
         return return_list
 
+    #halo
+
     def update(self):
         for animal_key in self.animal_dict:
             animal = self.animal_dict[animal_key]
