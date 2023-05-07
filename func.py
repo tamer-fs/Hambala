@@ -84,6 +84,7 @@ class Player:
         self.attacking = False
         self.can_attack = True
         self.sword_selected = False
+        self.hitting = False
         self.attack_delay = 0.8
         self.update_frame_1 = 0
         self.cooldown = 0
@@ -123,10 +124,15 @@ class Player:
                 self.framed += 1
         else:
             self.attacking = False
+            self.hitting = False
 
-        if self.can_attack and self.sword_selected and not self.attacking and not self.inventory.holding_item and not self.inventory.hovering_menu:
+        if self.can_attack and self.sword_selected \
+                and not self.attacking \
+                and not self.inventory.holding_item \
+                and not self.inventory.hovering_menu:
             if mouse[0] and self.energy_value > 15:
                 self.attacking = True
+                self.hitting = True
                 self.framed = 0
                 self.sword_frame = 0
                 self.energy_value -= 15
@@ -278,7 +284,9 @@ class Player:
             pygame.K_e] and self.inventory.can_fill:
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
             self.inventory.add_item("flower ")
-        if self.on_interact and self.interact_message == "Mine stone (only with pickaxe)" and self.inventory.holding_pickaxe:
+        if self.on_interact \
+                and self.interact_message == "Mine stone (only with pickaxe)" \
+                and self.inventory.holding_pickaxe:
             pygame.draw.rect(screen, pygame.Color("#212529"), self.stone_rect3, border_radius=26)
             pygame.draw.rect(screen, pygame.Color("#c1121f"), self.stone_rect2, border_radius=20)
             pygame.draw.rect(screen, pygame.Color("#0ead69"), self.stone_rect, border_radius=20)
@@ -579,13 +587,19 @@ class CraftingTable:
             time.sleep(0.1)
 
 class Animal:
-    def __init__(self, max_spawn):
+    def __init__(self, max_spawn, width, height):
         self.max_spawn = max_spawn
         self.animal_list = []
         self.update_frame = time.perf_counter()
         self.animal_frame = 1
         self.update_move = time.perf_counter()
         self.animal_walk_plan = []
+        self.random_spawn_x_friendly = random.randint(0, 150 * 16)
+        self.random_spawn_y_friendly = random.randint(0, 150 * 16)
+        self.random_spawn_x_hostile = random.randint(0, 150 * 16)
+        self.random_spawn_y_hostile = random.randint(0, 150 * 16)
+        self.screen_width = width
+        self.screen_height = height
 
         self.pic_dict = {}
         self.load_images = ["sheep"]
@@ -603,8 +617,51 @@ class Animal:
         self.rect = None
         self.animal_dict = {}
         for x in range(self.max_spawn):
-            self.rect = self.pic_dict["sheepright1"].get_rect(topleft=(random.randint(0, 150*16), random.randint(0, 150*16)))
-            self.animal_dict[x] = [self.rect, "sheep", random.choice(["left", "right", "front", "back"]), 1, False, 0, 0, [], time.perf_counter()]
+            size = random.choice(["small", "big"])
+            animal_type = random.choice(spawn_list)
+            if animal_type in ["sheepbrown", "sheep"]:
+                self.rect = self.pic_dict[f"sheepright1{size}"].get_rect(
+                    topleft=(
+                        self.random_spawn_x_friendly + random.randint(-500, 500),
+                        self.random_spawn_y_friendly + random.randint(-500, 500)
+                    )
+                )
+            else:
+                self.rect = self.pic_dict[f"sheepright1{size}"].get_rect(
+                    topleft=(
+                        self.random_spawn_x_hostile + random.randint(-150, 150),
+                        self.random_spawn_y_hostile + random.randint(-150, 150)
+                    )
+                )
+
+            hungry = random.choice([True, False])
+
+            if not self.rect.x < -150*16 - 8 and not self.rect.x > 150*16 - 8:
+                if not self.rect.y < -150*16 - 8 and not self.rect.y > 150*16 - 8:
+                    self.animal_dict[x] = [
+                        self.rect,  # ind 0
+                        animal_type,  # 1
+                        random.choice(["left", "right", "front", "back"]),  # 2
+                        1,  # 3
+                        random.choice([True, False]),
+                        0,  # 5
+                        0,  # 6
+                        [],  # 7
+                        time.perf_counter(),  # 8
+                        random.randint(6, 20),  # 9
+                        random.choice(["left", "right", "front", "back"]),
+                        1,  # 11
+                        time.perf_counter(),  # 12
+                        size,
+                        hungry, # 14
+                        100 #hp 15
+                    ]
+            else:
+                print((f"out of map [{x}]", (self.rect.x, self.rect.y)))
+
+    def reset_screen_size(self, width, height):
+        self.screen_width = width
+        self.screen_height = height
 
     def draw(self, screen, scrollx, scrolly):
         for animal_key in self.animal_dict:
@@ -613,32 +670,63 @@ class Animal:
             animal_type = animal[1]
             animal_direction = animal[2]
             animal_walking = animal[4]
-            if animal_walking:
-                if time.perf_counter() - self.update_frame > 0.2:
-                    self.animal_frame = (self.animal_frame + 1) % 4
-                    self.update_frame = time.perf_counter()
-            else:
-                self.animal_frame = 0
-            screen.blit(self.pic_dict[f"{animal_type}{animal_direction}{self.animal_frame+1}"], (animal_rect.x - scrollx, animal_rect.y - scrolly))
+            animal_draw_direction = animal[10]
+            animal_frame = animal[11]
+            animal_frame_timer = animal[12]
+            animal_size = animal[13]
+
+            if animal_walking and time.perf_counter() - animal_frame_timer > 0.2: #change to next frame
+                animal[11] = (animal_frame + 1) % 4
+                animal[12] = time.perf_counter()
+
+            if not animal_walking:
+                animal[11] = 1
+
+            screen.blit(
+                self.pic_dict[
+                    f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"],
+                    (
+                        animal_rect.x - scrollx, animal_rect.y - scrolly
+                    )
+            )
 
     @staticmethod
     def create_walk_plan(max_steps):
         return_list = []
-        waypoint = random.choice(["tl", "tr", "l", "r"])
+        waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
+        direction = ""
+        walk_speed = 0.5
         for x in range(max_steps):
             if waypoint == "tl":
-                return_list.append((-4, -4))
+                return_list.append((-walk_speed, -walk_speed))
+                direction = "left"
             elif waypoint == "tr":
-                return_list.append((4, -4))
+                return_list.append((walk_speed, -walk_speed))
+                direction = "right"
             elif waypoint == "r":
-                return_list.append((4, 0))
+                return_list.append((walk_speed, 0))
+                direction = "right"
             elif waypoint == "l":
-                return_list.append((-4, 0))
-        return return_list
+                return_list.append((-walk_speed, 0))
+                direction = "left"
+            elif waypoint == "bl":
+                return_list.append((-walk_speed, walk_speed))
+                direction = "left"
+            elif waypoint == "br":
+                return_list.append((walk_speed, walk_speed))
+                direction = "right"
+            elif waypoint == "b":
+                return_list.append((0, walk_speed))
+                direction = "front"
+            elif waypoint == "t":
+                return_list.append((0, -walk_speed))
+                direction = "back"
+
+        return return_list, direction
 
     #halofdas
 
-    def update(self):
+    def update(self, plants, player):
         for animal_key in self.animal_dict:
             animal = self.animal_dict[animal_key]
             animal_rect = animal[0]
@@ -659,15 +747,35 @@ class Animal:
                 animal[8] = time.perf_counter()
             if animal_walking:
                 if animal_path < animal_set_steps:
-                    animal_rect.x += animal_walk_plan[animal_path][0]
-                    animal_rect.y += animal_walk_plan[animal_path][0]
+                    animal_rect.x += animal[7][animal[5]][0]
+                    animal_rect.y += animal[7][animal[5]][1]
                     animal[5] += 1
                 else:
                     animal[4] = False
                     animal[6] = []
                     animal[5] = 0
-            print(animal_walking)
 
+            on_tile = (int(animal_rect.x / 16), int(animal_rect.y / 16))
+
+            if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
+                plants[on_tile[1] + 1, on_tile[0] + 1] = 14
+                print('eating')
+
+            if player.x < animal_rect.x + 16 and  player.x > animal_rect.x - 32:
+                if player.y < animal_rect.y + 16 and player.y > animal_rect.y - 32:
+                    if player.hitting:
+                        animal[4] = True
+                        animal[6] = random.randint(300, 350)
+                        animal[7], animal[10] = self.create_walk_plan(animal[6])
+                        animal[15] -= random.randint(30, 40)
+                        animal_rect.y += random.randint(-5, 5)
+                        animal_rect.x += random.randint(-5, 5)
+                        player.hitting = False
+
+            print(animal_hp)
+
+            if animal_hp <= 0:
+                print("killed")
 
 
 class Inventory:
