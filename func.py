@@ -594,12 +594,9 @@ class Animal:
         self.animal_frame = 1
         self.update_move = time.perf_counter()
         self.animal_walk_plan = []
-        self.random_spawn_x_friendly = random.randint(0, 150 * 16)
-        self.random_spawn_y_friendly = random.randint(0, 150 * 16)
-        self.random_spawn_x_hostile = random.randint(0, 150 * 16)
-        self.random_spawn_y_hostile = random.randint(0, 150 * 16)
         self.screen_width = width
         self.screen_height = height
+        self.inventory = None
 
         self.pic_dict = {}
         self.load_images = ["sheep"]
@@ -618,46 +615,32 @@ class Animal:
         self.animal_dict = {}
         for x in range(self.max_spawn):
             size = random.choice(["small", "big"])
-            animal_type = random.choice(spawn_list)
-            if animal_type in ["sheepbrown", "sheep"]:
-                self.rect = self.pic_dict[f"sheepright1{size}"].get_rect(
-                    topleft=(
-                        self.random_spawn_x_friendly + random.randint(-500, 500),
-                        self.random_spawn_y_friendly + random.randint(-500, 500)
-                    )
-                )
-            else:
-                self.rect = self.pic_dict[f"sheepright1{size}"].get_rect(
-                    topleft=(
-                        self.random_spawn_x_hostile + random.randint(-150, 150),
-                        self.random_spawn_y_hostile + random.randint(-150, 150)
-                    )
-                )
+            group = random.randint(0, group_count-1)
+            rect = self.pic_dict["sheepright1small"].get_rect(topleft=
+                 (group_list[group][0] + random.randint(-250, 250), group_list[group][1] + random.randint(-250, 250)))
+            self.spawn_animal(rect, size, group_list[group][2], x)
 
-            hungry = random.choice([True, False])
-
-            if not self.rect.x < -150*16 - 8 and not self.rect.x > 150*16 - 8:
-                if not self.rect.y < -150*16 - 8 and not self.rect.y > 150*16 - 8:
-                    self.animal_dict[x] = [
-                        self.rect,  # ind 0
-                        animal_type,  # 1
-                        random.choice(["left", "right", "front", "back"]),  # 2
-                        1,  # 3
-                        random.choice([True, False]),
-                        0,  # 5
-                        0,  # 6
-                        [],  # 7
-                        time.perf_counter(),  # 8
-                        random.randint(6, 20),  # 9
-                        random.choice(["left", "right", "front", "back"]),
-                        1,  # 11
-                        time.perf_counter(),  # 12
-                        size,
-                        hungry, # 14
-                        100 #hp 15
-                    ]
-            else:
-                print((f"out of map [{x}]", (self.rect.x, self.rect.y)))
+    def spawn_animal(self, rect, size, animal_type, x):
+        if not rect.x < -150 * 16 - 8 and not rect.x > 150 * 16 - 8:
+            if not rect.y < -150 * 16 - 8 and not rect.y > 150 * 16 - 8:
+                self.animal_dict[x] = [
+                    rect,  # ind 0
+                    animal_type,  # 1
+                    random.choice(["left", "right", "front", "back"]),  # 2
+                    1,  # 3
+                    random.choice([True, False]),  # 4
+                    0,  # 5
+                    0,  # 6
+                    [],  # 7
+                    time.perf_counter(),  # 8
+                    random.randint(6, 20),  # 9
+                    random.choice(["left", "right", "front", "back"]),
+                    1,  # 11
+                    time.perf_counter(),  # 12
+                    size,
+                    random.choice([True, False]),  # 14
+                    100  # hp 15
+                ]
 
     def reset_screen_size(self, width, height):
         self.screen_width = width
@@ -757,9 +740,10 @@ class Animal:
 
             on_tile = (int(animal_rect.x / 16), int(animal_rect.y / 16))
 
-            if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
-                plants[on_tile[1] + 1, on_tile[0] + 1] = 14
-                print('eating')
+            if not animal_rect.x < -150 * 16 - 32 and not animal_rect.x > 150 * 16 - 32:
+                if not animal_rect.y < -150 * 16 - 32 and not animal_rect.y > 150 * 16 - 32:
+                    if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
+                        plants[on_tile[1] + 1, on_tile[0] + 1] = 14
 
             if player.x < animal_rect.x + 16 and  player.x > animal_rect.x - 32:
                 if player.y < animal_rect.y + 16 and player.y > animal_rect.y - 32:
@@ -772,7 +756,6 @@ class Animal:
                         animal_rect.x += random.randint(-5, 5)
                         player.hitting = False
 
-            print(animal_hp)
 
             if animal_hp <= 0:
                 print("killed")
@@ -786,28 +769,56 @@ class Inventory:
         self.pos = pos
         self.bar = pygame.Rect(pos, (size[0], size[1] + 2))
         self.block = pygame.Rect((pos[0] + 8, pos[1] - 8), (size[0] - 16, size[1] - 8))
-        self.blocks = []
+        self.backpack_margin = 100
+        self.bar_backback = pygame.Rect((pos[0] + self.backpack_margin, pos[1]), (size[0], size[1] + 2))
+        self.backpack_block = pygame.Rect((pos[0] + 8 + self.backpack_margin, pos[1] - 8), (size[0] - 16, size[1] - 8))
+        self.blocks = [] # 9 normal always visible slots
+        self.backpack_blocks = [] # 9 backback slots
         self.block_y = 0
+        self.backpack_block_y = 0
         self.colors = ["orange", "grey", "black"]
         self.color = "orange"
         self.block_color = pygame.Color("#343a40")
         self.selected_block = 0
-        self.tomato_img = pygame.image.load("assets/floor/tile127.png").convert_alpha()
-        self.flower_img = pygame.image.load("assets/floor/tile011.png").convert_alpha()
-        self.sword_img = pygame.image.load("assets/tools/Sword-1.png").convert_alpha()
-        self.stone_img = pygame.image.load("assets/floor/tile010.png").convert_alpha()
-        self.pickaxe_img = pygame.image.load("assets/tools/pickaxe.png").convert_alpha()
-        self.axe_img = pygame.image.load("assets/tools/axe.png").convert_alpha()
-        self.log_img = pygame.image.load("assets/floor/tile131.png").convert_alpha()
-        self.cookie_img = pygame.image.load("assets/food/00.png").convert_alpha()
-        self.tomato_img = pygame.transform.scale(self.tomato_img, (30, 30))
-        self.flower_img = pygame.transform.scale(self.flower_img, (30, 30))
-        self.stone_img = pygame.transform.scale(self.stone_img, (30, 30))
-        self.sword_img = pygame.transform.scale(self.sword_img, (37, 37))
-        self.pickaxe_img = pygame.transform.scale(self.pickaxe_img, (33, 33))
-        self.axe_img = pygame.transform.scale(self.axe_img, (33, 33))
-        self.log_img = pygame.transform.scale(self.log_img, (33, 33))
-        self.cookie_img = pygame.transform.scale(self.cookie_img, (30, 30))
+
+        self.pic_dict = {}
+        self.items_dict = {"tomato ": ["assets/floor/tile127.png", 30],
+                           "flower " : ["assets/floor/tile011.png", 30],
+                           "sword ": ["assets/tools/Sword-1.png", 37],
+                           "stone ": ["assets/floor/tile010.png", 30],
+                           "axe ": ["assets/tools/axe.png", 33],
+                           "log ": ["assets/floor/tile131.png", 33],
+                           "meat ": ["assets/food/26.png", 30],
+                           "tomato ": ["assets/floor/tile127.png", 30],
+                           "flower ": ["assets/floor/tile011.png", 30],
+                           "cookie ": ["assets/food/00.png", 30],
+                           "pickaxe ": ["assets/tools/pickaxe.png", 33]
+                           }
+
+        for item in self.items_dict:
+            self.pic_dict[item] = pygame.image.load(f"{self.items_dict[item][0]}").convert_alpha()
+            self.pic_dict[item] = pygame.transform.scale(self.pic_dict[item], (self.items_dict[item][1], self.items_dict[item][1]))
+
+
+        # self.tomato_img = pygame.image.load("assets/floor/tile127.png").convert_alpha()
+        # self.flower_img = pygame.image.load("assets/floor/tile011.png").convert_alpha()
+        # self.sword_img = pygame.image.load("assets/tools/Sword-1.png").convert_alpha()
+        # self.stone_img = pygame.image.load("assets/floor/tile010.png").convert_alpha()
+        # self.pickaxe_img = pygame.image.load("assets/tools/pickaxe.png").convert_alpha()
+        # self.axe_img = pygame.image.load("assets/tools/axe.png").convert_alpha()
+        # self.log_img = pygame.image.load("assets/floor/tile131.png").convert_alpha()
+        # self.meat_img = pygame.image.load("assets/food/26.png").convert_alpha()
+        # self.meat_img = pygame.transform.scale(self.meat_img, (30, 30))
+        # self.cookie_img = pygame.image.load("assets/food/00.png").convert_alpha()
+        # self.tomato_img = pygame.transform.scale(self.tomato_img, (30, 30))
+        # self.flower_img = pygame.transform.scale(self.flower_img, (30, 30))
+        # self.stone_img = pygame.transform.scale(self.stone_img, (30, 30))
+        # self.sword_img = pygame.transform.scale(self.sword_img, (37, 37))
+        # self.pickaxe_img = pygame.transform.scale(self.pickaxe_img, (33, 33))
+        # self.axe_img = pygame.transform.scale(self.axe_img, (33, 33))
+        # self.log_img = pygame.transform.scale(self.log_img, (33, 33))
+        # self.cookie_img = pygame.transform.scale(self.cookie_img, (30, 30))
+
         self.description = ""
         self.font = pygame.font.Font("assets/Font/Roboto-Medium.ttf", 12)
         self.clicked_item = ""
@@ -818,11 +829,12 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.block_fill = {
+        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "tomato "}
+        self.block_fill = {}
+        for i in range(19):
+            self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
 
-            0: "axe ", 1: "pickaxe ", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: ""
 
-        }
         self.full_key_dict = {
 
             0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False
@@ -861,6 +873,21 @@ class Inventory:
 
     def draw(self, screen, pos):
         pygame.draw.rect(screen, pygame.Color("#212529"), self.bar, border_radius=8)
+        pygame.draw.rect(screen, pygame.Color("#212529"), self.bar_backback, border_radius=8)
+
+        # for index, block in enumerate(self.blocks):
+        #
+        #     pygame.draw.rect(screen, self.block_color, block, border_radius=4)
+        #
+        #     if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
+        #         pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
+        #
+        #
+        #     if self.block_fill[index] != '':
+        #         screen.blit(self.pic_dict[self.block_fill[index]], block)
+
+
+
         for index, block in enumerate(self.blocks):
 
             if index == self.selected_block:
@@ -871,29 +898,35 @@ class Inventory:
             if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
                 pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
 
-            if self.block_fill[index] == "tomato ":
-                screen.blit(self.tomato_img, block)
+            # if self.block_fill[index] == "tomato ":
+            #     screen.blit(self.tomato_img, block)
+            #
+            # if self.block_fill[index] == "flower ":
+            #     screen.blit(self.flower_img, block)
+            #
+            # if self.block_fill[index] == "sword ":
+            #     screen.blit(self.sword_img, block)
+            #
+            # if self.block_fill[index] == "stone ":
+            #     screen.blit(self.stone_img, block)
+            #
+            # if self.block_fill[index] == "pickaxe ":
+            #     screen.blit(self.pickaxe_img, block)
+            #
+            # if self.block_fill[index] == "axe ":
+            #     screen.blit(self.axe_img, block)
+            #
+            # if self.block_fill[index] == "log ":
+            #     screen.blit(self.log_img, block)
+            #
+            # if self.block_fill[index] == "cookie ":
+            #     screen.blit(self.cookie_img, block)
+            #
+            # if self.block_fill[index] == "meat ":
+            #     screen.blit(self.meat_img, block)
 
-            if self.block_fill[index] == "flower ":
-                screen.blit(self.flower_img, block)
-
-            if self.block_fill[index] == "sword ":
-                screen.blit(self.sword_img, block)
-
-            if self.block_fill[index] == "stone ":
-                screen.blit(self.stone_img, block)
-
-            if self.block_fill[index] == "pickaxe ":
-                screen.blit(self.pickaxe_img, block)
-
-            if self.block_fill[index] == "axe ":
-                screen.blit(self.axe_img, block)
-
-            if self.block_fill[index] == "log ":
-                screen.blit(self.log_img, block)
-
-            if self.block_fill[index] == "cookie ":
-                screen.blit(self.cookie_img, block)
+            if self.block_fill[index] != '':
+                screen.blit(self.pic_dict[self.block_fill[index]], block)
 
             self.color = random.choice(self.colors)
 
@@ -901,7 +934,7 @@ class Inventory:
         holding_item = False
         clicked_item = ""
 
-        if self.bar.collidepoint(pos[0], pos[1]):
+        if self.bar.collidepoint(pos[0], pos[1]) or self.bar_backback.collidepoint(pos):
             self.hovering_menu = True
         else:
             self.hovering_menu = False
@@ -942,6 +975,17 @@ class Inventory:
                         self.block_fill[self.selected_block] = ""
                         pygame.mixer.Sound.play(self.eating_sound)
 
+            if self.block_fill[self.selected_block] == "meat ":
+                if keys[2] and not self.player.on_interact:
+                    if keys[2] and self.player.food_value < 10000 - self.player.cookie_feeding:
+                        self.player.food_value += self.player.cookie_feeding
+                        self.block_fill[self.selected_block] = ""
+                        pygame.mixer.Sound.play(self.eating_sound)
+                    elif keys[2] and self.player.food_value < 10000:
+                        self.player.food_value = 10000
+                        self.block_fill[self.selected_block] = ""
+                        pygame.mixer.Sound.play(self.eating_sound)
+
             if self.block_fill[self.selected_block] == "flower ":
                 if keys[2] and not self.player.on_interact:
                     if keys[2] and self.player.energy_value < 100 - self.player.flower_power:
@@ -968,6 +1012,9 @@ class Inventory:
             else:
                 self.holding_axe = False
 
+            # if block.collidepoint(pos):
+            #     print(self.blocks[index])
+
             if block.collidepoint(pos[0], pos[1]):
                 current_block = block
                 current_index = index
@@ -989,26 +1036,13 @@ class Inventory:
                     self.description = "With logs you can craft items |  [TAB] to open crafting table"
                 elif self.block_fill[index] == "cookie ":
                     self.description = "Cookies are a great source of food  |  [RMB] to consume"
+                elif self.block_fill[index] == "meat ":
+                    self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
                 else:
                     self.description = ""
 
             if self.holding_item:
-                if self.clicked_item == "sword ":
-                    screen.blit(self.sword_img, (pos[0], pos[1]))
-                if self.clicked_item == "tomato ":
-                    screen.blit(self.tomato_img, (pos[0], pos[1]))
-                if self.clicked_item == "flower ":
-                    screen.blit(self.flower_img, (pos[0], pos[1]))
-                if self.clicked_item == "stone ":
-                    screen.blit(self.stone_img, (pos[0], pos[1]))
-                if self.clicked_item == "pickaxe ":
-                    screen.blit(self.pickaxe_img, (pos[0], pos[1]))
-                if self.clicked_item == "axe ":
-                    screen.blit(self.axe_img, (pos[0], pos[1]))
-                if self.clicked_item == "log ":
-                    screen.blit(self.log_img, (pos[0], pos[1]))
-                if self.clicked_item == "cookie ":
-                    screen.blit(self.cookie_img, (pos[0], pos[1]))
+                screen.blit(self.pic_dict[self.clicked_item], (pos[0], pos[1]))
 
             if keys[1] and block.collidepoint(pos[0], pos[1]) and bool(
                     self.block_fill[index]) and not self.holding_item:
@@ -1209,7 +1243,7 @@ def create_world(map_w, map_h, chance_index):
                             world[y, x] = convert_dict[gen_code]
                             # if convert_dict[gen_code] == -1: #temp
                             #     world[y, x] = 18
-                            #     print(gen_code, x, y)
+                            #
                         # else:
                         #     world[y, x] = 12
 

@@ -48,7 +48,8 @@ main_inventory = Inventory((50, 400), (8, screenHeight / 2 - 200))
 main_crafting_table = CraftingTable()
 main_crafting_table.set_inventory(main_inventory)
 main_inventory.set_crafting_table(main_crafting_table)
-animals = Animal(random.randint(12, 30), screenWidth, screenHeight)
+animals = Animal(random.randint(25, 45), screenWidth, screenHeight)
+animals.set_inventory(main_inventory)
 
 images = load_img()
 
