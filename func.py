@@ -769,8 +769,8 @@ class Inventory:
         self.pos = pos
         self.bar = pygame.Rect(pos, (size[0], size[1] + 2))
         self.block = pygame.Rect((pos[0] + 8, pos[1] - 8), (size[0] - 16, size[1] - 8))
-        self.backpack_margin = 100
-        self.bar_backback = pygame.Rect((pos[0] + self.backpack_margin, pos[1]), (size[0], size[1] + 2))
+        self.backpack_margin = 55
+        self.bar_backback = pygame.Rect((pos[0] + self.backpack_margin, pos[1]), (size[0]*2-2, size[1] + 2))
         self.backpack_block = pygame.Rect((pos[0] + 8 + self.backpack_margin, pos[1] - 8), (size[0] - 16, size[1] - 8))
         self.blocks = [] # 9 normal always visible slots
         self.backpack_blocks = [] # 9 backback slots
@@ -780,8 +780,10 @@ class Inventory:
         self.color = "orange"
         self.block_color = pygame.Color("#343a40")
         self.selected_block = 0
+        self.backpack_visible = False
 
         self.pic_dict = {}
+        self.pic_dict_small = {}
         self.items_dict = {"tomato ": ["assets/floor/tile127.png", 30],
                            "flower " : ["assets/floor/tile011.png", 30],
                            "sword ": ["assets/tools/Sword-1.png", 37],
@@ -795,9 +797,26 @@ class Inventory:
                            "pickaxe ": ["assets/tools/pickaxe.png", 33]
                            }
 
+        self.items_dict_small = {"tomato ": ["assets/floor/tile127.png", 15],
+                           "flower ": ["assets/floor/tile011.png", 15],
+                           "sword ": ["assets/tools/Sword-1.png", 12],
+                           "stone ": ["assets/floor/tile010.png", 15],
+                           "axe ": ["assets/tools/axe.png", 18],
+                           "log ": ["assets/floor/tile131.png", 18],
+                           "meat ": ["assets/food/26.png", 15],
+                           "tomato ": ["assets/floor/tile127.png", 15],
+                           "flower ": ["assets/floor/tile011.png", 15],
+                           "cookie ": ["assets/food/00.png", 15],
+                           "pickaxe ": ["assets/tools/pickaxe.png", 18]
+                           }
+
         for item in self.items_dict:
             self.pic_dict[item] = pygame.image.load(f"{self.items_dict[item][0]}").convert_alpha()
             self.pic_dict[item] = pygame.transform.scale(self.pic_dict[item], (self.items_dict[item][1], self.items_dict[item][1]))
+
+        for item in self.items_dict_small:
+            self.pic_dict_small[item] = pygame.image.load(f"{self.items_dict_small[item][0]}").convert_alpha()
+            self.pic_dict_small[item] = pygame.transform.scale(self.pic_dict_small[item], (self.items_dict_small[item][1], self.items_dict_small[item][1]))
 
 
         # self.tomato_img = pygame.image.load("assets/floor/tile127.png").convert_alpha()
@@ -831,13 +850,16 @@ class Inventory:
         self.dropped_items = []
         self.given_items = {0: "axe ", 1: "pickaxe ", 2: "tomato "}
         self.block_fill = {}
-        for i in range(19):
+        self.dropped_items = {}
+        for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
 
 
         self.full_key_dict = {
 
-            0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False
+            0: True, 1: True, 2: True, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False,
+            9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: False, 16: False, 17: False,
+            18: False, 19: False, 20: False, 21: False, 22: False, 23: False, 24: False, 25: False, 26: False
 
         }
 
@@ -849,7 +871,7 @@ class Inventory:
         if not bool(self.block_fill[self.selected_block]):
             self.block_fill[self.selected_block] = item
         else:
-            for x in range(9):
+            for x in range(27):
                 if not bool(self.block_fill[x]):
                     self.block_fill[x] = item
                     break
@@ -871,9 +893,30 @@ class Inventory:
                 pygame.Rect(pos[0] + 8, pos[1] + self.block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
             self.block_y += self.size[1] / 9
 
-    def draw(self, screen, pos):
+        self.backpack_margin = 55
+        self.bar_backback = pygame.Rect((pos[0] + self.backpack_margin, pos[1]), (self.size[0]*2-2, self.size[1] + 2))
+        self.backpack_block = pygame.Rect((pos[0] + 8 + self.backpack_margin, pos[1] - 8), (self.size[0] - 16, self.size[1] - 8))
+        self.backpack_block_y = 0
+
+        self.block_y = 0
+
+        for x in range(9):
+            self.blocks.append(
+                pygame.Rect(pos[0] + 8 + self.backpack_margin, pos[1] + self.block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+            self.block_y += self.size[1] / 9
+
+        self.backpack_block_y = 0
+
+        for x in range(9):
+            self.blocks.append(
+                pygame.Rect(pos[0] + self.backpack_margin * 2, pos[1] + self.backpack_block_y + 8,
+                            self.size[0] - 16, self.size[1] / 10.5 - 8))
+            self.backpack_block_y += self.size[1] / 9
+
+    def draw(self, screen, pos, scrollx, scrolly):
         pygame.draw.rect(screen, pygame.Color("#212529"), self.bar, border_radius=8)
-        pygame.draw.rect(screen, pygame.Color("#212529"), self.bar_backback, border_radius=8)
+        if self.backpack_visible:
+            pygame.draw.rect(screen, pygame.Color("#212529"), self.bar_backback, border_radius=8)
 
         # for index, block in enumerate(self.blocks):
         #
@@ -886,17 +929,41 @@ class Inventory:
         #     if self.block_fill[index] != '':
         #         screen.blit(self.pic_dict[self.block_fill[index]], block)
 
+        for i in self.dropped_items:
+            item = self.dropped_items[i]
+            image_code = item[0]
+            screen.blit(
+                self.pic_dict_small[image_code],
+                (item[1] - scrollx, item[2] - scrolly)
+            )
+            if self.player.x > item[1] - 20 and self.player.x < item[1] + 10:
+                if self.player.y > item[2] - 20 and self.player.y < item[2] + 10:
+                    self.add_item(item[0])
+                    self.dropped_items.pop(i)
+                    break
 
+            if time.perf_counter() - item[3] > 60*5: # 5 minutes
+                self.dropped_items.pop(i)
+                break
 
         for index, block in enumerate(self.blocks):
 
-            if index == self.selected_block:
-                pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
-            else:
-                pygame.draw.rect(screen, self.block_color, block, border_radius=4)
+            if not index > 8:
+                if index == self.selected_block:
+                    pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
+                else:
+                    pygame.draw.rect(screen, self.block_color, block, border_radius=4)
 
-            if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
-                pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
+                if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
+                    pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
+            elif self.backpack_visible:
+                if index == self.selected_block:
+                    pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
+                else:
+                    pygame.draw.rect(screen, self.block_color, block, border_radius=4)
+
+                if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
+                    pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
 
             # if self.block_fill[index] == "tomato ":
             #     screen.blit(self.tomato_img, block)
@@ -925,12 +992,16 @@ class Inventory:
             # if self.block_fill[index] == "meat ":
             #     screen.blit(self.meat_img, block)
 
-            if self.block_fill[index] != '':
-                screen.blit(self.pic_dict[self.block_fill[index]], block)
+            if not index > 8:
+                if self.block_fill[index] != '':
+                    screen.blit(self.pic_dict[self.block_fill[index]], block)
+            elif self.backpack_visible:
+                if self.block_fill[index] != '':
+                    screen.blit(self.pic_dict[self.block_fill[index]], block)
 
             self.color = random.choice(self.colors)
 
-    def update(self, keys, pos, screen):
+    def update(self, keys, pos, screen, keyboard):
         holding_item = False
         clicked_item = ""
 
@@ -1016,60 +1087,85 @@ class Inventory:
             #     print(self.blocks[index])
 
             if block.collidepoint(pos[0], pos[1]):
-                current_block = block
-                current_index = index
-                if keys[0]:
-                    self.selected_block = current_index
-                if self.block_fill[index] == "tomato ":
-                    self.description = "Tomato's will make you less hungry  |  [RMB] to consume"
-                elif self.block_fill[index] == "flower ":
-                    self.description = "Flowers refill your energy  |  [RMB] to consume"
-                elif self.block_fill[index] == "sword ":
-                    self.description = "With the sword you can attack living things  |  [LMB] to attack"
-                elif self.block_fill[index] == "pickaxe ":
-                    self.description = "With a pickaxe you can mine stone  |  [E] to mine"
-                elif self.block_fill[index] == "stone ":
-                    self.description = "You can use stone to craft items  |  [TAB] to open crafting table"
-                elif self.block_fill[index] == "axe ":
-                    self.description = "With an axe you can cut down trees  |  [E] to cut"
-                elif self.block_fill[index] == "log ":
-                    self.description = "With logs you can craft items |  [TAB] to open crafting table"
-                elif self.block_fill[index] == "cookie ":
-                    self.description = "Cookies are a great source of food  |  [RMB] to consume"
-                elif self.block_fill[index] == "meat ":
-                    self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
-                else:
-                    self.description = ""
+                if not index > 8 or self.backpack_visible:
+                    current_block = block
+                    current_index = index
+                    if not index > 8:
+                        if keys[0]:
+                            self.selected_block = current_index
+                    if self.block_fill[index] == "tomato ":
+                        self.description = "Tomato's will make you less hungry  |  [RMB] to consume"
+                    elif self.block_fill[index] == "flower ":
+                        self.description = "Flowers refill your energy  |  [RMB] to consume"
+                    elif self.block_fill[index] == "sword ":
+                        self.description = "With the sword you can attack living things  |  [LMB] to attack"
+                    elif self.block_fill[index] == "pickaxe ":
+                        self.description = "With a pickaxe you can mine stone  |  [E] to mine"
+                    elif self.block_fill[index] == "stone ":
+                        self.description = "You can use stone to craft items  |  [TAB] to open crafting table"
+                    elif self.block_fill[index] == "axe ":
+                        self.description = "With an axe you can cut down trees  |  [E] to cut"
+                    elif self.block_fill[index] == "log ":
+                        self.description = "With logs you can craft items |  [TAB] to open crafting table"
+                    elif self.block_fill[index] == "cookie ":
+                        self.description = "Cookies are a great source of food  |  [RMB] to consume"
+                    elif self.block_fill[index] == "meat ":
+                        self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
+                    else:
+                        self.description = ""
 
-            if self.holding_item:
-                screen.blit(self.pic_dict[self.clicked_item], (pos[0], pos[1]))
+            if not index > 8 or self.backpack_visible:
+                if self.holding_item:
+                    screen.blit(self.pic_dict[self.clicked_item], (pos[0], pos[1]))
 
-            if keys[1] and block.collidepoint(pos[0], pos[1]) and bool(
-                    self.block_fill[index]) and not self.holding_item:
-                clicked_block = index
-                clicked_item = self.block_fill[clicked_block]
-                self.clicked_item = clicked_item
-                self.block_fill[clicked_block] = ""
-                self.holding_item = True
+                if keys[1] and block.collidepoint(pos[0], pos[1]) and bool(
+                        self.block_fill[index]) and not self.holding_item:
+                    clicked_block = index
+                    clicked_item = self.block_fill[clicked_block]
+                    self.clicked_item = clicked_item
+                    self.block_fill[clicked_block] = ""
+                    self.holding_item = True
 
-            if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
-                    self.block_fill[index]) and self.holding_item:
-                self.block_fill[index] = self.clicked_item
-                self.holding_item = False
-            elif keys[0] and block.collidepoint(pos[0], pos[1]) and bool(self.block_fill[index]) and self.holding_item:
-                item = self.block_fill[index]
-                self.block_fill[index] = self.clicked_item
-                self.clicked_item = item
-                self.holding_item = True
-                time.sleep(0.1)
+                # if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
+                #         self.block_fill[index]) and self.holding_item:
+                if keys[0] and block.collidepoint(pos[0], pos[1]) and self.block_fill[index] in ["", " "] and self.holding_item:
+                    self.block_fill[index] = self.clicked_item
+                    self.holding_item = False
+                    print("run", self.block_fill[index])
+                elif keys[0] and block.collidepoint(pos[0], pos[1]):
+                    print(f"/{self.block_fill[index]}/", self.holding_item)
 
-            if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
-                    self.block_fill[index]) and self.crafting_table.holding_item:
-                self.block_fill[index] = self.crafting_table.interacted_item
-                self.crafting_table.holding_item = False
+                if keys[0] and block.collidepoint(pos[0], pos[1]) and bool(self.block_fill[index]) and self.holding_item:
+                    item = self.block_fill[index]
+                    self.block_fill[index] = self.clicked_item
+                    self.clicked_item = item
+                    self.holding_item = True
+                    time.sleep(0.1)
 
-            if keys[0] and not self.hovering_menu and self.holding_item and not self.crafting_table.hovering:
-                self.holding_item = False
+                if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
+                        self.block_fill[index]) and self.crafting_table.holding_item:
+                    self.block_fill[index] = self.crafting_table.interacted_item
+                    self.crafting_table.holding_item = False
+
+                if self.holding_item and keys[0] and not self.hovering_menu and not self.crafting_table.opened:
+                    if not self.clicked_item == "":
+                        self.dropped_items[
+                            len(self.dropped_items)] = [
+                            self.clicked_item,
+                            self.player.x + random.randint(-30, 30), self.player.y + random.randint(-30, 30),
+                            time.perf_counter()
+                        ]
+                        self.clicked_item = ""
+                        self.holding_item = False
+
+                if keyboard[pygame.K_q] and not self.block_fill[self.selected_block] == "":
+                    self.dropped_items[
+                        len(self.dropped_items)] = [
+                        self.block_fill[self.selected_block],
+                        self.player.x + random.randint(-30, 30), self.player.y + random.randint(-30, 30),
+                        time.perf_counter()
+                    ]
+                    self.block_fill[self.selected_block] = ""
 
             if bool(self.description):
                 text_w, text_h = self.font.size(self.description)

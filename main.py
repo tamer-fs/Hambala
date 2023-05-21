@@ -81,6 +81,13 @@ while playing:
         if event.type == pygame.MOUSEWHEEL:
             main_inventory.mouse_update(event.y)
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_CAPSLOCK:
+                if main_inventory.backpack_visible:
+                    main_inventory.backpack_visible = False
+                else:
+                    main_inventory.backpack_visible = True
+
         if event.type == pygame.VIDEORESIZE:
             screenWidth, screenHeight = screen.get_size()
             player_sprint_bar.reset(
@@ -137,6 +144,8 @@ while playing:
     player_hp_bar.update(player.health_value)
     keys = pygame.key.get_pressed()
 
+    main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
+
     player.walking(keys, deltaT, pygame.mouse.get_pressed())
     player.update(plants, keys, screen)
 
@@ -165,16 +174,14 @@ while playing:
     prev_player_y = player.y
     player.draw(screen, scrollx, scrolly)
 
-    main_inventory.draw(screen, pygame.mouse.get_pos())
-    main_inventory.update(pygame.mouse.get_pressed(), pygame.mouse.get_pos(), screen)
+    main_inventory.update(pygame.mouse.get_pressed(), pygame.mouse.get_pos(), screen, pygame.key.get_pressed())
 
-    main_crafting_table.draw(screen)
+    main_crafting_table.draw(screen, scrollx, scrolly, pygame.key.get_pressed())
     main_crafting_table.update(keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed())
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if not main_inventory.holding_item and not main_crafting_table.holding_item:
         screen.blit(cursor, cursor_rect)
-
 
     fps = clock.get_fps()
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
