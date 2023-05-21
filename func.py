@@ -1083,9 +1083,6 @@ class Inventory:
             else:
                 self.holding_axe = False
 
-            # if block.collidepoint(pos):
-            #     print(self.blocks[index])
-
             if block.collidepoint(pos[0], pos[1]):
                 if not index > 8 or self.backpack_visible:
                     current_block = block
@@ -1131,9 +1128,8 @@ class Inventory:
                 if keys[0] and block.collidepoint(pos[0], pos[1]) and self.block_fill[index] in ["", " "] and self.holding_item:
                     self.block_fill[index] = self.clicked_item
                     self.holding_item = False
-                    print("run", self.block_fill[index])
-                elif keys[0] and block.collidepoint(pos[0], pos[1]):
-                    print(f"/{self.block_fill[index]}/", self.holding_item)
+                #elif keys[0] and block.collidepoint(pos[0], pos[1]):
+                #    print(f"/{self.block_fill[index]}/", self.holding_item)
 
                 if keys[0] and block.collidepoint(pos[0], pos[1]) and bool(self.block_fill[index]) and self.holding_item:
                     item = self.block_fill[index]
