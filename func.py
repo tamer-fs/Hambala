@@ -10,6 +10,10 @@ import json
 
 pygame.mixer.init()
 
+def get_distance(x1, y1, x2, y2):
+    c2 = math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2)
+    c = math.sqrt(c2)
+    return c
 
 class Player:
     def __init__(self, images, x, y):
@@ -36,7 +40,7 @@ class Player:
         self.flower_power = 40
         self.player_tile = (0, 0)
         self.interact_img = pygame.image.load("assets/icons/Interact.png").convert_alpha()
-        self.font = pygame.font.Font("assets/Font/Roboto-Medium.ttf", 25)
+        self.font = pygame.font.Font("assets/Font/RoyalKingdom.ttf", 25)
         self.on_interact = False
         self.interact_message = ""
         self.screen_size = pygame.display.get_window_size()
@@ -781,6 +785,9 @@ class Inventory:
         self.block_color = pygame.Color("#343a40")
         self.selected_block = 0
         self.backpack_visible = False
+        self.last_time = 0
+        self.item_direction = -1
+        self.item_speed = 0.3
 
         self.pic_dict = {}
         self.pic_dict_small = {}
@@ -936,8 +943,21 @@ class Inventory:
                 self.pic_dict_small[image_code],
                 (item[1] - scrollx, item[2] - scrolly)
             )
-            if self.player.x > item[1] - 20 and self.player.x < item[1] + 10:
-                if self.player.y > item[2] - 20 and self.player.y < item[2] + 10:
+            if time.perf_counter() - self.last_time > 0.5:
+                self.last_time = time.perf_counter()
+                if self.item_direction == 1:
+                    self.item_direction = -1
+                else:
+                    self.item_direction = 1
+
+            print(get_distance(item[1], item[2], self.player.x + 24, self.player.y + 24))
+
+            item[2] += self.item_direction * self.item_speed
+
+            if get_distance(item[1], item[2], self.player.x + 12, self.player.y + 12) < 50:
+                item[1] -= (item[1] - self.player.x - 12) / 5
+                item[2] -= (item[2] - self.player.y) / 5
+                if get_distance(item[1], item[2], self.player.x + 12, self.player.y + 12) < 17:
                     self.add_item(item[0])
                     self.dropped_items.pop(i)
                     break
@@ -1148,7 +1168,7 @@ class Inventory:
                         self.dropped_items[
                             len(self.dropped_items)] = [
                             self.clicked_item,
-                            self.player.x + random.randint(-30, 30), self.player.y + random.randint(-30, 30),
+                            self.player.x + random.choice([-60, 60, 55, -55]), self.player.y + random.choice([-60, 60, 55, -55]),
                             time.perf_counter()
                         ]
                         self.clicked_item = ""
@@ -1158,7 +1178,7 @@ class Inventory:
                     self.dropped_items[
                         len(self.dropped_items)] = [
                         self.block_fill[self.selected_block],
-                        self.player.x + random.randint(-30, 30), self.player.y + random.randint(-30, 30),
+                        self.player.x + random.choice([-60, 60, 55, -55]), self.player.y + random.choice([-60, 60, 55, -55]),
                         time.perf_counter()
                     ]
                     self.block_fill[self.selected_block] = ""
