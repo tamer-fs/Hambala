@@ -452,6 +452,7 @@ class Animal:
         self.screen_height = height
         self.inventory = None
         self.hit = False
+        self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
 
         self.pic_dict = {}
         self.load_images = ["sheep", "sheepbrown", "bearblue", "bearbrown", "wolfblue", "wolfwhite", "wolfbluebrown", "wolfblack"]
@@ -632,6 +633,7 @@ class Animal:
                 if player.y < animal_rect.y + 16 and player.y > animal_rect.y - 32:
                     if player.hitting:
                         self.hit = True
+                        pygame.mixer.Sound.play(self.damage_sound)
                         # maak particles
                         for _ in range(15):
                             particles.append(HitParticle(animal[0].x, animal[0].y))
