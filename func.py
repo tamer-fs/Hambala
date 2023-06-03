@@ -40,7 +40,7 @@ class Player:
         self.flower_power = 40
         self.player_tile = (0, 0)
         self.interact_img = pygame.image.load("assets/icons/Interact.png").convert_alpha()
-        self.font = pygame.font.Font("assets/Font/RoyalKingdom.ttf", 25)
+        self.font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 25)
         self.on_interact = False
         self.interact_message = ""
         self.screen_size = pygame.display.get_window_size()
@@ -601,6 +601,7 @@ class Animal:
         self.screen_width = width
         self.screen_height = height
         self.inventory = None
+        self.hit = False
 
         self.pic_dict = {}
         self.load_images = ["sheep"]
@@ -747,11 +748,15 @@ class Animal:
             if not animal_rect.x < -150 * 16 - 32 and not animal_rect.x > 150 * 16 - 32:
                 if not animal_rect.y < -150 * 16 - 32 and not animal_rect.y > 150 * 16 - 32:
                     if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
-                        plants[on_tile[1] + 1, on_tile[0] + 1] = 14
+                        plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
             if player.x < animal_rect.x + 16 and  player.x > animal_rect.x - 32:
                 if player.y < animal_rect.y + 16 and player.y > animal_rect.y - 32:
                     if player.hitting:
+                        self.hit = True
+                        # maak particles
+                        for _ in range(15):
+                            particles.append(HitParticle(animal[0].x, animal[0].y))
                         animal[4] = True
                         animal[6] = random.randint(300, 350)
                         animal[7], animal[10] = self.create_walk_plan(animal[6])
@@ -846,7 +851,7 @@ class Inventory:
         # self.cookie_img = pygame.transform.scale(self.cookie_img, (30, 30))
 
         self.description = ""
-        self.font = pygame.font.Font("assets/Font/Roboto-Medium.ttf", 12)
+        self.font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 12)
         self.clicked_item = ""
         self.holding_item = False
         self.can_fill = True
@@ -855,7 +860,7 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "tomato "}
+        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "tomato ", 3: "sword "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):

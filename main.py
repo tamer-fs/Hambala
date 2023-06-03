@@ -73,6 +73,19 @@ cursor = pygame.image.load("assets/icons/cursor.png").convert_alpha()
 pygame.mouse.set_visible(False)
 cursor_rect = cursor.get_rect()
 
+shake_time = time.perf_counter()
+started_shake = False
+
+
+def shake(shakeTime, scrollx, scrolly):
+    global started_shake
+    if time.perf_counter() - shake_time < shakeTime:
+        scrollx += random.randint(-2, 2)
+        scrolly += random.randint(-2, 2)
+    else:
+        started_shake = False
+
+
 while playing:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -103,14 +116,38 @@ while playing:
 
     screen.fill((0, 0, 0))
     render_world(screen, world, plants, world_rotation, images,
-                 scrollx, scrolly, screenWidth, screenHeight)
-
+                 scrollx + shake_x, scrolly + shake_y, screenWidth, screenHeight)
     animals.draw(
         screen,
-        scrollx,
-        scrolly
+        scrollx + shake_x,
+        scrolly + shake_y
     )
-    animals.update(plants, player)
+    particles = animals.update(plants, player, particles)
+
+    prev_player_x = player.x
+    prev_player_y = player.y
+    player.draw(screen, scrollx, scrolly)
+
+    render_plants(
+        screen, world, plants, world_rotation, images,
+        scrollx + shake_x, scrolly + shake_y, screenWidth, screenHeight,
+        player
+    )
+
+    if animals.hit:
+        # if not started_shake:
+        #     shake_time = time.perf_counter()
+        #     started_shake = True
+        # shake(shake_time, scrollx, scrolly)
+        shake_frame = 1
+        animals.hit = False
+
+    if shake_frame > 0:
+        shake_frame += 1
+        if shake_frame > 10:
+            shake_frame = 0
+        shake_x = random.randint(-1, 1)
+        shake_y = random.randint(-1, 1)
 
     player_sprint_bar.draw(
         screen, pygame.Color("#212529"),
