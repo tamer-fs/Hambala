@@ -69,6 +69,10 @@ prev_player_y = 0
 scrollx = ((map_w * 16) - screenWidth) / 2
 scrolly = ((map_h * 16) - screenHeight) / 2
 
+shake_x = 0
+shake_y = 0
+shake_frame = 0
+
 cursor = pygame.image.load("assets/icons/cursor.png").convert_alpha()
 pygame.mouse.set_visible(False)
 cursor_rect = cursor.get_rect()
@@ -191,7 +195,7 @@ while playing:
 
     del_list = []
     for i, particle in enumerate(particles):
-        particle.update(scrollx, scrolly, deltaT, player, world)
+        particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
         particle.draw(screen)
         if particle.delete_timer + 0.75 < time.perf_counter():
             del_list.append(i)
@@ -206,10 +210,6 @@ while playing:
     scrollx = min(scrollx, 16 * map_w - screenWidth)
     scrolly = max(scrolly, 0)
     scrolly = min(scrolly, 16 * map_h - screenHeight)
-
-    prev_player_x = player.x
-    prev_player_y = player.y
-    player.draw(screen, scrollx, scrolly)
 
     main_inventory.update(pygame.mouse.get_pressed(), pygame.mouse.get_pos(), screen, pygame.key.get_pressed())
 
