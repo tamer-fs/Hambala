@@ -498,6 +498,12 @@ class Animal:
             self.spawn_animal(rect, size, group_list[group][2], x)
 
     def spawn_animal(self, rect, size, animal_type, x):
+
+        if animal_type == "bearbrown" or animal_type == "bearblue":
+            hp = 180
+        else:
+            hp = random.randint(100, 115)
+
         if not rect.x < -150 * 16 - 8 and not rect.x > 150 * 16 - 8:
             if not rect.y < -150 * 16 - 8 and not rect.y > 150 * 16 - 8:
                 self.animal_dict[x] = [
@@ -516,7 +522,8 @@ class Animal:
                     time.perf_counter(),  # 12
                     size,
                     random.choice([True, False]),  # 14
-                    100  # hp 15
+                    hp,  # hp 15
+                    False # set target 16
                 ]
 
     def reset_screen_size(self, width, height):
@@ -550,11 +557,11 @@ class Animal:
                     )
             )
 
-    def create_walk_plan(self, max_steps):
+    def create_walk_plan(self, max_steps, walking_speed):
         return_list = []
         waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
         direction = ""
-        walk_speed = 0.5
+        walk_speed = walking_speed
         for x in range(max_steps):
             if waypoint == "tl":
                 return_list.append((-walk_speed, -walk_speed))
@@ -603,6 +610,7 @@ class Animal:
             hungry = animal[14]
             player = player
             animal_hp = animal[15]
+            animal_set_target = animal[16]
 
             if time.perf_counter() - animal_perf > animal_break_time:
                 if animal_walking:
@@ -610,7 +618,7 @@ class Animal:
                 else:
                     animal[4] = True
                     animal[6] = random.randint(30, 150)
-                    animal[7], animal[10] = self.create_walk_plan(animal[6])
+                    animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
                 animal[8] = time.perf_counter()
             if animal_walking:
                 if animal_path < animal_set_steps:
@@ -629,21 +637,20 @@ class Animal:
                     if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
                         plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
-            if player.x < animal_rect.x + 16 and  player.x > animal_rect.x - 32:
-                if player.y < animal_rect.y + 16 and player.y > animal_rect.y - 32:
-                    if player.hitting:
-                        self.hit = True
-                        pygame.mixer.Sound.play(self.damage_sound)
-                        # maak particles
-                        for _ in range(15):
-                            particles.append(HitParticle(animal[0].x, animal[0].y))
-                        animal[4] = True
-                        animal[6] = random.randint(300, 350)
-                        animal[7], animal[10] = self.create_walk_plan(animal[6])
-                        animal[15] -= random.randint(30, 40)
-                        animal_rect.y += random.randint(-5, 5)
-                        animal_rect.x += random.randint(-5, 5)
-                        player.hitting = False
+            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 25:
+                if player.hitting:
+                    self.hit = True
+                    pygame.mixer.Sound.play(self.damage_sound)
+                    # maak particles
+                    for _ in range(15):
+                        particles.append(HitParticle(animal[0].x, animal[0].y))
+                    animal[4] = True
+                    animal[6] = random.randint(300, 350)
+                    animal[7], animal[10] = self.create_walk_plan(animal[6], 1.2)
+                    animal[15] -= random.randint(30, 40)
+                    animal_rect.y += random.randint(-5, 5)
+                    animal_rect.x += random.randint(-5, 5)
+                    player.hitting = False
 
 
             if animal_hp <= 0:

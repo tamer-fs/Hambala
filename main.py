@@ -27,6 +27,11 @@ stamina_icon = pygame.image.load("assets/icons/stamina.png").convert_alpha()
 hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
 health_icon = pygame.image.load("assets/icons/health_icon.png").convert_alpha()
 
+mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+sky_color = (0, 0, 0, 0)
+mask_surf.fill(sky_color)
+is_night = False
+sky_time = 0
 
 scrollx = 0
 scrolly = 0
@@ -117,6 +122,8 @@ while playing:
             main_inventory.reset_pos((8, screenHeight / 2 - 200))
             main_crafting_table.reset()
             animals.reset_screen_size(screenWidth, screenHeight)
+            mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+            mask_surf.fill(sky_color)
 
     screen.fill((0, 0, 0))
     render_world(screen, world, plants, world_rotation, images,
@@ -152,6 +159,21 @@ while playing:
             shake_frame = 0
         shake_x = random.randint(-1, 1)
         shake_y = random.randint(-1, 1)
+
+    particles, particle_perf = spawn_particles(
+        particle_perf, player, particles)
+
+    del_list = []
+    for i, particle in enumerate(particles):
+        particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
+        particle.draw(screen)
+        if particle.delete_timer + 0.75 < time.perf_counter():
+            del_list.append(i)
+
+    for j in list(sorted(del_list))[::-1]:
+        particles.pop(j)
+
+    screen.blit(mask_surf, (0, 0))
 
     player_sprint_bar.draw(
         screen, pygame.Color("#212529"),
@@ -190,18 +212,20 @@ while playing:
     player.walking(keys, deltaT, pygame.mouse.get_pressed())
     player.update(plants, keys, screen)
 
-    particles, particle_perf = spawn_particles(
-        particle_perf, player, particles)
+    if time.perf_counter() - sky_time > 0.8:
+        if not is_night:
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.25)
+        else:
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.25)
 
-    del_list = []
-    for i, particle in enumerate(particles):
-        particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
-        particle.draw(screen)
-        if particle.delete_timer + 0.75 < time.perf_counter():
-            del_list.append(i)
+        sky_time = time.perf_counter()
 
-    for j in list(sorted(del_list))[::-1]:
-        particles.pop(j)
+    mask_surf.fill(sky_color)
+
+    if sky_color[3] > 200:
+        is_night = True
+    elif sky_color[3] < 1:
+        is_night = False
 
     scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
     scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)
