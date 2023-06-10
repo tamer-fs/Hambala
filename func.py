@@ -452,7 +452,18 @@ class Animal:
         self.screen_height = height
         self.inventory = None
         self.hit = False
+        self.player = None
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
+        self.drop_item = {
+            "sheep": "meat ",
+            "sheepbrown": "meat ",
+            "wolfblue": "meat ",
+            "wolfblack": "meat ",
+            "wolfbluebrown": "meat ",
+            "wolfwhite": "meat ",
+            "bearblue": "meat ",
+            "bearbrown": "meat ",
+        }
 
         self.pic_dict = {}
         self.load_images = ["sheep", "sheepbrown", "bearblue", "bearbrown", "wolfblue", "wolfwhite", "wolfbluebrown", "wolfblack"]
@@ -478,7 +489,7 @@ class Animal:
 
         spawn_list = []
         spawn_freq = {
-            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown" : 20, "wolfwhite" : 12,
+            #"sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown" : 20, "wolfwhite" : 12,
             "bearblue" : 5, "bearbrown" : 30
         }
         for animal in spawn_freq.keys():
@@ -637,7 +648,7 @@ class Animal:
                     if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
                         plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
-            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 25:
+            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 35:
                 if player.hitting:
                     self.hit = True
                     pygame.mixer.Sound.play(self.damage_sound)
@@ -653,9 +664,26 @@ class Animal:
                     player.hitting = False
 
 
+            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 500:
+                if animal[17] <= time.perf_counter() and animal[17] != 0:
+                    print("kaas walk plan")
+                    animal[4] = True
+                    animal[6] = random.randint(10, 20)
+                    animal[7], animal[10] = self.create_walk_plan(animal[6], 1.2, True, animal_rect=animal[0])
+            else:
+                animal[4] = False
+
+
             if animal_hp <= 0:
                 animal_delete_list.append(animal_key)
-                self.inventory.add_item("meat ")
+                for _ in range(random.randint(1, 2)):
+                    self.inventory.dropped_items[
+                        len(self.inventory.dropped_items)] = [
+                        self.drop_item[animal_type],
+                        animal_rect.x + random.choice([-60, 60, 55, -55]),
+                        animal_rect.y + random.choice([-60, 60, 55, -55]),
+                        time.perf_counter()
+                    ]
                 for _ in range(30):
                     particles.append(HitParticle(animal[0].x, animal[0].y))
 

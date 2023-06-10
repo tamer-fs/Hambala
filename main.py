@@ -32,6 +32,7 @@ sky_color = (0, 0, 0, 0)
 mask_surf.fill(sky_color)
 is_night = False
 sky_time = 0
+light = pygame.image.load("assets/Images/Light.png").convert_alpha()
 
 scrollx = 0
 scrolly = 0
@@ -65,6 +66,8 @@ player = Player(images, ((map_w * 16) - 48) / 2, ((map_h * 16) - 48) / 2)
 particle_perf = -1
 player.get_inventory(main_inventory)
 main_inventory.get_player(player)
+
+animals.player = player
 
 deltaT = 0
 
