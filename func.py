@@ -534,7 +534,8 @@ class Animal:
                     size,
                     random.choice([True, False]),  # 14
                     hp,  # hp 15
-                    False # set target 16
+                    False, # set target 16
+                    0 #animal start attack 17
                 ]
 
     def reset_screen_size(self, width, height):
@@ -568,36 +569,60 @@ class Animal:
                     )
             )
 
-    def create_walk_plan(self, max_steps, walking_speed):
+    def create_walk_plan(self, max_steps, walking_speed, to_player=False, animal_rect=None):
         return_list = []
-        waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
-        direction = ""
-        walk_speed = walking_speed
-        for x in range(max_steps):
-            if waypoint == "tl":
-                return_list.append((-walk_speed, -walk_speed))
-                direction = "left"
-            elif waypoint == "tr":
-                return_list.append((walk_speed, -walk_speed))
-                direction = "right"
-            elif waypoint == "r":
-                return_list.append((walk_speed, 0))
-                direction = "right"
-            elif waypoint == "l":
-                return_list.append((-walk_speed, 0))
-                direction = "left"
-            elif waypoint == "bl":
-                return_list.append((-walk_speed, walk_speed))
-                direction = "left"
-            elif waypoint == "br":
-                return_list.append((walk_speed, walk_speed))
-                direction = "right"
-            elif waypoint == "b":
-                return_list.append((0, walk_speed))
-                direction = "front"
-            elif waypoint == "t":
-                return_list.append((0, -walk_speed))
-                direction = "back"
+        if to_player == False:
+            waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
+            direction = ""
+            walk_speed = walking_speed
+            for x in range(max_steps):
+                if waypoint == "tl":
+                    return_list.append((-walk_speed, -walk_speed))
+                    direction = "left"
+                elif waypoint == "tr":
+                    return_list.append((walk_speed, -walk_speed))
+                    direction = "right"
+                elif waypoint == "r":
+                    return_list.append((walk_speed, 0))
+                    direction = "right"
+                elif waypoint == "l":
+                    return_list.append((-walk_speed, 0))
+                    direction = "left"
+                elif waypoint == "bl":
+                    return_list.append((-walk_speed, walk_speed))
+                    direction = "left"
+                elif waypoint == "br":
+                    return_list.append((walk_speed, walk_speed))
+                    direction = "right"
+                elif waypoint == "b":
+                    return_list.append((0, walk_speed))
+                    direction = "front"
+                elif waypoint == "t":
+                    return_list.append((0, -walk_speed))
+                    direction = "back"
+        else:
+            # kijken of beer x groter kleiner dan player x en hetzelfde met y
+            player_x, player_y = self.player.x + 24, self.player.y + 24
+            animal_x, animal_y = animal_rect.x + (animal_rect.w / 2), animal_rect.y + (animal_rect.h / 2)
+            x_diff = 0
+            y_diff = 0
+            x_diff = player_x - animal_x
+            y_diff = player_y - animal_y
+            step_x = min(x_diff / max_steps, 2.5)
+            step_y = min(y_diff / max_steps, 2.5)
+            for x in range(max_steps):
+                return_list.append((round(step_x), round(step_y)))
+
+            if abs(x_diff) > abs(y_diff):
+                if abs(step_x) == step_x: # is positive
+                    direction = "right"
+                else:
+                    direction = "left"
+            else:
+                if abs(step_y) == step_y:
+                    direction = "front"
+                else:
+                    direction = "back"
 
         return return_list, direction
 
@@ -622,6 +647,7 @@ class Animal:
             player = player
             animal_hp = animal[15]
             animal_set_target = animal[16]
+            animal_start_attack = animal[17]
 
             if time.perf_counter() - animal_perf > animal_break_time:
                 if animal_walking:
@@ -631,6 +657,7 @@ class Animal:
                     animal[6] = random.randint(30, 150)
                     animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
                 animal[8] = time.perf_counter()
+
             if animal_walking:
                 if animal_path < animal_set_steps:
                     animal_rect.x += animal[7][animal[5]][0]
@@ -657,7 +684,12 @@ class Animal:
                         particles.append(HitParticle(animal[0].x, animal[0].y))
                     animal[4] = True
                     animal[6] = random.randint(300, 350)
-                    animal[7], animal[10] = self.create_walk_plan(animal[6], 1.2)
+                    if animal_type in ["bearbrown", "bearblue"]:
+                        print("kaas 2.0")
+                        animal[17] = time.perf_counter() + 1
+                        animal[4] = False
+                    else:
+                        animal[7], animal[10] = self.create_walk_plan(animal[6], 1.2, False)
                     animal[15] -= random.randint(30, 40)
                     animal_rect.y += random.randint(-5, 5)
                     animal_rect.x += random.randint(-5, 5)
