@@ -1263,7 +1263,8 @@ class CraftingTable:
             self.inventory.update(pygame.mouse.get_pressed(), pygame.mouse.get_pos(), screen, keyboard)
 
             if self.holding_item:
-                screen.blit(self.inventory.pic_dict[self.interacted_item], (self.mouse_pos[0], self.mouse_pos[1]))
+                if self.interacted_item in self.inventory.pic_dict:
+                    screen.blit(self.inventory.pic_dict[self.interacted_item], (self.mouse_pos[0], self.mouse_pos[1]))
 
     def set_inventory(self, inventory):
         self.inventory = inventory
