@@ -13,6 +13,8 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
+controllerInput = True # False/True
+
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
 pygame.display.set_caption("Hambala")
 icon = pygame.image.load("assets/character/idle1.png").convert_alpha()
@@ -125,7 +127,8 @@ while playing:
             main_inventory.reset_pos((8, screenHeight / 2 - 200))
             main_crafting_table.reset()
             animals.reset_screen_size(screenWidth, screenHeight)
-            mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+            mask_surf = pygame.Surface(
+                (screenWidth, screenHeight), pygame.SRCALPHA, 32)
             mask_surf.fill(sky_color)
 
     screen.fill((0, 0, 0))
@@ -168,7 +171,8 @@ while playing:
 
     del_list = []
     for i, particle in enumerate(particles):
-        particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
+        particle.update(scrollx + shake_x, scrolly +
+                        shake_y, deltaT, player, world)
         particle.draw(screen)
         if particle.delete_timer + 0.75 < time.perf_counter():
             del_list.append(i)
@@ -217,9 +221,11 @@ while playing:
 
     if time.perf_counter() - sky_time > 0.8:
         if not is_night:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.25)
+            sky_color = (sky_color[0], sky_color[1],
+                         sky_color[2], sky_color[3] + 0.25)
         else:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.25)
+            sky_color = (sky_color[0], sky_color[1],
+                         sky_color[2], sky_color[3] - 0.25)
 
         sky_time = time.perf_counter()
 
@@ -238,10 +244,13 @@ while playing:
     scrolly = max(scrolly, 0)
     scrolly = min(scrolly, 16 * map_h - screenHeight)
 
-    main_inventory.update(pygame.mouse.get_pressed(), pygame.mouse.get_pos(), screen, pygame.key.get_pressed())
+    main_inventory.update(pygame.mouse.get_pressed(
+    ), pygame.mouse.get_pos(), screen, pygame.key.get_pressed())
 
-    main_crafting_table.draw(screen, scrollx, scrolly, pygame.key.get_pressed())
-    main_crafting_table.update(keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed())
+    main_crafting_table.draw(screen, scrollx, scrolly,
+                             pygame.key.get_pressed())
+    main_crafting_table.update(
+        keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed())
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if not main_inventory.holding_item and not main_crafting_table.holding_item:

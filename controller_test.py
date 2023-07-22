@@ -27,7 +27,6 @@ while run:
             if event.button == 0:
                 max_speed_add = 20
                 time_diff = time.perf_counter() - last_press_time
-                print(time_diff)
                 last_press_time = time.perf_counter()
 
         if event.type == pygame.JOYHATMOTION:
@@ -45,8 +44,6 @@ while run:
 
     shooting = True if joystick.get_axis(5) > -0.5 else False
 
-    print(max_speed_add)
-
     if shooting:
         if time.perf_counter() - shoot_delay > 0.5:
             joystick.rumble(0, 20, 150)
@@ -54,7 +51,7 @@ while run:
 
     window.fill(0)
     pygame.draw.circle(window, (255, 0, 0), (x, y), 10)
-    pygame.display.flip()
+    pygame.display.update()
     clock.tick(60)
 
 pygame.quit()
