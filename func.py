@@ -128,7 +128,7 @@ class Player:
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
 
-    def walking(self, keys, deltaT, mouse):
+    def walking(self, keys, deltaT, mouse, joystick):
         self.state = "idle"
 
         if keys[pygame.K_LSHIFT] and self.energy_value > 0 and (
@@ -279,7 +279,7 @@ class Player:
     def get_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, keys, screen):
+    def update(self, plants, keys, screen, joystick):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
         if self.damaging:
@@ -546,7 +546,7 @@ class Animal:
 
         spawn_list = []
         spawn_freq = {
-            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown" : 20, "wolfwhite" : 12,
+            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
             "bearblue": 5, "bearbrown": 30
         }
         for animal in spawn_freq.keys():

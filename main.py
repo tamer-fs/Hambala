@@ -13,7 +13,12 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
-controllerInput = True # False/True
+if pygame.joystick.get_count() == 1:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+else:
+    joystick = None
+
 
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
 pygame.display.set_caption("Hambala")
@@ -216,8 +221,8 @@ while playing:
 
     main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-    player.walking(keys, deltaT, pygame.mouse.get_pressed())
-    player.update(plants, keys, screen)
+    player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick)
+    player.update(plants, keys, screen, joystick)
 
     if time.perf_counter() - sky_time > 0.8:
         if not is_night:
