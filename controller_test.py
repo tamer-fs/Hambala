@@ -42,6 +42,7 @@ while run:
     if abs(axis_y) > 0.1:
         y = (y + round((7 + max_speed_add) * axis_y)) % window.get_height()
 
+    print(axis_x, axis_y)
     shooting = True if joystick.get_axis(5) > -0.5 else False
 
     if shooting:

@@ -128,96 +128,146 @@ class Player:
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
 
-    def walking(self, keys, deltaT, mouse, joystick):
+    def walking(self, keys, deltaT, mouse, joystick, joystick_input):
         self.state = "idle"
-
-        if keys[pygame.K_LSHIFT] and self.energy_value > 0 and (
-                keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]):
-            if self.energy_value > 0.025 * deltaT:
-                self.speed = 0.525
+        if joystick_input:
+            axis_x, axis_y = (joystick.get_axis(0), joystick.get_axis(1))
+            self.x += axis_x * 10 * self.speed
+            self.y += axis_y * 10 * self.speed
+            if joystick.get_button(0):  # button X on controller pressed
                 self.state = "run"
-            self.energy_value -= 0.025 * deltaT
-        elif keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]:
-            self.speed = 0.1
-            self.state = "walk"
-            if self.energy_value < 100:
-                self.energy_value += 0.01 * deltaT
-        else:
-            if self.energy_value < 100:
-                self.energy_value += 0.02 * deltaT
+                self.speed = 0.525
+                self.energy_value -= 0.025 * deltaT
 
-        if self.attacking and self.framed < 3:
-            if time.perf_counter() - self.sword_update > 0.0855:
-                self.sword_update = time.perf_counter()
-                self.sword_frame = (self.sword_frame + 1) % 3
-                self.framed += 1
-        else:
-            self.attacking = False
-            self.hitting = False
+            else:
+                self.speed = 0.1
+                self.state = "walk"
+                if self.energy_value < 100:
+                    self.energy_value += 0.01 * deltaT
 
-        if self.can_attack and self.sword_selected \
-                and not self.attacking \
-                and not self.inventory.holding_item \
-                and not self.inventory.hovering_menu:
-            if mouse[0] and self.energy_value > 15:
-                self.attacking = True
-                self.hitting = True
-                self.framed = 0
-                self.sword_frame = 0
-                self.energy_value -= 15
-                self.food_value -= 10
-                pygame.mixer.Sound.play(self.sword_sweep_sound)
+            if self.state != "idle":
+                if axis_x > 0.15:
+                    self.direction = "RIGHT"
+                elif axis_x < 0.15:
+                    self.direction = "LEFT"
+            print(axis_x)
 
-        if keys[pygame.K_d] and keys[pygame.K_w]:
-            self.x += 100 * self.speed / numpy.sqrt(200)
-            self.y -= 100 * self.speed / numpy.sqrt(200)
-            self.direction = "RIGHT"
-            self.direction_xy = "RIGHT"
+            if abs(axis_x) < 0.1 and abs(axis_y) < 0.1:
+                self.state = "idle"
+                if self.energy_value < 100:
+                    self.energy_value += 0.02 * deltaT
 
-        elif keys[pygame.K_d] and keys[pygame.K_s]:
-            self.x += 100 * self.speed / numpy.sqrt(200)
-            self.y += 100 * self.speed / numpy.sqrt(200)
-            self.direction = "RIGHT"
-            self.direction_xy = "RIGHT"
+            if self.can_attack and self.sword_selected \
+                    and not self.attacking \
+                    and not self.inventory.holding_item \
+                    and not self.inventory.hovering_menu:
+                if joystick.get_button(1) and self.energy_value > 15:
+                    self.attacking = True
+                    self.hitting = True
+                    self.framed = 0
+                    self.sword_frame = 0
+                    self.energy_value -= 15
+                    self.food_value -= 10
+                    pygame.mixer.Sound.play(self.sword_sweep_sound)
 
-        elif keys[pygame.K_w] and keys[pygame.K_a]:
-            self.x -= 100 * self.speed / numpy.sqrt(200)
-            self.y -= 100 * self.speed / numpy.sqrt(200)
-            self.direction = "LEFT"
-            self.direction_xy = "LEFT"
-
-        elif keys[pygame.K_s] and keys[pygame.K_a]:
-            self.x -= 100 * self.speed / numpy.sqrt(200)
-            self.y += 100 * self.speed / numpy.sqrt(200)
-            self.direction = "LEFT"
-            self.direction_xy = "LEFT"
+            if self.attacking and self.framed < 3:
+                if time.perf_counter() - self.sword_update > 0.0855:
+                    self.sword_update = time.perf_counter()
+                    self.sword_frame = (self.sword_frame + 1) % 3
+                    self.framed += 1
+            else:
+                self.attacking = False
+                self.hitting = False
 
         else:
-            if keys[pygame.K_d]:
-                self.x += 10 * self.speed
-                if self.state != "run":
-                    self.state = "walk"
+
+            if keys[pygame.K_LSHIFT] and self.energy_value > 0 and (
+                    keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]):
+                if self.energy_value > 0.025 * deltaT:
+                    self.speed = 0.525
+                    self.state = "run"
+                self.energy_value -= 0.025 * deltaT
+            elif keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]:
+                self.speed = 0.1
+                self.state = "walk"
+                if self.energy_value < 100:
+                    self.energy_value += 0.01 * deltaT
+            else:
+                if self.energy_value < 100:
+                    self.energy_value += 0.02 * deltaT
+
+            if self.can_attack and self.sword_selected \
+                    and not self.attacking \
+                    and not self.inventory.holding_item \
+                    and not self.inventory.hovering_menu:
+                if mouse[0] and self.energy_value > 15:
+                    self.attacking = True
+                    self.hitting = True
+                    self.framed = 0
+                    self.sword_frame = 0
+                    self.energy_value -= 15
+                    self.food_value -= 10
+                    pygame.mixer.Sound.play(self.sword_sweep_sound)
+
+            if self.attacking and self.framed < 3:
+                if time.perf_counter() - self.sword_update > 0.0855:
+                    self.sword_update = time.perf_counter()
+                    self.sword_frame = (self.sword_frame + 1) % 3
+                    self.framed += 1
+            else:
+                self.attacking = False
+                self.hitting = False
+
+            if keys[pygame.K_d] and keys[pygame.K_w]:
+                self.x += 100 * self.speed / numpy.sqrt(200)
+                self.y -= 100 * self.speed / numpy.sqrt(200)
                 self.direction = "RIGHT"
                 self.direction_xy = "RIGHT"
 
-            if keys[pygame.K_a]:
-                self.x -= 10 * self.speed
-                if self.state != "run":
-                    self.state = "walk"
+            elif keys[pygame.K_d] and keys[pygame.K_s]:
+                self.x += 100 * self.speed / numpy.sqrt(200)
+                self.y += 100 * self.speed / numpy.sqrt(200)
+                self.direction = "RIGHT"
+                self.direction_xy = "RIGHT"
+
+            elif keys[pygame.K_w] and keys[pygame.K_a]:
+                self.x -= 100 * self.speed / numpy.sqrt(200)
+                self.y -= 100 * self.speed / numpy.sqrt(200)
                 self.direction = "LEFT"
                 self.direction_xy = "LEFT"
 
-            if keys[pygame.K_s]:
-                self.y += 10 * self.speed
-                if self.state != "run":
-                    self.state = "walk"
-                self.direction_xy = "DOWN"
+            elif keys[pygame.K_s] and keys[pygame.K_a]:
+                self.x -= 100 * self.speed / numpy.sqrt(200)
+                self.y += 100 * self.speed / numpy.sqrt(200)
+                self.direction = "LEFT"
+                self.direction_xy = "LEFT"
 
-            if keys[pygame.K_w]:
-                self.y -= 10 * self.speed
-                if self.state != "run":
-                    self.state = "walk"
-                self.direction_xy = "UP"
+            else:
+                if keys[pygame.K_d]:
+                    self.x += 10 * self.speed
+                    if self.state != "run":
+                        self.state = "walk"
+                    self.direction = "RIGHT"
+                    self.direction_xy = "RIGHT"
+
+                if keys[pygame.K_a]:
+                    self.x -= 10 * self.speed
+                    if self.state != "run":
+                        self.state = "walk"
+                    self.direction = "LEFT"
+                    self.direction_xy = "LEFT"
+
+                if keys[pygame.K_s]:
+                    self.y += 10 * self.speed
+                    if self.state != "run":
+                        self.state = "walk"
+                    self.direction_xy = "DOWN"
+
+                if keys[pygame.K_w]:
+                    self.y -= 10 * self.speed
+                    if self.state != "run":
+                        self.state = "walk"
+                    self.direction_xy = "UP"
 
         if time.perf_counter() - self.update_frame > 0.0825:
             self.update_frame = time.perf_counter()
@@ -902,8 +952,8 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "axe ",
-                            1: "pickaxe ", 2: "tomato ", 3: "sword "}
+        self.given_items = {0: "sword ",
+                            1: "pickaxe ", 2: "tomato ", 3: "axe "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):

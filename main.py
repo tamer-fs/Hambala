@@ -2,7 +2,7 @@ import numpy
 
 from func import *
 import pygame
-
+import time
 pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
@@ -13,12 +13,16 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
+joystick_input = False
 if pygame.joystick.get_count() == 1:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
+    print("Joystick found!!!")
+    joystick_input = True
 else:
     joystick = None
-
+    joystick_input = False
+    print("No joystick connected")
 
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
 pygame.display.set_caption("Hambala")
@@ -113,7 +117,13 @@ while playing:
         if event.type == pygame.MOUSEWHEEL:
             main_inventory.mouse_update(event.y)
 
+        if joystick:
+            if event.type == pygame.JOYBUTTONDOWN:
+                joystick_input = True
+
         if event.type == pygame.KEYDOWN:
+            if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
+                joystick_input = False
             if event.key == pygame.K_CAPSLOCK:
                 if main_inventory.backpack_visible:
                     main_inventory.backpack_visible = False
@@ -221,7 +231,8 @@ while playing:
 
     main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-    player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick)
+    player.walking(keys, deltaT, pygame.mouse.get_pressed(),
+                   joystick, joystick_input)
     player.update(plants, keys, screen, joystick)
 
     if time.perf_counter() - sky_time > 0.8:
