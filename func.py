@@ -132,25 +132,30 @@ class Player:
         self.state = "idle"
         if joystick_input:
             axis_x, axis_y = (joystick.get_axis(0), joystick.get_axis(1))
-            self.x += axis_x * 10 * self.speed
-            self.y += axis_y * 10 * self.speed
-            if joystick.get_button(0):  # button X on controller pressed
-                self.state = "run"
-                self.speed = 0.525
-                self.energy_value -= 0.025 * deltaT
+            if abs(axis_x) > 0.1:
+                self.x += axis_x * 10 * self.speed
+            if abs(axis_y) > 0.1:
+                self.y += axis_y * 10 * self.speed
 
+            # button X on controller pressed
+            if joystick.get_button(0) and self.energy_value > 0:
+                if self.energy_value > 0.025 * deltaT:
+                    self.speed = 0.525
+                    self.state = "run"
+                self.energy_value -= 0.025 * deltaT
             else:
                 self.speed = 0.1
                 self.state = "walk"
-                if self.energy_value < 100:
+                if self.energy_value < 100 and not joystick.get_button(0):
                     self.energy_value += 0.01 * deltaT
 
             if self.state != "idle":
                 if axis_x > 0.15:
                     self.direction = "RIGHT"
-                elif axis_x < 0.15:
+                    self.direction_xy = "RIGHT"
+                elif axis_x < -0.15:
                     self.direction = "LEFT"
-            print(axis_x)
+                    self.direction_xy = "LEFT"
 
             if abs(axis_x) < 0.1 and abs(axis_y) < 0.1:
                 self.state = "idle"
@@ -329,7 +334,7 @@ class Player:
     def get_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, keys, screen, joystick):
+    def update(self, plants, keys, screen, joystick, joystick_input):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
         if self.damaging:
@@ -365,12 +370,16 @@ class Player:
         else:
             self.on_interact = False
 
-        if self.on_interact and self.interact_message == "Harvest tomato" and keys[
-                pygame.K_e] and self.inventory.can_fill:
+        e_pressed = False
+        if joystick_input:
+            e_pressed = joystick.get_button(2)
+        else:
+            e_pressed = keys[pygame.K_e]
+
+        if self.on_interact and self.interact_message == "Harvest tomato" and e_pressed and self.inventory.can_fill:
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 125
             self.inventory.add_item("tomato ")
-        if self.on_interact and self.interact_message == "Harvest flower" and keys[
-                pygame.K_e] and self.inventory.can_fill:
+        if self.on_interact and self.interact_message == "Harvest flower" and e_pressed and self.inventory.can_fill:
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
             self.inventory.add_item("flower ")
         if self.on_interact \
@@ -382,7 +391,7 @@ class Player:
                              self.stone_rect2, border_radius=20)
             pygame.draw.rect(screen, pygame.Color("#0ead69"),
                              self.stone_rect, border_radius=20)
-            if keys[pygame.K_e]:
+            if e_pressed:
                 if time.perf_counter() - self.cooldown > 0.8:
                     self.stone_rect.width -= (self.screen_size[0] / 4) / 4
                     self.cooldown = time.perf_counter()
@@ -391,7 +400,7 @@ class Player:
                     self.pickaxe_frame = (self.pickaxe_frame + 1) % 2
                     self.pickaxe_cooldown = time.perf_counter()
 
-            elif not keys[pygame.K_e]:
+            elif not e_pressed:
                 self.stone_rect = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
                                               (self.screen_size[0] / 4 - 16, 30))
                 self.stone_rect2 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
@@ -411,7 +420,7 @@ class Player:
                              self.stone_rect2, border_radius=20)
             pygame.draw.rect(screen, pygame.Color("#0ead69"),
                              self.stone_rect, border_radius=20)
-            if keys[pygame.K_e]:
+            if e_pressed:
                 if time.perf_counter() - self.cooldown > 0.8:
                     self.stone_rect.width -= (self.screen_size[0] / 4) / 4
                     self.cooldown = time.perf_counter()
@@ -420,7 +429,7 @@ class Player:
                     self.axe_frame = (self.axe_frame + 1) % 2
                     self.axe_cooldown = time.perf_counter()
 
-            elif not keys[pygame.K_e]:
+            elif not e_pressed:
                 self.stone_rect = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
                                               (self.screen_size[0] / 4 - 16, 30))
                 self.stone_rect2 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
@@ -567,16 +576,19 @@ class Animal:
             "wolfwhite": "meat ",
             "bearblue": "meat ",
             "bearbrown": "meat ",
+            "ratwhite": "meat "
         }
         self.attack_delay = 2
 
         self.pic_dict = {}
         self.load_images = ["sheep", "sheepbrown", "bearblue", "bearbrown",
-                            "wolfblue", "wolfwhite", "wolfbluebrown", "wolfblack"]
+                            "wolfblue", "wolfwhite", "wolfbluebrown", "wolfblack", "ratwhite"]
         for load_image in self.load_images:
             for direction in ["front", "right", "back", "left"]:
                 for frame in range(1, 5):
                     if not direction == "left":
+                        print(
+                            f"assets/{load_image}/{load_image}{direction}{str(frame)}.png")
                         image = pygame.image.load(
                             f"assets/{load_image}/{load_image}{direction}{str(frame)}.png"
                         ).convert_alpha()
@@ -596,8 +608,9 @@ class Animal:
 
         spawn_list = []
         spawn_freq = {
-            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
-            "bearblue": 5, "bearbrown": 30
+            # "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
+            # "bearblue": 5, "bearbrown": 30,
+            "ratwhite": 9
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -617,8 +630,10 @@ class Animal:
             self.spawn_animal(rect, size, group_list[group][2], x)
 
     def spawn_animal(self, rect, size, animal_type, x):
-        if animal_type == "bearbrown" or animal_type == "bearblue":
+        if "bear" in animal_type:
             hp = 180
+        elif "rat" in animal_type:
+            hp = 60
         else:
             hp = random.randint(100, 115)
 

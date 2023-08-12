@@ -92,6 +92,9 @@ shake_x = 0
 shake_y = 0
 shake_frame = 0
 
+mouse_set_x = 300
+mouse_set_y = 300
+
 cursor = pygame.image.load("assets/icons/cursor.png").convert_alpha()
 pygame.mouse.set_visible(False)
 cursor_rect = cursor.get_rect()
@@ -233,7 +236,7 @@ while playing:
 
     player.walking(keys, deltaT, pygame.mouse.get_pressed(),
                    joystick, joystick_input)
-    player.update(plants, keys, screen, joystick)
+    player.update(plants, keys, screen, joystick, joystick_input)
 
     if time.perf_counter() - sky_time > 0.8:
         if not is_night:
@@ -272,9 +275,22 @@ while playing:
     if not main_inventory.holding_item and not main_crafting_table.holding_item:
         screen.blit(cursor, cursor_rect)
 
+    if joystick_input:
+        axis_x_2, axis_y_2 = joystick.get_axis(2), joystick.get_axis(3)
+        if abs(axis_x_2) > 0.15:
+            mouse_set_x += joystick.get_axis(2) * deltaT
+        if abs(axis_y_2) > 0.15:
+            mouse_set_y += joystick.get_axis(3) * deltaT
+
+        mouse_set_x = min(max(5, mouse_set_x), screenWidth-5)
+        mouse_set_y = min(max(5, mouse_set_y), screenHeight-5)
+        pygame.mouse.set_pos((mouse_set_x, mouse_set_y))
+
     fps = clock.get_fps()
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     deltaT = clock.tick(60)
+    if joystick and joystick_input:
+        print(joystick.get_button(12))
 
 pygame.quit()
