@@ -117,21 +117,28 @@ while playing:
         if event.type == pygame.QUIT:
             playing = False
 
-        if event.type == pygame.MOUSEWHEEL:
-            main_inventory.mouse_update(event.y)
+        if event.type == pygame.MOUSEWHEEL or event.type == pygame.JOYBUTTONDOWN:
+            if not joystick_input and hasattr(event, 'y'):
+                main_inventory.mouse_update(event.y, joystick_input, joystick)
+            else:
+                main_inventory.mouse_update(0, joystick_input, joystick)
 
         if joystick:
             if event.type == pygame.JOYBUTTONDOWN:
                 joystick_input = True
 
-        if event.type == pygame.KEYDOWN:
-            if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
-                joystick_input = False
-            if event.key == pygame.K_CAPSLOCK:
-                if main_inventory.backpack_visible:
-                    main_inventory.backpack_visible = False
-                else:
+        if event.type == pygame.KEYDOWN or event.type == pygame.JOYBUTTONDOWN:
+            if hasattr(event, 'key'):
+                if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
+                    joystick_input = False
+            if joystick_input:
+                if joystick.get_button(14):
                     main_inventory.backpack_visible = True
+                elif joystick.get_button(13):
+                    main_inventory.backpack_visible = False
+            else:
+                if event.key == pygame.K_CAPSLOCK:
+                    main_inventory.backpack_visible = not main_inventory.backpack_visible
 
         if event.type == pygame.VIDEORESIZE:
             screenWidth, screenHeight = screen.get_size()
@@ -265,12 +272,12 @@ while playing:
     scrolly = min(scrolly, 16 * map_h - screenHeight)
 
     main_inventory.update(pygame.mouse.get_pressed(
-    ), pygame.mouse.get_pos(), screen, pygame.key.get_pressed())
+    ), pygame.mouse.get_pos(), screen, pygame.key.get_pressed(), joystick_input, joystick)
 
     main_crafting_table.draw(screen, scrollx, scrolly,
-                             pygame.key.get_pressed())
+                             pygame.key.get_pressed(), joystick_input, joystick)
     main_crafting_table.update(
-        keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed())
+        keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed(), joystick_input, joystick)
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if not main_inventory.holding_item and not main_crafting_table.holding_item:
@@ -292,6 +299,6 @@ while playing:
     pygame.display.update()
     deltaT = clock.tick(60)
     if joystick and joystick_input:
-        print(joystick.get_button(12))
+        print(joystick.get_button(6))
 
 pygame.quit()

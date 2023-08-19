@@ -603,7 +603,7 @@ class Animal:
             "wolfwhite": "meat ",
             "bearblue": "meat ",
             "bearbrown": "meat ",
-            "ratwhite": "rat's tail"
+            "ratwhite": "rat's tail "
         }
         self.attack_delay = 2
 
@@ -891,6 +891,12 @@ class Animal:
                 if "rat" in animal_type:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
+                    self.inventory.dropped_items[len(self.inventory.dropped_items)] = [
+                        self.drop_item[animal_type],
+                        animal_rect.x + random.choice([-60, 60, 55, -55]),
+                        animal_rect.y + random.choice([-60, 60, 55, -55]),
+                        time.perf_counter()
+                    ]
                 else:
                     for _ in range(random.randint(1, 2)):
                         self.inventory.dropped_items[
@@ -1197,14 +1203,17 @@ class Inventory:
 
             self.color = random.choice(self.colors)
 
-    def update(self, keys, pos, screen, keyboard):
+    def update(self, keys, pos, screen, keyboard, joystick_input, joystick):
         holding_item = False
         clicked_item = ""
+
+        keys = list(keys)
 
         if self.bar.collidepoint(pos[0], pos[1]) or self.bar_backback.collidepoint(pos):
             self.hovering_menu = True
         else:
             self.hovering_menu = False
+            self.description = ""
 
         for key in self.block_fill:
             if bool(self.block_fill[key]):
@@ -1219,6 +1228,10 @@ class Inventory:
 
         for index, block in enumerate(self.blocks):
             current_block = pygame.Rect((-500, 0), (0, 0))
+            if joystick_input:
+                keys[2] = joystick.get_button(2)
+                keys[1] = joystick.get_button(1)
+                keys[0] = joystick.get_button(0)
 
             if self.block_fill[self.selected_block] == "tomato ":
                 if keys[2] and not self.player.on_interact:
@@ -1308,6 +1321,8 @@ class Inventory:
                         self.description = "With a rat's tail you're able to make different types of potions, not an edible product... | [TAB] to open crafting table"
                     else:
                         self.description = ""
+            else:
+                self.description = ""
 
             if not index > 8 or self.backpack_visible:
                 if self.holding_item:
@@ -1380,17 +1395,29 @@ class Inventory:
                 screen.blit(text_render, (current_block.x +
                             50 + 7, current_block.y + 7))
 
-    def mouse_update(self, mouse):
-        if mouse > 0:
-            if self.selected_block == 0:
-                self.selected_block = 8
-            else:
-                self.selected_block -= 1
-        elif mouse < 0:
-            if self.selected_block == 8:
-                self.selected_block = 0
-            else:
-                self.selected_block += 1
+    def mouse_update(self, mouse, joystick_input, joystick):
+        if not joystick_input:  # no joystick connected
+            if mouse > 0:
+                if self.selected_block == 0:
+                    self.selected_block = 8
+                else:
+                    self.selected_block -= 1
+            elif mouse < 0:
+                if self.selected_block == 8:
+                    self.selected_block = 0
+                else:
+                    self.selected_block += 1
+        else:  # joystick connected and used
+            if joystick.get_button(11):  # DPAD Up
+                if self.selected_block == 0:
+                    self.selected_block = 8
+                else:
+                    self.selected_block -= 1
+            elif joystick.get_button(12):  # DPAD Down
+                if self.selected_block == 8:
+                    self.selected_block = 0
+                else:
+                    self.selected_block += 1
 
 
 class CraftingTable:
@@ -1486,7 +1513,7 @@ class CraftingTable:
                     )
                 )
 
-    def draw(self, screen, scrollx, scrolly, keyboard):
+    def draw(self, screen, scrollx, scrolly, keyboard, joystick_input, joystick):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
             pygame.draw.rect(screen, self.bg_color,
@@ -1526,7 +1553,7 @@ class CraftingTable:
             self.inventory.draw(
                 screen, pygame.mouse.get_pos(), scrollx, scrolly)
             self.inventory.update(pygame.mouse.get_pressed(
-            ), pygame.mouse.get_pos(), screen, keyboard)
+            ), pygame.mouse.get_pos(), screen, keyboard, joystick_input, joystick)
 
             if self.holding_item:
                 if self.interacted_item in self.inventory.pic_dict:
@@ -1574,29 +1601,52 @@ class CraftingTable:
                     )
                 )
 
-    def update(self, keys, mouse_pos, mouse_click):
+    def update(self, keys, mouse_pos, mouse_click, joystick_input, joystick):
         self.mouse_pos = mouse_pos
-        if keys[pygame.K_TAB]:
-            if not self.opened:
-                self.opened = True
-                time.sleep(0.15)
-            else:
-                self.opened = False
-                for key in self.block_fill:
-                    if bool(self.block_fill[key]):
-                        self.inventory.add_item(self.block_fill[key])
-                        self.block_fill[key] = ""
+        if not joystick_input:
+            if keys[pygame.K_TAB]:
+                if not self.opened:
+                    self.opened = True
+                    time.sleep(0.15)
+                else:
+                    self.opened = False
+                    for key in self.block_fill:
+                        if bool(self.block_fill[key]):
+                            self.inventory.add_item(self.block_fill[key])
+                            self.block_fill[key] = ""
 
-                if self.holding_item:
-                    self.inventory.add_item(self.interacted_item)
-                    self.holding_item = False
-                time.sleep(0.15)
+                    if self.holding_item:
+                        self.inventory.add_item(self.interacted_item)
+                        self.holding_item = False
+                    time.sleep(0.15)
+            
+        else:
+            if joystick.get_button(6):
+                if not self.opened:
+                    self.opened = True
+                    time.sleep(0.15)
+                else:
+                    self.opened = False
+                    for key in self.block_fill:
+                        if bool(self.block_fill[key]):
+                            self.inventory.add_item(self.block_fill[key])
+                            self.block_fill[key] = ""
+
+                    if self.holding_item:
+                        self.inventory.add_item(self.interacted_item)
+                        self.holding_item = False
+                    time.sleep(0.15)
 
         if self.background.collidepoint(mouse_pos[0], mouse_pos[1]):
             self.hovering = True
         else:
             self.hovering = False
 
+        mouse_click = list(mouse_click)
+        if joystick_input:
+            mouse_click[0] = joystick.get_button(0)
+            mouse_click[1] = joystick.get_button(1)
+            mouse_click[2] = joystick.get_button(2)
         for index, block in enumerate(self.blocks):
             if block.collidepoint(mouse_pos[0], mouse_pos[1]):
                 if mouse_click[0] and self.inventory.holding_item:
