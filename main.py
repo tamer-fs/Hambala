@@ -221,8 +221,8 @@ while playing:
     player_hp_bar.draw(
         screen, pygame.Color("#212529"),
         pygame.Color("#343a40"),
-        pygame.Color('#ae2012'),
-        health_icon,
+        player.hp_bar_color,
+        player.hp_icon,
         (-28, -2),
         5
     )
@@ -236,7 +236,8 @@ while playing:
 
     player.walking(keys, deltaT, pygame.mouse.get_pressed(),
                    joystick, joystick_input)
-    player.update(plants, keys, screen, joystick, joystick_input)
+    player.update(plants, keys, screen, joystick,
+                  joystick_input, player_hp_bar)
 
     if time.perf_counter() - sky_time > 0.8:
         if not is_night:

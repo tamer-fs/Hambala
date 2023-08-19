@@ -125,6 +125,18 @@ class Player:
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
         self.damaging = False
 
+        self.poisoned = False
+        self.poison_time = -1  # perf counter when poison is gone
+        self.poison_duration = 7
+
+        self.hp_bar_color = pygame.Color('#ae2012')
+
+        self.green_hp_icon = pygame.image.load(
+            'assets/icons/health_icon_green.png').convert_alpha()
+        self.red_hp_icon = pygame.image.load(
+            'assets/icons/health_icon_red.png').convert_alpha()
+        self.hp_icon = self.red_hp_icon
+
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
 
@@ -334,7 +346,7 @@ class Player:
     def get_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, keys, screen, joystick, joystick_input):
+    def update(self, plants, keys, screen, joystick, joystick_input, health_bar):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
         if self.damaging:
@@ -437,6 +449,7 @@ class Player:
                 self.stone_rect3 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
                                                (self.screen_size[0] / 4, 46))
                 self.axe_frame = 0
+
             if self.stone_rect.width <= 0:
                 plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
                 plants[self.player_tile[1] + 1, self.player_tile[0] + 2] = 12
@@ -452,9 +465,23 @@ class Player:
                 self.health_value -= 0.5
                 self.damaging = True
 
-        if time.perf_counter() - self.update_frame_1 > 5 and self.food_value > 800 and self.health_value < 10:
+        if time.perf_counter() - self.update_frame_1 > 5 and self.food_value > 800 and self.health_value < 10 and not self.poisoned:
             self.update_frame_1 = time.perf_counter()
             self.health_value += 0.25
+
+        if self.poisoned:
+            self.hp_bar_color = pygame.Color('#588157')
+            self.hp_icon = self.green_hp_icon
+            # check if poison is over
+            if self.poison_time + self.poison_duration <= time.perf_counter():
+                self.poisoned = False
+                self.hp_bar_color = pygame.Color('#ae2012')
+                self.hp_icon = self.red_hp_icon
+            else:
+                self.health_value -= 0.01
+
+        if self.health_value < 0:
+            self.health_value = 0
 
 
 class WalkParticle:
@@ -576,7 +603,7 @@ class Animal:
             "wolfwhite": "meat ",
             "bearblue": "meat ",
             "bearbrown": "meat ",
-            "ratwhite": "meat "
+            "ratwhite": "rat's tail"
         }
         self.attack_delay = 2
 
@@ -587,8 +614,6 @@ class Animal:
             for direction in ["front", "right", "back", "left"]:
                 for frame in range(1, 5):
                     if not direction == "left":
-                        print(
-                            f"assets/{load_image}/{load_image}{direction}{str(frame)}.png")
                         image = pygame.image.load(
                             f"assets/{load_image}/{load_image}{direction}{str(frame)}.png"
                         ).convert_alpha()
@@ -597,6 +622,9 @@ class Animal:
                             f"assets/{load_image}/{load_image}right{str(frame)}.png"
                         ).convert_alpha()
                         image = pygame.transform.flip(image, True, False)
+
+                    self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = pygame.transform.smoothscale(
+                        image, (14, 14))
 
                     self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = image
 
@@ -627,7 +655,11 @@ class Animal:
             group = random.randint(0, group_count-1)
             rect = self.pic_dict["sheepright1small"].get_rect(topleft=(
                 group_list[group][0] + random.randint(-250, 250), group_list[group][1] + random.randint(-250, 250)))
-            self.spawn_animal(rect, size, group_list[group][2], x)
+
+            if group_list[group][2] == "ratwhite":
+                self.spawn_animal(rect, "tiny", group_list[group][2], x)
+            else:
+                self.spawn_animal(rect, size, group_list[group][2], x)
 
     def spawn_animal(self, rect, size, animal_type, x):
         if "bear" in animal_type:
@@ -807,6 +839,10 @@ class Animal:
                         plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
             if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 35:
+                if "rat" in animal_type:
+                    player.poisoned = True
+                    player.poison_time = time.perf_counter()
+
                 if player.hitting:
                     if 'bear' in animal_type:
                         print('stoute man slaat een beer')
@@ -852,18 +888,20 @@ class Animal:
 
             if animal_hp <= 0:
                 animal_delete_list.append(animal_key)
-                for _ in range(random.randint(1, 2)):
-                    self.inventory.dropped_items[
-                        len(self.inventory.dropped_items)] = [
-                        self.drop_item[animal_type],
-                        animal_rect.x + random.choice([-60, 60, 55, -55]),
-                        animal_rect.y + random.choice([-60, 60, 55, -55]),
-                        time.perf_counter()
-                    ]
+                if "rat" in animal_type:
+                    player.poisoned = True
+                    player.poison_time = time.perf_counter()
+                else:
+                    for _ in range(random.randint(1, 2)):
+                        self.inventory.dropped_items[
+                            len(self.inventory.dropped_items)] = [
+                            self.drop_item[animal_type],
+                            animal_rect.x + random.choice([-60, 60, 55, -55]),
+                            animal_rect.y + random.choice([-60, 60, 55, -55]),
+                            time.perf_counter()
+                        ]
                 for _ in range(30):
                     particles.append(HitParticle(animal[0].x, animal[0].y))
-
-        # if 'bear' in animal_type:
 
         for delete_animal in sorted(animal_delete_list, reverse=True):
             self.animal_dict.pop(delete_animal)
@@ -910,7 +948,8 @@ class Inventory:
                            "tomato ": ["assets/floor/tile127.png", 30],
                            "flower ": ["assets/floor/tile011.png", 30],
                            "cookie ": ["assets/food/00.png", 30],
-                           "pickaxe ": ["assets/tools/pickaxe.png", 33]
+                           "pickaxe ": ["assets/tools/pickaxe.png", 33],
+                           "rat's tail ": ["assets/food/73.png", 30]
                            }
 
         self.items_dict_small = {"tomato ": ["assets/floor/tile127.png", 15],
@@ -923,7 +962,8 @@ class Inventory:
                                  "tomato ": ["assets/floor/tile127.png", 15],
                                  "flower ": ["assets/floor/tile011.png", 15],
                                  "cookie ": ["assets/food/00.png", 15],
-                                 "pickaxe ": ["assets/tools/pickaxe.png", 18]
+                                 "pickaxe ": ["assets/tools/pickaxe.png", 18],
+                                 "rat's tail ": ["assets/food/73.png", 15]
                                  }
 
         for item in self.items_dict:
@@ -968,7 +1008,7 @@ class Inventory:
         self.holding_axe = False
         self.dropped_items = []
         self.given_items = {0: "sword ",
-                            1: "pickaxe ", 2: "tomato ", 3: "axe "}
+                            1: "pickaxe ", 2: "tomato ", 3: "axe ", 4: "rat's tail "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):
@@ -976,7 +1016,7 @@ class Inventory:
 
         self.full_key_dict = {
 
-            0: True, 1: True, 2: True, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False,
+            0: True, 1: True, 2: True, 3: True, 4: False, 5: False, 6: False, 7: False, 8: False,
             9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: False, 16: False, 17: False,
             18: False, 19: False, 20: False, 21: False, 22: False, 23: False, 24: False, 25: False, 26: False
 
@@ -1264,6 +1304,8 @@ class Inventory:
                         self.description = "Cookies are a great source of food  |  [RMB] to consume"
                     elif self.block_fill[index] == "meat ":
                         self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
+                    elif self.block_fill[index] == "rat's tail ":
+                        self.description = "With a rat's tail you're able to make different types of potions, not an edible product... | [TAB] to open crafting table"
                     else:
                         self.description = ""
 
