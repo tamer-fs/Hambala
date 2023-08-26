@@ -13,6 +13,7 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
+
 joystick_input = False
 if pygame.joystick.get_count() == 1:
     joystick = pygame.joystick.Joystick(0)
@@ -23,6 +24,18 @@ else:
     joystick = None
     joystick_input = False
     print("No joystick connected")
+
+joystick_btn_dict = {
+    "PS4 Controller": {
+        "d-pad-up": 11,
+        "d-pad-down": 12,
+        "d-pad-left": 13,
+        "d-pad-right": 14
+    }
+}
+
+controller_type = joystick.get_name()
+
 
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
 pygame.display.set_caption("Hambala")
@@ -298,7 +311,7 @@ while playing:
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     deltaT = clock.tick(60)
-    if joystick and joystick_input:
-        print(joystick.get_button(6))
+    if joystick.get_button(joystick_btn_dict[controller_type]['d-pad-up']):
+        print("UP")
 
 pygame.quit()

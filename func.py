@@ -1619,7 +1619,7 @@ class CraftingTable:
                         self.inventory.add_item(self.interacted_item)
                         self.holding_item = False
                     time.sleep(0.15)
-            
+
         else:
             if joystick.get_button(6):
                 if not self.opened:
