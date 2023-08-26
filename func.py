@@ -27,7 +27,7 @@ def get_distance(x1, y1, x2, y2):
 
 
 class Player:
-    def __init__(self, images, x, y):
+    def __init__(self, images, x, y, controller_type):
         self.x = x
         self.y = y
 
@@ -52,8 +52,13 @@ class Player:
         self.cookie_feeding = 2500
         self.flower_power = 40
         self.player_tile = (0, 0)
-        self.interact_img = pygame.image.load(
-            "assets/icons/Interact.png").convert_alpha()
+        if controller_type == "":
+            self.interact_img = pygame.image.load(
+                "assets/icons/Interact.png").convert_alpha()
+        elif controller_type == "Xbox 360 Controller":
+            self.interact_img = pygame.image.load(
+                "assets/icons/Interact-Y.png").convert_alpha()
+
         self.font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 25)
         self.on_interact = False
         self.interact_message = ""
