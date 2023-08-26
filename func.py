@@ -58,6 +58,9 @@ class Player:
         elif controller_type == "Xbox 360 Controller":
             self.interact_img = pygame.image.load(
                 "assets/icons/Interact-Y.png").convert_alpha()
+        elif controller_type == "PS4 Controller":
+            self.interact_img = pygame.image.load(
+                "assets/icons/Interact-PS4.png").convert_alpha()
 
         self.font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 25)
         self.on_interact = False

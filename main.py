@@ -119,7 +119,7 @@ images = load_img()
 particles = []
 
 keys = pygame.key.get_pressed()
-player = Player(images, ((map_w * 16) - 48) / 2, ((map_h * 16) - 48) / 2)
+player = Player(images, ((map_w * 16) - 48) / 2, ((map_h * 16) - 48) / 2, controller_type)
 particle_perf = -1
 player.get_inventory(main_inventory)
 main_inventory.get_player(player)
