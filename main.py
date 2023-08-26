@@ -163,7 +163,7 @@ while playing:
         if event.type == pygame.QUIT:
             playing = False
 
-        if event.type == pygame.MOUSEWHEEL or event.type == pygame.JOYBUTTONDOWN:
+        if event.type == pygame.MOUSEWHEEL or event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION:
             if not joystick_input and hasattr(event, 'y'):
                 main_inventory.mouse_update(event.y, joystick_input, joystick)
             else:
@@ -173,7 +173,7 @@ while playing:
             if event.type == pygame.JOYBUTTONDOWN:
                 joystick_input = True
 
-        if event.type == pygame.KEYDOWN or event.type == pygame.JOYBUTTONDOWN:
+        if event.type == pygame.KEYDOWN or event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION:
             if hasattr(event, 'key'):
                 if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
                     joystick_input = False
@@ -183,8 +183,9 @@ while playing:
                 elif eval(joystick_btn_dict["d-pad-left"]):
                     main_inventory.backpack_visible = False
             else:
-                if event.key == pygame.K_CAPSLOCK:
-                    main_inventory.backpack_visible = not main_inventory.backpack_visible
+                if hasattr(event, 'key'):
+                    if event.key == pygame.K_CAPSLOCK:
+                        main_inventory.backpack_visible = not main_inventory.backpack_visible
 
         if event.type == pygame.VIDEORESIZE:
             screenWidth, screenHeight = screen.get_size()
@@ -344,7 +345,7 @@ while playing:
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     deltaT = clock.tick(60)
-    if eval(joystick_btn_dict['d-pad-up']):
-        print("UP")
+    if eval(joystick_btn_dict['d-pad-right']):
+        print("RIGHT")
 
 pygame.quit()
