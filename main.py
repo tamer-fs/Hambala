@@ -1,8 +1,9 @@
 import numpy
 
-from func import *
 import pygame
 import time
+import json
+
 pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
@@ -25,16 +26,48 @@ else:
     joystick_input = False
     print("No joystick connected")
 
-joystick_btn_dict = {
-    "PS4 Controller": {
-        "d-pad-up": 11,
-        "d-pad-down": 12,
-        "d-pad-left": 13,
-        "d-pad-right": 14
-    }
-}
 
 controller_type = joystick.get_name()
+
+with open('joystick_btn_dict.json') as f:
+    joystick_btn_dict = json.load(f)
+    joystick_btn_dict = joystick_btn_dict[controller_type]
+
+with open('controller_type.txt', 'w') as f:
+    f.write(str(controller_type))
+
+from func import *
+import random
+
+
+# joystick_btn_dict = {
+#     "Xbox 360 Controller": {
+#         "south-btn": "joystick.get_button(0)",
+#         "east-btn": "joystick.get_button(1)",
+#         "west-btn": "joystick.get_button(2)",
+#         "north-btn": "joystick.get_button(3)",
+
+#         "crafting_table": "joystick.get_button(7)",  # START btn
+
+#         "d-pad-up": "joystick.get_hat(0)[1] > 0",
+#         "d-pad-down": "joystick.get_hat(0)[1] < 0",
+#         "d-pad-right": "joystick.get_hat(0)[0] > 0",
+#         "d-pad-left": "joystick.get_hat(0)[0] < 0",
+#     },
+#     "PS4 Controller": {
+#         "south-btn": "joystick.get_button(0)",
+#         "east-btn": "joystick.get_button(1)",
+#         "west-btn": "joystick.get_button(2)",
+#         "north-btn": "joystick.get_button(3)",
+
+#         "crafting_table": "joystick.get_button(6)",  # OPTIONS btn
+
+#         "d-pad-up": "joystick.get_button(11)",
+#         "d-pad-down": "joystick.get_button(12)",
+#         "d-pad-left": "joystick.get_button(13)",
+#         "d-pad-right": "joystick.get_button(14)"
+#     }
+# }
 
 
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
@@ -145,9 +178,9 @@ while playing:
                 if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
                     joystick_input = False
             if joystick_input:
-                if joystick.get_button(14):
+                if eval(joystick_btn_dict["d-pad-right"]):
                     main_inventory.backpack_visible = True
-                elif joystick.get_button(13):
+                elif eval(joystick_btn_dict["d-pad-left"]):
                     main_inventory.backpack_visible = False
             else:
                 if event.key == pygame.K_CAPSLOCK:
@@ -311,7 +344,7 @@ while playing:
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     deltaT = clock.tick(60)
-    if joystick.get_button(joystick_btn_dict[controller_type]['d-pad-up']):
+    if eval(joystick_btn_dict['d-pad-up']):
         print("UP")
 
 pygame.quit()

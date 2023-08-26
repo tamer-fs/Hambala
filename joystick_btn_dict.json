@@ -1,0 +1,28 @@
+{
+  "Xbox 360 Controller": {
+    "south-btn": "joystick.get_button(0)",
+    "east-btn": "joystick.get_button(1)",
+    "west-btn": "joystick.get_button(2)",
+    "north-btn": "joystick.get_button(3)",
+
+    "crafting_table": "joystick.get_button(7)",
+
+    "d-pad-up": "joystick.get_hat(0)[1] > 0",
+    "d-pad-down": "joystick.get_hat(0)[1] < 0",
+    "d-pad-right": "joystick.get_hat(0)[0] > 0",
+    "d-pad-left": "joystick.get_hat(0)[0] < 0"
+  },
+  "PS4 Controller": {
+    "south-btn": "joystick.get_button(0)",
+    "east-btn": "joystick.get_button(1)",
+    "west-btn": "joystick.get_button(2)",
+    "north-btn": "joystick.get_button(3)",
+
+    "crafting_table": "joystick.get_button(6)",
+
+    "d-pad-up": "joystick.get_button(11)",
+    "d-pad-down": "joystick.get_button(12)",
+    "d-pad-left": "joystick.get_button(13)",
+    "d-pad-right": "joystick.get_button(14)"
+  }
+}

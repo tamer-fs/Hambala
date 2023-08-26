@@ -10,6 +10,15 @@ import json
 
 pygame.mixer.init()
 
+with open('controller_type.txt') as f:
+    controller_type = f.read()
+
+joystick_btn_dict = {}
+with open('joystick_btn_dict.json') as f:
+    joystick_btn_dict = json.load(f)
+    joystick_btn_dict = joystick_btn_dict[controller_type]
+    print(joystick_btn_dict)
+
 
 def get_distance(x1, y1, x2, y2):
     c2 = math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2)
@@ -150,7 +159,7 @@ class Player:
                 self.y += axis_y * 10 * self.speed
 
             # button X on controller pressed
-            if joystick.get_button(0) and self.energy_value > 0:
+            if eval(joystick_btn_dict["south-btn"]) and self.energy_value > 0:
                 if self.energy_value > 0.025 * deltaT:
                     self.speed = 0.525
                     self.state = "run"
@@ -158,7 +167,7 @@ class Player:
             else:
                 self.speed = 0.1
                 self.state = "walk"
-                if self.energy_value < 100 and not joystick.get_button(0):
+                if self.energy_value < 100 and not eval(joystick_btn_dict["south-btn"]):
                     self.energy_value += 0.01 * deltaT
 
             if self.state != "idle":
@@ -178,7 +187,7 @@ class Player:
                     and not self.attacking \
                     and not self.inventory.holding_item \
                     and not self.inventory.hovering_menu:
-                if joystick.get_button(1) and self.energy_value > 15:
+                if eval(joystick_btn_dict["east-btn"]) and self.energy_value > 15:
                     self.attacking = True
                     self.hitting = True
                     self.framed = 0
@@ -384,7 +393,7 @@ class Player:
 
         e_pressed = False
         if joystick_input:
-            e_pressed = joystick.get_button(2)
+            e_pressed = eval(joystick_btn_dict["north-btn"])
         else:
             e_pressed = keys[pygame.K_e]
 
@@ -1229,9 +1238,9 @@ class Inventory:
         for index, block in enumerate(self.blocks):
             current_block = pygame.Rect((-500, 0), (0, 0))
             if joystick_input:
-                keys[2] = joystick.get_button(2)
-                keys[1] = joystick.get_button(1)
-                keys[0] = joystick.get_button(0)
+                keys[2] = eval(joystick_btn_dict["west-btn"])
+                keys[1] = eval(joystick_btn_dict["east-btn"])
+                keys[0] = eval(joystick_btn_dict["south-btn"])
 
             if self.block_fill[self.selected_block] == "tomato ":
                 if keys[2] and not self.player.on_interact:
@@ -1408,12 +1417,12 @@ class Inventory:
                 else:
                     self.selected_block += 1
         else:  # joystick connected and used
-            if joystick.get_button(11):  # DPAD Up
+            if eval(joystick_btn_dict["d-pad-up"]):  # DPAD Up
                 if self.selected_block == 0:
                     self.selected_block = 8
                 else:
                     self.selected_block -= 1
-            elif joystick.get_button(12):  # DPAD Down
+            elif eval(joystick_btn_dict["d-pad-down"]):  # DPAD Down
                 if self.selected_block == 8:
                     self.selected_block = 0
                 else:
@@ -1621,7 +1630,7 @@ class CraftingTable:
                     time.sleep(0.15)
 
         else:
-            if joystick.get_button(6):
+            if eval(joystick_btn_dict["crafting_table"]):
                 if not self.opened:
                     self.opened = True
                     time.sleep(0.15)
@@ -1644,9 +1653,10 @@ class CraftingTable:
 
         mouse_click = list(mouse_click)
         if joystick_input:
-            mouse_click[0] = joystick.get_button(0)
-            mouse_click[1] = joystick.get_button(1)
-            mouse_click[2] = joystick.get_button(2)
+
+            mouse_click[0] = eval(joystick_btn_dict["south-btn"])
+            mouse_click[1] = eval(joystick_btn_dict["east-btn"])
+            mouse_click[2] = eval(joystick_btn_dict["west-btn"])
         for index, block in enumerate(self.blocks):
             if block.collidepoint(mouse_pos[0], mouse_pos[1]):
                 if mouse_click[0] and self.inventory.holding_item:
