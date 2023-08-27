@@ -27,14 +27,21 @@ else:
     print("No joystick connected")
 
 
-controller_type = joystick.get_name()
+if joystick:
+    controller_type = joystick.get_name()
+else:
+    controller_type = None
 
-with open('joystick_btn_dict.json') as f:
-    joystick_btn_dict = json.load(f)
-    joystick_btn_dict = joystick_btn_dict[controller_type]
+if controller_type in ["PS4 Controller", "Xbox 360 Controller"]:
+    with open('joystick_btn_dict.json') as f:
+        joystick_btn_dict = json.load(f)
+        joystick_btn_dict = joystick_btn_dict[controller_type]
 
-with open('controller_type.txt', 'w') as f:
-    f.write(str(controller_type))
+    with open('controller_type.txt', 'w') as f:
+        f.write(str(controller_type))
+else:
+    with open('controller_type.txt', 'w') as f:
+        f.write(str(""))
 
 from func import *
 import random
@@ -293,6 +300,8 @@ while playing:
     player.update(plants, keys, screen, joystick,
                   joystick_input, player_hp_bar)
 
+    main_inventory.draw_holding_items(screen, (scrollx, scrolly))
+
     if time.perf_counter() - sky_time > 0.8:
         if not is_night:
             sky_color = (sky_color[0], sky_color[1],
@@ -319,12 +328,12 @@ while playing:
     scrolly = min(scrolly, 16 * map_h - screenHeight)
 
     main_inventory.update(pygame.mouse.get_pressed(
-    ), pygame.mouse.get_pos(), screen, pygame.key.get_pressed(), joystick_input, joystick)
+    ), pygame.mouse.get_pos(), screen, pygame.key.get_pressed(), joystick_input, joystick, (scrollx, scrolly))
 
     main_crafting_table.draw(screen, scrollx, scrolly,
                              pygame.key.get_pressed(), joystick_input, joystick)
     main_crafting_table.update(
-        keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed(), joystick_input, joystick)
+        keys, pygame.mouse.get_pos(), pygame.mouse.get_pressed(), joystick_input, joystick, (scrollx, scrolly))
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if not main_inventory.holding_item and not main_crafting_table.holding_item:
@@ -345,7 +354,8 @@ while playing:
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     deltaT = clock.tick(60)
-    if eval(joystick_btn_dict['d-pad-right']):
-        print("RIGHT")
+    if joystick_input:
+        if eval(joystick_btn_dict['d-pad-right']):
+            print("RIGHT")
 
 pygame.quit()

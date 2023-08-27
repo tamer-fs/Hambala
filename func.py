@@ -14,10 +14,11 @@ with open('controller_type.txt') as f:
     controller_type = f.read()
 
 joystick_btn_dict = {}
-with open('joystick_btn_dict.json') as f:
-    joystick_btn_dict = json.load(f)
-    joystick_btn_dict = joystick_btn_dict[controller_type]
-    print(joystick_btn_dict)
+if controller_type != "":
+    with open('joystick_btn_dict.json') as f:
+        joystick_btn_dict = json.load(f)
+        joystick_btn_dict = joystick_btn_dict[controller_type]
+        print(joystick_btn_dict)
 
 
 def get_distance(x1, y1, x2, y2):
@@ -653,8 +654,8 @@ class Animal:
 
         spawn_list = []
         spawn_freq = {
-            # "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
-            # "bearblue": 5, "bearbrown": 30,
+            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
+            "bearblue": 5, "bearbrown": 30,
             "ratwhite": 9
         }
         for animal in spawn_freq.keys():
@@ -1220,7 +1221,7 @@ class Inventory:
 
             self.color = random.choice(self.colors)
 
-    def update(self, keys, pos, screen, keyboard, joystick_input, joystick):
+    def update(self, keys, pos, screen, keyboard, joystick_input, joystick, scroll):
         holding_item = False
         clicked_item = ""
 
@@ -1345,6 +1346,7 @@ class Inventory:
                 if self.holding_item:
                     screen.blit(
                         self.pic_dict[self.clicked_item], (pos[0], pos[1]))
+        
 
                 if keys[1] and block.collidepoint(pos[0], pos[1]) and bool(
                         self.block_fill[index]) and not self.holding_item:
@@ -1411,6 +1413,13 @@ class Inventory:
                     "#212529"), bg_rect, border_radius=8)
                 screen.blit(text_render, (current_block.x +
                             50 + 7, current_block.y + 7))
+                
+    def draw_holding_items(self, screen, scroll):
+        if not self.block_fill[self.selected_block] in ["sword ", "pickaxe ", "axe ", ""]:
+            if self.player.direction == "RIGHT" or self.player.direction_xy == "RIGHT":
+                screen.blit(self.pic_dict_small[self.block_fill[self.selected_block]], (self.player.x - scroll[0] + 35, self.player.y - scroll[1] + 10))
+            else:
+                screen.blit(self.pic_dict_small[self.block_fill[self.selected_block]], (self.player.x - scroll[0] - 5, self.player.y - scroll[1] + 10))
 
     def mouse_update(self, mouse, joystick_input, joystick):
         if not joystick_input:  # no joystick connected
@@ -1447,6 +1456,7 @@ class CraftingTable:
         self.interacted_item = ""
         self.mouse_pos = None
         self.last_index = 0
+        self.scroll = (0,0)
 
         self.log_img = pygame.image.load(
             "assets/floor/tile131.png").convert_alpha()
@@ -1570,7 +1580,7 @@ class CraftingTable:
             self.inventory.draw(
                 screen, pygame.mouse.get_pos(), scrollx, scrolly)
             self.inventory.update(pygame.mouse.get_pressed(
-            ), pygame.mouse.get_pos(), screen, keyboard, joystick_input, joystick)
+            ), pygame.mouse.get_pos(), screen, keyboard, joystick_input, joystick, self.scroll)
 
             if self.holding_item:
                 if self.interacted_item in self.inventory.pic_dict:
@@ -1618,7 +1628,8 @@ class CraftingTable:
                     )
                 )
 
-    def update(self, keys, mouse_pos, mouse_click, joystick_input, joystick):
+    def update(self, keys, mouse_pos, mouse_click, joystick_input, joystick, scroll):
+        self.scroll = scroll
         self.mouse_pos = mouse_pos
         if not joystick_input:
             if keys[pygame.K_TAB]:
