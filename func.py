@@ -1031,8 +1031,7 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "sword ",
-                            1: "pickaxe ", 2: "tomato ", 3: "axe ", 4: "rat's tail "}
+        self.given_items = {0: "axe ", 1: "pickaxe "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):
@@ -1040,7 +1039,7 @@ class Inventory:
 
         self.full_key_dict = {
 
-            0: True, 1: True, 2: True, 3: True, 4: False, 5: False, 6: False, 7: False, 8: False,
+            0: True, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False,
             9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: False, 16: False, 17: False,
             18: False, 19: False, 20: False, 21: False, 22: False, 23: False, 24: False, 25: False, 26: False
 
