@@ -597,6 +597,23 @@ class ValueBar:
     def update(self, value):
         self.foreground.w = value * (self.width / self.max_value)
 
+class Enemies:
+    def __init__(self, spawn_rate, strength, speed, max_spawn):
+        self.spawn_rate = spawn_rate
+        self.strength = strength
+        self.speed = speed
+        self.max_spawn = max_spawn
+        self.enemies = {
+            "zombie": {
+                "spawn_rate": self.spawn_rate["zombie"],
+                "strength": self.strength["zombie"],
+                "speed": self.speed["zombie"]
+            }
+        }
+        self.alive_enemies = {
+            "Zombies": [],
+        }
+
 
 class Animal:
     def __init__(self, max_spawn, width, height):
@@ -1981,3 +1998,6 @@ def spawn_particles(particle_perf, player, particles):
                 player.x + 24, player.y + particle_y_offset))
             particle_perf = time.perf_counter()
     return particles, particle_perf
+
+        
+        
