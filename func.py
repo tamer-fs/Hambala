@@ -598,11 +598,15 @@ class ValueBar:
         self.foreground.w = value * (self.width / self.max_value)
 
 class Enemies:
-    def __init__(self, spawn_rate, strength, speed, max_spawn):
+    def __init__(self, spawn_rate, strength, speed):
         self.spawn_rate = spawn_rate
         self.strength = strength
         self.speed = speed
-        self.max_spawn = max_spawn
+        #speed = {"zombie": random.randint(10,16)}
+        self.max_spawn = {
+            "zombie": 1000
+        }
+        self.is_night = False
         self.enemies = {
             "zombie": {
                 "spawn_rate": self.spawn_rate["zombie"],
@@ -610,9 +614,61 @@ class Enemies:
                 "speed": self.speed["zombie"]
             }
         }
-        self.alive_enemies = {
-            "Zombies": [],
-        }
+        
+        self.alive_enemies = []
+
+        self.imgs = {"zombie": {}}
+        self.num_of_frames = {"zombie": {"idle": 7, "attack": 6, "special_attack": 21, "walk": 7, "die": 7}}
+        for enemy in list(self.num_of_frames.keys()):
+            for load_img in list(self.num_of_frames[enemy].keys()): # list(self.num_of_frames.keys()) = ["idle", "attack", ...]
+                for frame in range(self.num_of_frames[enemy][load_img]):
+                    image = pygame.image.load(f'./assets/{enemy}/{load_img}{frame+1}.png').convert_alpha()
+                    image_flip = pygame.transform.flip(image, True, False)
+
+                    self.imgs[enemy][f"{load_img}{frame+1}right"] = image
+                    self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
+
+                    # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
+                    # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
+        
+        #remove later, testing
+        self.spawn_enemies(1, "zombie")
+
+        print(self.imgs)
+
+    def spawn_enemies(self, enemy_count, enemy_type):
+        add_enemy = {
+                    "type": enemy_type, 
+                    "direction": random.choice(["right", "left"]),
+                    "rect": self.imgs[enemy_type]["idle1right"].get_rect(topleft=(500, 500)), # change (500, 500) later
+                    "hp": 100, 
+                    "strength": self.strength[enemy_type],
+                    "speed": self.speed[enemy_type],
+                    "current_animation_frame": 1,
+                    "current_action": "walk",
+                    "next_frame_perf": -1,
+                    "start_attack_perf": -1, # perf_counter for when enemy starts (normal) attack
+                    "start_special_attack_perf": -1 # perf counter for when enemy starts special attack (if none for enemy, skip)
+                    }
+        self.alive_enemies.append(add_enemy)
+
+    def draw_enemies(self, screen, scrollx, scrolly):
+        for enemy in self.alive_enemies:
+            screen.blit(
+                self.imgs[enemy["type"]][f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'], 
+                (enemy["rect"].x - scrollx, enemy["rect"].y - scrolly)
+                
+            )
+
+    def update(self, is_night):
+        self.is_night = is_night
+        
+        for i, enemy in enumerate(self.alive_enemies):
+            if enemy["next_frame_perf"] + 0.1 < time.perf_counter():
+                    self.alive_enemies[i]["next_frame_perf"] = time.perf_counter()
+                    self.alive_enemies[i]["current_animation_frame"] = (enemy["current_animation_frame"]) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
+
+
 
 
 class Animal:

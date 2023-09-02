@@ -121,6 +121,14 @@ main_inventory.set_crafting_table(main_crafting_table)
 animals = Animal(random.randint(25, 45), screenWidth, screenHeight)
 animals.set_inventory(main_inventory)
 
+
+enemies = Enemies(
+    {"zombie": random.randint(20,100)}, 
+    {"zombie": random.randint(50, 60)}, 
+    {"zombie": random.randint(20, 30)}
+)
+enemies_spawn = False
+
 images = load_img()
 
 particles = []
@@ -218,6 +226,7 @@ while playing:
         scrollx + shake_x,
         scrolly + shake_y
     )
+    enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
     particles = animals.update(plants, player, particles)
 
     prev_player_x = player.x
@@ -299,6 +308,8 @@ while playing:
                    joystick, joystick_input)
     player.update(plants, keys, screen, joystick,
                   joystick_input, player_hp_bar)
+    
+    enemies.update(enemies_spawn)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -313,6 +324,11 @@ while playing:
         sky_time = time.perf_counter()
 
     mask_surf.fill(sky_color)
+    
+    if sky_color[3] > 125:
+        enemies_spawn = True
+    else:
+        enemies_spawn = False
 
     if sky_color[3] > 200:
         is_night = True
