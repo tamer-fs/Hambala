@@ -617,6 +617,8 @@ class Enemies:
         
         self.alive_enemies = []
 
+        self.zombie_spawn_perf = -1 # perf counter for spawning enemy zombie
+
         self.imgs = {"zombie": {}}
         self.num_of_frames = {"zombie": {"idle": 7, "attack": 6, "special_attack": 21, "walk": 7, "die": 7}}
         for enemy in list(self.num_of_frames.keys()):
@@ -631,42 +633,105 @@ class Enemies:
                     # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
                     # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
         
-        #remove later, testing
-        self.spawn_enemies(1, "zombie")
-
-        print(self.imgs)
+        #TODO: remove later, testing
+        # for _ in range(0):
+        #     self.spawn_enemies(1, "zombie")
 
     def spawn_enemies(self, enemy_count, enemy_type):
+        spawn_side = random.choice(["top", "bottom", "left", "right"])
+        spawn_x, spawn_y = 0, 0
+        if spawn_side == "top":
+            spawn_x = random.randint(50, 150 * 16 - 50)
+            spawn_y = random.randint(25, 400)
+        elif spawn_side == "bottom":
+            spawn_x = random.randint(50, 150 * 16 - 50)
+            spawn_y = random.randint(150 * 16 - 400, 150 * 16 - 25)
+        elif spawn_side == "left":
+            spawn_x = random.randint(50, 100)
+            spawn_y = random.randint(25, 150 * 16 - 25)
+        elif spawn_side == "right":
+            spawn_x = random.randint(150 * 16 - 400, 150 * 16 - 25)
+            spawn_y = random.randint(25, 150 * 16 - 25)
+
+
         add_enemy = {
                     "type": enemy_type, 
                     "direction": random.choice(["right", "left"]),
-                    "rect": self.imgs[enemy_type]["idle1right"].get_rect(topleft=(500, 500)), # change (500, 500) later
+                    "rect": self.imgs[enemy_type]["idle1right"].get_rect(topleft=(spawn_x, spawn_y)), # change (500, 500) later
                     "hp": 100, 
                     "strength": self.strength[enemy_type],
                     "speed": self.speed[enemy_type],
-                    "current_animation_frame": 1,
+                    "current_animation_frame": random.randint(1, 3),
                     "current_action": "walk",
                     "next_frame_perf": -1,
                     "start_attack_perf": -1, # perf_counter for when enemy starts (normal) attack
-                    "start_special_attack_perf": -1 # perf counter for when enemy starts special attack (if none for enemy, skip)
+                    "start_special_attack_perf": -1, # perf counter for when enemy starts special attack (if none for enemy, skip)
+                    "chasing_player": False,
+                    "walk_vx": 0,
+                    "walk_vy": 0,
+                    "walking": False,
+                    "start_walking_perf": time.perf_counter() + random.randint(3, 5),
+                    "stop_walking_perf": time.perf_counter() + random.randint(7, 9)
                     }
+        
+        add_enemy["x"] = float(add_enemy["rect"].x)
+        add_enemy["y"] = float(add_enemy["rect"].y)
+
         self.alive_enemies.append(add_enemy)
 
     def draw_enemies(self, screen, scrollx, scrolly):
+        width, height = screen.get_size()
         for enemy in self.alive_enemies:
-            screen.blit(
-                self.imgs[enemy["type"]][f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'], 
-                (enemy["rect"].x - scrollx, enemy["rect"].y - scrolly)
-                
-            )
+            blit_x = round(enemy["x"] - scrollx)
+            blit_y = round(enemy["y"] - scrolly)
+            
+            if blit_x > 0 - 100 and blit_x < width:
+                if blit_y > 0 - 100 and blit_y < height:
+                    screen.blit(
+                        self.imgs[enemy["type"]][f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'], 
+                        (blit_x, blit_y)
+                        )                
 
     def update(self, is_night):
         self.is_night = is_night
-        
+
+        if is_night:
+            if self.zombie_spawn_perf <= time.perf_counter():
+                self.spawn_enemies(1, "zombie")
+                self.zombie_spawn_perf = time.perf_counter() + 0.25
+
         for i, enemy in enumerate(self.alive_enemies):
+            # walk animation
             if enemy["next_frame_perf"] + 0.1 < time.perf_counter():
-                    self.alive_enemies[i]["next_frame_perf"] = time.perf_counter()
-                    self.alive_enemies[i]["current_animation_frame"] = (enemy["current_animation_frame"]) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
+                self.alive_enemies[i]["next_frame_perf"] = time.perf_counter()
+                self.alive_enemies[i]["current_animation_frame"] = (enemy["current_animation_frame"]) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
+
+            if not enemy["walking"]:
+                self.alive_enemies[i]["start_walking_perf"] = time.perf_counter() + random.randint(3, 20)
+                self.alive_enemies[i]["stop_walking_perf"] = time.perf_counter() + random.randint(1, 3) + self.alive_enemies[i]["start_walking_perf"]
+                self.alive_enemies[i]["walk_vx"] = random.randint(-8, 8) / 10
+                self.alive_enemies[i]["walk_vy"] = random.randint(-8, 8) / 10
+                self.alive_enemies[i]["walking"] = True
+                self.alive_enemies[i]["current_action"] = "idle"
+            else:
+                if time.perf_counter() >= enemy["start_walking_perf"]:
+                    if time.perf_counter() <= enemy["stop_walking_perf"]:
+                        self.alive_enemies[i]["x"] += enemy["walk_vx"]
+                        self.alive_enemies[i]["y"] += enemy["walk_vy"]
+                        self.alive_enemies[i]["current_action"] = "walk" 
+                        if enemy["walk_vx"] > 0:
+                            self.alive_enemies[i]["direction"] = "right"
+                        else:
+                            self.alive_enemies[i]["direction"] = "left"
+                    else:
+                        self.alive_enemies[i]["walking"] = False
+                
+                else:
+                    self.alive_enemies[i]["current_action"] = "idle"
+
+            self.alive_enemies[i]["rect"].x = round(enemy["x"])
+            self.alive_enemies[i]["rect"].y = round(enemy["y"])
+
 
 
 
