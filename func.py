@@ -10,12 +10,12 @@ import json
 
 pygame.mixer.init()
 
-with open('controller_type.txt') as f:
+with open("controller_type.txt") as f:
     controller_type = f.read()
 
 joystick_btn_dict = {}
 if controller_type != "":
-    with open('joystick_btn_dict.json') as f:
+    with open("joystick_btn_dict.json") as f:
         joystick_btn_dict = json.load(f)
         joystick_btn_dict = joystick_btn_dict[controller_type]
         print(joystick_btn_dict)
@@ -34,11 +34,9 @@ class Player:
 
         self.images = images
         self.speed = 0.10
-        self.idle_frames = ["idle1", "idle2",
-                            "idle3", "idle4", "idle5", "idle6"]
+        self.idle_frames = ["idle1", "idle2", "idle3", "idle4", "idle5", "idle6"]
         self.idle_frame = 0
-        self.walk_frames = ["walk1", "walk2",
-                            "walk3", "walk4", "walk5", "walk6"]
+        self.walk_frames = ["walk1", "walk2", "walk3", "walk4", "walk5", "walk6"]
         self.walk_frame = 0
         self.run_frames = ["run1", "run2"]
         self.run_frame = 0
@@ -55,73 +53,73 @@ class Player:
         self.player_tile = (0, 0)
         if controller_type == "":
             self.interact_img = pygame.image.load(
-                "assets/icons/Interact.png").convert_alpha()
+                "assets/icons/Interact.png"
+            ).convert_alpha()
         elif controller_type == "Xbox 360 Controller":
             self.interact_img = pygame.image.load(
-                "assets/icons/Interact-Y.png").convert_alpha()
+                "assets/icons/Interact-Y.png"
+            ).convert_alpha()
         elif controller_type == "PS4 Controller":
             self.interact_img = pygame.image.load(
-                "assets/icons/Interact-PS4.png").convert_alpha()
+                "assets/icons/Interact-PS4.png"
+            ).convert_alpha()
 
         self.font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 25)
         self.on_interact = False
         self.interact_message = ""
         self.screen_size = pygame.display.get_window_size()
-        self.interact_rect = pygame.Rect(
-            self.screen_size[0] / 2 - 200, 15, 400, 40)
+        self.interact_rect = pygame.Rect(self.screen_size[0] / 2 - 200, 15, 400, 40)
         self.interact_render = None
         self.interact_render_rect = None
         self.inter_w, self.inter_h = 0, 0
         self.inventory = None
-        self.sword_img_1 = pygame.image.load(
-            "assets/tools/Sword-1.png").convert_alpha()
+        self.sword_img_1 = pygame.image.load("assets/tools/Sword-1.png").convert_alpha()
         self.sword_img_1 = pygame.transform.rotate(self.sword_img_1, -45)
-        self.sword_img_2 = pygame.image.load(
-            "assets/tools/Sword-2.png").convert_alpha()
+        self.sword_img_2 = pygame.image.load("assets/tools/Sword-2.png").convert_alpha()
         self.sword_img_2 = pygame.transform.rotate(self.sword_img_2, -80)
-        self.sword_img_3 = pygame.image.load(
-            "assets/tools/Sword-3.png").convert_alpha()
+        self.sword_img_3 = pygame.image.load("assets/tools/Sword-3.png").convert_alpha()
         self.sword_img_3 = pygame.transform.rotate(self.sword_img_3, -110)
 
         self.pickaxe_img_1 = pygame.image.load(
-            "assets/tools/pickaxe.png").convert_alpha()
+            "assets/tools/pickaxe.png"
+        ).convert_alpha()
         self.pickaxe_img_2 = pygame.transform.rotate(self.pickaxe_img_1, -45)
 
         self.pickaxe_img_2_flipped = pygame.transform.flip(
-            self.pickaxe_img_2, True, False)
+            self.pickaxe_img_2, True, False
+        )
         self.pickaxe_img_1_flipped = pygame.transform.flip(
-            self.pickaxe_img_1, True, False)
+            self.pickaxe_img_1, True, False
+        )
         self.pickaxe_frame = 0
         self.pickaxe_list = [self.pickaxe_img_1, self.pickaxe_img_2]
         self.pickaxe_list_flip = [
-            self.pickaxe_img_1_flipped, self.pickaxe_img_2_flipped]
+            self.pickaxe_img_1_flipped,
+            self.pickaxe_img_2_flipped,
+        ]
         self.pickaxe_cooldown = 0
 
-        self.axe_img_1 = pygame.image.load(
-            "assets/tools/axe.png").convert_alpha()
+        self.axe_img_1 = pygame.image.load("assets/tools/axe.png").convert_alpha()
         self.axe_img_2 = pygame.transform.rotate(self.axe_img_1, 45)
 
-        self.axe_img_2_flipped = pygame.transform.flip(
-            self.axe_img_2, True, False)
-        self.axe_img_1_flipped = pygame.transform.flip(
-            self.axe_img_1, True, False)
+        self.axe_img_2_flipped = pygame.transform.flip(self.axe_img_2, True, False)
+        self.axe_img_1_flipped = pygame.transform.flip(self.axe_img_1, True, False)
         self.axe_frame = 0
         self.axe_list = [self.axe_img_1, self.axe_img_2]
         self.axe_list_flip = [self.axe_img_1_flipped, self.axe_img_2_flipped]
         self.axe_cooldown = 0
 
-        self.sword_img_1_flip = pygame.transform.flip(
-            self.sword_img_1, True, False)
-        self.sword_img_2_flip = pygame.transform.flip(
-            self.sword_img_2, True, False)
-        self.sword_img_3_flip = pygame.transform.flip(
-            self.sword_img_3, True, False)
+        self.sword_img_1_flip = pygame.transform.flip(self.sword_img_1, True, False)
+        self.sword_img_2_flip = pygame.transform.flip(self.sword_img_2, True, False)
+        self.sword_img_3_flip = pygame.transform.flip(self.sword_img_3, True, False)
         self.sword_update = 0
 
-        self.sword_list = [self.sword_img_1,
-                           self.sword_img_2, self.sword_img_3]
-        self.sword_list_flipped = [self.sword_img_1_flip,
-                                   self.sword_img_2_flip, self.sword_img_3_flip]
+        self.sword_list = [self.sword_img_1, self.sword_img_2, self.sword_img_3]
+        self.sword_list_flipped = [
+            self.sword_img_1_flip,
+            self.sword_img_2_flip,
+            self.sword_img_3_flip,
+        ]
         self.sword_frame = 0
         self.framed = 0
         self.attacking = False
@@ -131,15 +129,13 @@ class Player:
         self.attack_delay = 0.8
         self.update_frame_1 = 0
         self.cooldown = 0
-        self.stone_rect = pygame.Rect(
-            (self.screen_size[0] / 2 - 100, 100), (200, 30))
-        self.stone_rect2 = pygame.Rect(
-            (self.screen_size[0] / 2 - 100, 100), (200, 30))
+        self.stone_rect = pygame.Rect((self.screen_size[0] / 2 - 100, 100), (200, 30))
+        self.stone_rect2 = pygame.Rect((self.screen_size[0] / 2 - 100, 100), (200, 30))
         self.stone_rect3 = pygame.Rect(
-            (self.screen_size[0] / 2 - 108, 100 - 8), (216, 46))
+            (self.screen_size[0] / 2 - 108, 100 - 8), (216, 46)
+        )
 
-        self.sword_sweep_sound = pygame.mixer.Sound(
-            "assets/sounds/sword_swoosh.wav")
+        self.sword_sweep_sound = pygame.mixer.Sound("assets/sounds/sword_swoosh.wav")
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
         self.damaging = False
 
@@ -147,12 +143,14 @@ class Player:
         self.poison_time = -1  # perf counter when poison is gone
         self.poison_duration = 7
 
-        self.hp_bar_color = pygame.Color('#ae2012')
+        self.hp_bar_color = pygame.Color("#ae2012")
 
         self.green_hp_icon = pygame.image.load(
-            'assets/icons/health_icon_green.png').convert_alpha()
+            "assets/icons/health_icon_green.png"
+        ).convert_alpha()
         self.red_hp_icon = pygame.image.load(
-            'assets/icons/health_icon_red.png').convert_alpha()
+            "assets/icons/health_icon_red.png"
+        ).convert_alpha()
         self.hp_icon = self.red_hp_icon
 
     def set_window_size(self, screen):
@@ -192,10 +190,13 @@ class Player:
                 if self.energy_value < 100:
                     self.energy_value += 0.02 * deltaT
 
-            if self.can_attack and self.sword_selected \
-                    and not self.attacking \
-                    and not self.inventory.holding_item \
-                    and not self.inventory.hovering_menu:
+            if (
+                self.can_attack
+                and self.sword_selected
+                and not self.attacking
+                and not self.inventory.holding_item
+                and not self.inventory.hovering_menu
+            ):
                 if eval(joystick_btn_dict["east-btn"]) and self.energy_value > 15:
                     self.attacking = True
                     self.hitting = True
@@ -215,14 +216,26 @@ class Player:
                 self.hitting = False
 
         else:
-
-            if keys[pygame.K_LSHIFT] and self.energy_value > 0 and (
-                    keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]):
+            if (
+                keys[pygame.K_LSHIFT]
+                and self.energy_value > 0
+                and (
+                    keys[pygame.K_d]
+                    or keys[pygame.K_a]
+                    or keys[pygame.K_s]
+                    or keys[pygame.K_w]
+                )
+            ):
                 if self.energy_value > 0.025 * deltaT:
                     self.speed = 0.525
                     self.state = "run"
                 self.energy_value -= 0.025 * deltaT
-            elif keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_w]:
+            elif (
+                keys[pygame.K_d]
+                or keys[pygame.K_a]
+                or keys[pygame.K_s]
+                or keys[pygame.K_w]
+            ):
                 self.speed = 0.1
                 self.state = "walk"
                 if self.energy_value < 100:
@@ -231,10 +244,13 @@ class Player:
                 if self.energy_value < 100:
                     self.energy_value += 0.02 * deltaT
 
-            if self.can_attack and self.sword_selected \
-                    and not self.attacking \
-                    and not self.inventory.holding_item \
-                    and not self.inventory.hovering_menu:
+            if (
+                self.can_attack
+                and self.sword_selected
+                and not self.attacking
+                and not self.inventory.holding_item
+                and not self.inventory.hovering_menu
+            ):
                 if mouse[0] and self.energy_value > 15:
                     self.attacking = True
                     self.hitting = True
@@ -326,38 +342,59 @@ class Player:
 
         if self.sword_selected:
             if self.direction == "RIGHT" or self.direction_xy == "RIGHT":
-                screen.blit(self.sword_list[self.sword_frame],
-                            (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5))
+                screen.blit(
+                    self.sword_list[self.sword_frame],
+                    (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5),
+                )
             if self.direction == "LEFT" or self.direction_xy == "LEFT":
-                screen.blit(self.sword_list_flipped[self.sword_frame],
-                            (self.x - 1 - scrollx + 12 - 30, self.y - 1 - scrolly + 5))
+                screen.blit(
+                    self.sword_list_flipped[self.sword_frame],
+                    (self.x - 1 - scrollx + 12 - 30, self.y - 1 - scrolly + 5),
+                )
 
         if self.inventory.holding_pickaxe:
             if self.direction == "RIGHT" or self.direction_xy == "RIGHT":
-                screen.blit(self.pickaxe_list[self.pickaxe_frame],
-                            (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5))
+                screen.blit(
+                    self.pickaxe_list[self.pickaxe_frame],
+                    (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5),
+                )
             if self.direction == "LEFT" or self.direction_xy == "LEFT":
-                screen.blit(self.pickaxe_list_flip[self.pickaxe_frame],
-                            (self.x - 1 - scrollx + 20 - 30, self.y - 1 - scrolly + 5))
+                screen.blit(
+                    self.pickaxe_list_flip[self.pickaxe_frame],
+                    (self.x - 1 - scrollx + 20 - 30, self.y - 1 - scrolly + 5),
+                )
 
         if self.inventory.holding_axe:
             if self.direction == "RIGHT" or self.direction_xy == "RIGHT":
                 screen.blit(
-                    self.axe_list_flip[self.axe_frame], (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5))
+                    self.axe_list_flip[self.axe_frame],
+                    (self.x - 1 - scrollx + 35, self.y - 1 - scrolly + 5),
+                )
             if self.direction == "LEFT" or self.direction_xy == "LEFT":
-                screen.blit(self.axe_list[self.axe_frame], (self.x -
-                            1 - scrollx + 20 - 30, self.y - 1 - scrolly + 5))
+                screen.blit(
+                    self.axe_list[self.axe_frame],
+                    (self.x - 1 - scrollx + 20 - 30, self.y - 1 - scrolly + 5),
+                )
 
         if self.direction == "RIGHT":
-            screen.blit(self.images[eval(f"self.{self.state}_frames[self.{self.state}_frame]")],
-                        (int(self.x) - scrollx, int(self.y) - scrolly))
+            screen.blit(
+                self.images[eval(f"self.{self.state}_frames[self.{self.state}_frame]")],
+                (int(self.x) - scrollx, int(self.y) - scrolly),
+            )
         elif self.direction == "LEFT":
-            screen.blit(self.images[eval(f"self.{self.state}_frames[self.{self.state}_frame]") + '_flipped'],
-                        (int(self.x) - scrollx, int(self.y) - scrolly))
+            screen.blit(
+                self.images[
+                    eval(f"self.{self.state}_frames[self.{self.state}_frame]")
+                    + "_flipped"
+                ],
+                (int(self.x) - scrollx, int(self.y) - scrolly),
+            )
 
         if self.on_interact:
-            screen.blit(self.interact_img, (self.x - 1 -
-                        scrollx + 12, self.y - 1 - scrolly - 20))
+            screen.blit(
+                self.interact_img,
+                (self.x - 1 - scrollx + 12, self.y - 1 - scrolly - 20),
+            )
             # pygame.draw.rect(screen, pygame.Color("#212529"), self.interact_rect, border_radius=15)
             screen.blit(self.interact_render, ((scr_w - self.inter_w) / 2, 15))
 
@@ -371,7 +408,12 @@ class Player:
             pygame.mixer.Sound.play(self.damage_sound)
             self.damaging = False
 
-        if plants[self.player_tile[1] + 1, self.player_tile[0] + 1] in [127, 11, 10, 61]:
+        if plants[self.player_tile[1] + 1, self.player_tile[0] + 1] in [
+            127,
+            11,
+            10,
+            61,
+        ]:
             self.on_interact = True
             plant = plants[self.player_tile[1] + 1, self.player_tile[0] + 1]
             if plant == 127:
@@ -384,14 +426,23 @@ class Player:
                 self.interact_message = "Cut down tree (only with axe)"
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
-                (text_w + 15, text_h + 15), pygame.SRCALPHA)
+                (text_w + 15, text_h + 15), pygame.SRCALPHA
+            )
             self.inter_w, self.inter_h = self.interact_render.get_size()
-            text_render = self.font.render(
-                self.interact_message, True, (255, 255, 255))
-            pygame.draw.rect(self.interact_render, pygame.Color("#212529"), ((0, 0), (text_w + 15, text_h + 15)),
-                             border_radius=15)
-            self.interact_render.blit(text_render, (
-                (self.inter_w - text_render.get_width()) / 2, (self.inter_h - text_render.get_height()) / 2))
+            text_render = self.font.render(self.interact_message, True, (255, 255, 255))
+            pygame.draw.rect(
+                self.interact_render,
+                pygame.Color("#212529"),
+                ((0, 0), (text_w + 15, text_h + 15)),
+                border_radius=15,
+            )
+            self.interact_render.blit(
+                text_render,
+                (
+                    (self.inter_w - text_render.get_width()) / 2,
+                    (self.inter_h - text_render.get_height()) / 2,
+                ),
+            )
 
             self.interact_render.set_alpha(200)
 
@@ -406,21 +457,36 @@ class Player:
         else:
             e_pressed = keys[pygame.K_e]
 
-        if self.on_interact and self.interact_message == "Harvest tomato" and e_pressed and self.inventory.can_fill:
+        if (
+            self.on_interact
+            and self.interact_message == "Harvest tomato"
+            and e_pressed
+            and self.inventory.can_fill
+        ):
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 125
             self.inventory.add_item("tomato ")
-        if self.on_interact and self.interact_message == "Harvest flower" and e_pressed and self.inventory.can_fill:
+        if (
+            self.on_interact
+            and self.interact_message == "Harvest flower"
+            and e_pressed
+            and self.inventory.can_fill
+        ):
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
             self.inventory.add_item("flower ")
-        if self.on_interact \
-                and self.interact_message == "Mine stone (only with pickaxe)" \
-                and self.inventory.holding_pickaxe:
-            pygame.draw.rect(screen, pygame.Color("#212529"),
-                             self.stone_rect3, border_radius=26)
-            pygame.draw.rect(screen, pygame.Color("#c1121f"),
-                             self.stone_rect2, border_radius=20)
-            pygame.draw.rect(screen, pygame.Color("#0ead69"),
-                             self.stone_rect, border_radius=20)
+        if (
+            self.on_interact
+            and self.interact_message == "Mine stone (only with pickaxe)"
+            and self.inventory.holding_pickaxe
+        ):
+            pygame.draw.rect(
+                screen, pygame.Color("#212529"), self.stone_rect3, border_radius=26
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#c1121f"), self.stone_rect2, border_radius=20
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#0ead69"), self.stone_rect, border_radius=20
+            )
             if e_pressed:
                 if time.perf_counter() - self.cooldown > 0.8:
                     self.stone_rect.width -= (self.screen_size[0] / 4) / 4
@@ -431,25 +497,38 @@ class Player:
                     self.pickaxe_cooldown = time.perf_counter()
 
             elif not e_pressed:
-                self.stone_rect = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
-                                              (self.screen_size[0] / 4 - 16, 30))
-                self.stone_rect2 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
-                                               (self.screen_size[0] / 4 - 16, 30))
-                self.stone_rect3 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
-                                               (self.screen_size[0] / 4, 46))
+                self.stone_rect = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect2 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect3 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
+                    (self.screen_size[0] / 4, 46),
+                )
                 self.pickaxe_frame = 0
             if self.stone_rect.width <= 0:
                 plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
                 self.inventory.add_item("stone ")
                 self.pickaxe_frame = 0
 
-        if self.on_interact and self.interact_message == "Cut down tree (only with axe)" and self.inventory.holding_axe:
-            pygame.draw.rect(screen, pygame.Color("#212529"),
-                             self.stone_rect3, border_radius=26)
-            pygame.draw.rect(screen, pygame.Color("#c1121f"),
-                             self.stone_rect2, border_radius=20)
-            pygame.draw.rect(screen, pygame.Color("#0ead69"),
-                             self.stone_rect, border_radius=20)
+        if (
+            self.on_interact
+            and self.interact_message == "Cut down tree (only with axe)"
+            and self.inventory.holding_axe
+        ):
+            pygame.draw.rect(
+                screen, pygame.Color("#212529"), self.stone_rect3, border_radius=26
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#c1121f"), self.stone_rect2, border_radius=20
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#0ead69"), self.stone_rect, border_radius=20
+            )
             if e_pressed:
                 if time.perf_counter() - self.cooldown > 0.8:
                     self.stone_rect.width -= (self.screen_size[0] / 4) / 4
@@ -460,12 +539,18 @@ class Player:
                     self.axe_cooldown = time.perf_counter()
 
             elif not e_pressed:
-                self.stone_rect = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
-                                              (self.screen_size[0] / 4 - 16, 30))
-                self.stone_rect2 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
-                                               (self.screen_size[0] / 4 - 16, 30))
-                self.stone_rect3 = pygame.Rect((self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
-                                               (self.screen_size[0] / 4, 46))
+                self.stone_rect = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect2 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect3 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
+                    (self.screen_size[0] / 4, 46),
+                )
                 self.axe_frame = 0
 
             if self.stone_rect.width <= 0:
@@ -483,17 +568,22 @@ class Player:
                 self.health_value -= 0.5
                 self.damaging = True
 
-        if time.perf_counter() - self.update_frame_1 > 5 and self.food_value > 800 and self.health_value < 10 and not self.poisoned:
+        if (
+            time.perf_counter() - self.update_frame_1 > 5
+            and self.food_value > 800
+            and self.health_value < 10
+            and not self.poisoned
+        ):
             self.update_frame_1 = time.perf_counter()
             self.health_value += 0.25
 
         if self.poisoned:
-            self.hp_bar_color = pygame.Color('#588157')
+            self.hp_bar_color = pygame.Color("#588157")
             self.hp_icon = self.green_hp_icon
             # check if poison is over
             if self.poison_time + self.poison_duration <= time.perf_counter():
                 self.poisoned = False
-                self.hp_bar_color = pygame.Color('#ae2012')
+                self.hp_bar_color = pygame.Color("#ae2012")
                 self.hp_icon = self.red_hp_icon
             else:
                 self.health_value -= 0.01
@@ -525,9 +615,10 @@ class WalkParticle:
         self.width -= 0.015 * deltaT
         self.height -= 0.015 * deltaT
         self.rect = pygame.Rect(
-            (int(self.x) - scrollx, int(self.y) - scrolly), (int(self.width), int(self.height)))
-        self.player_tile = (math.floor(player.x / 16),
-                            math.floor(player.y / 16))
+            (int(self.x) - scrollx, int(self.y) - scrolly),
+            (int(self.width), int(self.height)),
+        )
+        self.player_tile = (math.floor(player.x / 16), math.floor(player.y / 16))
         if world[self.player_tile[1], self.player_tile[0]] in [5, 6, 7]:
             self.color = (159, 127, 86)
         else:
@@ -561,70 +652,88 @@ class HitParticle:
         self.width -= 0.015 * deltaT
         self.height -= 0.015 * deltaT
         self.rect = pygame.Rect(
-            (int(self.x) - scrollx, int(self.y) - scrolly), (int(self.width), int(self.height)))
+            (int(self.x) - scrollx, int(self.y) - scrolly),
+            (int(self.width), int(self.height)),
+        )
 
 
 class ValueBar:
     def __init__(self, pos, size, margin, max_value):
         self.background = pygame.Rect(pos, size)
         self.foreground = pygame.Rect(
-            (pos[0] + margin / 2, pos[1] + margin / 2), (size[0] - margin, size[1] - margin))
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
         self.shadow = pygame.Rect(
-            (pos[0] + margin / 2, pos[1] + margin / 2), (size[0] - margin, size[1] - margin))
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
         self.value = 0
         self.max_value = max_value
         self.width = self.foreground.w
         self.pos = pos
 
     def draw(self, screen, bg_color, shadow_color, fg_color, icon, padding, radius):
-        pygame.draw.rect(screen, bg_color, self.background,
-                         border_radius=radius)
-        pygame.draw.rect(screen, shadow_color, self.shadow,
-                         border_radius=radius - 2)
-        pygame.draw.rect(screen, fg_color, self.foreground,
-                         border_radius=radius - 2)
+        pygame.draw.rect(screen, bg_color, self.background, border_radius=radius)
+        pygame.draw.rect(screen, shadow_color, self.shadow, border_radius=radius - 2)
+        pygame.draw.rect(screen, fg_color, self.foreground, border_radius=radius - 2)
         screen.blit(icon, (self.pos[0] + padding[0], self.pos[1] + padding[1]))
 
     def reset(self, pos, size, margin):
         self.pos = pos
         self.background = pygame.Rect(pos, size)
         self.foreground = pygame.Rect(
-            (pos[0] + margin / 2, pos[1] + margin / 2), (size[0] - margin, size[1] - margin))
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
         self.shadow = pygame.Rect(
-            (pos[0] + margin / 2, pos[1] + margin / 2), (size[0] - margin, size[1] - margin))
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
         self.width = self.foreground.w
 
     def update(self, value):
         self.foreground.w = value * (self.width / self.max_value)
+
 
 class Enemies:
     def __init__(self, spawn_rate, strength, speed):
         self.spawn_rate = spawn_rate
         self.strength = strength
         self.speed = speed
-        #speed = {"zombie": random.randint(10,16)}
-        self.max_spawn = {
-            "zombie": 1000
-        }
+        # speed = {"zombie": random.randint(10,16)}
+        self.max_spawn = {"zombie": 1000}
         self.is_night = False
         self.enemies = {
             "zombie": {
                 "spawn_rate": self.spawn_rate["zombie"],
                 "strength": self.strength["zombie"],
-                "speed": self.speed["zombie"]
+                "speed": self.speed["zombie"],
             }
         }
-        
+
         self.alive_enemies = []
 
-        self.zombie_spawn_perf = -1 # perf counter for spawning enemy zombie
+        self.zombie_spawn_perf = -1  # perf counter for spawning enemy zombie
 
         self.imgs = {"zombie": {}}
-        self.num_of_frames = {"zombie": {"idle": 7, "attack": 6, "special_attack": 21, "walk": 7, "die": 7}}
+        self.num_of_frames = {
+            "zombie": {
+                "idle": 7,
+                "attack": 6,
+                "special_attack": 21,
+                "walk": 7,
+                "die": 7,
+            }
+        }
         for enemy in list(self.num_of_frames.keys()):
-            for load_img in list(self.num_of_frames[enemy].keys()): # list(self.num_of_frames.keys()) = ["idle", "attack", ...]
+            for load_img in list(
+                self.num_of_frames[enemy].keys()
+            ):  # list(self.num_of_frames.keys()) = ["idle", "attack", ...]
                 for frame in range(self.num_of_frames[enemy][load_img]):
-                    image = pygame.image.load(f'./assets/{enemy}/{load_img}{frame+1}.png').convert_alpha()
+                    image = pygame.image.load(
+                        f"./assets/{enemy}/{load_img}{frame+1}.png"
+                    ).convert_alpha()
                     image_flip = pygame.transform.flip(image, True, False)
 
                     self.imgs[enemy][f"{load_img}{frame+1}right"] = image
@@ -632,8 +741,8 @@ class Enemies:
 
                     # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
                     # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
-        
-        #TODO: remove later, testing
+
+        # TODO: remove later, testing
         # for _ in range(0):
         #     self.spawn_enemies(1, "zombie")
 
@@ -653,27 +762,28 @@ class Enemies:
             spawn_x = random.randint(150 * 16 - 400, 150 * 16 - 25)
             spawn_y = random.randint(25, 150 * 16 - 25)
 
-
         add_enemy = {
-                    "type": enemy_type, 
-                    "direction": random.choice(["right", "left"]),
-                    "rect": self.imgs[enemy_type]["idle1right"].get_rect(topleft=(spawn_x, spawn_y)), # change (500, 500) later
-                    "hp": 100, 
-                    "strength": self.strength[enemy_type],
-                    "speed": self.speed[enemy_type],
-                    "current_animation_frame": random.randint(1, 3),
-                    "current_action": "walk",
-                    "next_frame_perf": -1,
-                    "start_attack_perf": -1, # perf_counter for when enemy starts (normal) attack
-                    "start_special_attack_perf": -1, # perf counter for when enemy starts special attack (if none for enemy, skip)
-                    "chasing_player": False,
-                    "walk_vx": 0,
-                    "walk_vy": 0,
-                    "walking": False,
-                    "start_walking_perf": time.perf_counter() + random.randint(3, 5),
-                    "stop_walking_perf": time.perf_counter() + random.randint(7, 9)
-                    }
-        
+            "type": enemy_type,
+            "direction": random.choice(["right", "left"]),
+            "rect": self.imgs[enemy_type]["idle1right"].get_rect(
+                topleft=(spawn_x, spawn_y)
+            ),  # change (500, 500) later
+            "hp": 100,
+            "strength": self.strength[enemy_type],
+            "speed": self.speed[enemy_type],
+            "current_animation_frame": random.randint(1, 3),
+            "current_action": "walk",
+            "next_frame_perf": -1,
+            "start_attack_perf": -1,  # perf_counter for when enemy starts (normal) attack
+            "start_special_attack_perf": -1,  # perf counter for when enemy starts special attack (if none for enemy, skip)
+            "chasing_player": False,
+            "walk_vx": 0,
+            "walk_vy": 0,
+            "walking": False,
+            "start_walking_perf": time.perf_counter() + random.randint(3, 5),
+            "stop_walking_perf": time.perf_counter() + random.randint(7, 9),
+        }
+
         add_enemy["x"] = float(add_enemy["rect"].x)
         add_enemy["y"] = float(add_enemy["rect"].y)
 
@@ -684,13 +794,15 @@ class Enemies:
         for enemy in self.alive_enemies:
             blit_x = round(enemy["x"] - scrollx)
             blit_y = round(enemy["y"] - scrolly)
-            
+
             if blit_x > 0 - 100 and blit_x < width:
                 if blit_y > 0 - 100 and blit_y < height:
                     screen.blit(
-                        self.imgs[enemy["type"]][f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'], 
-                        (blit_x, blit_y)
-                        )                
+                        self.imgs[enemy["type"]][
+                            f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'
+                        ],
+                        (blit_x, blit_y),
+                    )
 
     def update(self, is_night):
         self.is_night = is_night
@@ -704,11 +816,19 @@ class Enemies:
             # walk animation
             if enemy["next_frame_perf"] + 0.1 < time.perf_counter():
                 self.alive_enemies[i]["next_frame_perf"] = time.perf_counter()
-                self.alive_enemies[i]["current_animation_frame"] = (enemy["current_animation_frame"]) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
+                self.alive_enemies[i]["current_animation_frame"] = (
+                    enemy["current_animation_frame"]
+                ) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
 
             if not enemy["walking"]:
-                self.alive_enemies[i]["start_walking_perf"] = time.perf_counter() + random.randint(3, 20)
-                self.alive_enemies[i]["stop_walking_perf"] = time.perf_counter() + random.randint(1, 3) + self.alive_enemies[i]["start_walking_perf"]
+                self.alive_enemies[i][
+                    "start_walking_perf"
+                ] = time.perf_counter() + random.randint(3, 20)
+                self.alive_enemies[i]["stop_walking_perf"] = (
+                    time.perf_counter()
+                    + random.randint(1, 3)
+                    + self.alive_enemies[i]["start_walking_perf"]
+                )
                 self.alive_enemies[i]["walk_vx"] = random.randint(-8, 8) / 10
                 self.alive_enemies[i]["walk_vy"] = random.randint(-8, 8) / 10
                 self.alive_enemies[i]["walking"] = True
@@ -718,22 +838,19 @@ class Enemies:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
                         self.alive_enemies[i]["x"] += enemy["walk_vx"]
                         self.alive_enemies[i]["y"] += enemy["walk_vy"]
-                        self.alive_enemies[i]["current_action"] = "walk" 
+                        self.alive_enemies[i]["current_action"] = "walk"
                         if enemy["walk_vx"] > 0:
                             self.alive_enemies[i]["direction"] = "right"
                         else:
                             self.alive_enemies[i]["direction"] = "left"
                     else:
                         self.alive_enemies[i]["walking"] = False
-                
+
                 else:
                     self.alive_enemies[i]["current_action"] = "idle"
 
             self.alive_enemies[i]["rect"].x = round(enemy["x"])
             self.alive_enemies[i]["rect"].y = round(enemy["y"])
-
-
-
 
 
 class Animal:
@@ -759,13 +876,22 @@ class Animal:
             "wolfwhite": "meat ",
             "bearblue": "meat ",
             "bearbrown": "meat ",
-            "ratwhite": "rat's tail "
+            "ratwhite": "rat's tail ",
         }
         self.attack_delay = 2
 
         self.pic_dict = {}
-        self.load_images = ["sheep", "sheepbrown", "bearblue", "bearbrown",
-                            "wolfblue", "wolfwhite", "wolfbluebrown", "wolfblack", "ratwhite"]
+        self.load_images = [
+            "sheep",
+            "sheepbrown",
+            "bearblue",
+            "bearbrown",
+            "wolfblue",
+            "wolfwhite",
+            "wolfbluebrown",
+            "wolfblack",
+            "ratwhite",
+        ]
         for load_image in self.load_images:
             for direction in ["front", "right", "back", "left"]:
                 for frame in range(1, 5):
@@ -779,22 +905,30 @@ class Animal:
                         ).convert_alpha()
                         image = pygame.transform.flip(image, True, False)
 
-                    self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = pygame.transform.smoothscale(
-                        image, (14, 14))
+                    self.pic_dict[
+                        f"{load_image}{direction}{str(frame)}tiny"
+                    ] = pygame.transform.smoothscale(image, (14, 14))
 
                     self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = image
 
-                    self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = pygame.transform.scale(
-                        image, (18, 18))
+                    self.pic_dict[
+                        f"{load_image}{direction}{str(frame)}big"
+                    ] = pygame.transform.scale(image, (18, 18))
 
         self.rect = None
         self.animal_dict = {}
 
         spawn_list = []
         spawn_freq = {
-            "sheep": 60, "sheepbrown": 10, "wolfblue": 15, "wolfblack": 30, "wolfbluebrown": 20, "wolfwhite": 12,
-            "bearblue": 5, "bearbrown": 30,
-            "ratwhite": 9
+            "sheep": 60,
+            "sheepbrown": 10,
+            "wolfblue": 15,
+            "wolfblack": 30,
+            "wolfbluebrown": 20,
+            "wolfwhite": 12,
+            "bearblue": 5,
+            "bearbrown": 30,
+            "ratwhite": 9,
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -803,14 +937,23 @@ class Animal:
         group_count = random.randint(15, 20)
         group_list = []
         for group_loop in range(group_count):
-            group_list.append((random.randint(100, 2300), random.randint(
-                100, 2300), random.choice(spawn_list)))  # x, y, animal_type
+            group_list.append(
+                (
+                    random.randint(100, 2300),
+                    random.randint(100, 2300),
+                    random.choice(spawn_list),
+                )
+            )  # x, y, animal_type
 
         for x in range(self.max_spawn):
             size = random.choice(["small", "big"])
-            group = random.randint(0, group_count-1)
-            rect = self.pic_dict["sheepright1small"].get_rect(topleft=(
-                group_list[group][0] + random.randint(-250, 250), group_list[group][1] + random.randint(-250, 250)))
+            group = random.randint(0, group_count - 1)
+            rect = self.pic_dict["sheepright1small"].get_rect(
+                topleft=(
+                    group_list[group][0] + random.randint(-250, 250),
+                    group_list[group][1] + random.randint(-250, 250),
+                )
+            )
 
             if group_list[group][2] == "ratwhite":
                 self.spawn_animal(rect, "tiny", group_list[group][2], x)
@@ -848,7 +991,7 @@ class Animal:
                     0,  # animal start attack 17
                     time.perf_counter(),  # animal kill/attack player 18
                     random.randint(2, 4),  # damage to player 19
-                    False  # animal boos 20
+                    False,  # animal boos 20
                 ]
 
     def reset_screen_size(self, width, height):
@@ -867,7 +1010,9 @@ class Animal:
             animal_frame_timer = animal[12]
             animal_size = animal[13]
 
-            if animal_walking and time.perf_counter() - animal_frame_timer > 0.2:  # change to next frame
+            if (
+                animal_walking and time.perf_counter() - animal_frame_timer > 0.2
+            ):  # change to next frame
                 animal[11] = (animal_frame + 1) % 4
                 animal[12] = time.perf_counter()
 
@@ -876,17 +1021,17 @@ class Animal:
 
             screen.blit(
                 self.pic_dict[
-                    f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"],
-                (
-                    animal_rect.x - scrollx, animal_rect.y - scrolly
-                )
+                    f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"
+                ],
+                (animal_rect.x - scrollx, animal_rect.y - scrolly),
             )
 
-    def create_walk_plan(self, max_steps, walking_speed, to_player=False, animal_rect=None):
+    def create_walk_plan(
+        self, max_steps, walking_speed, to_player=False, animal_rect=None
+    ):
         return_list = []
         if to_player == False:
-            waypoint = random.choice(
-                ["tl", "tr", "l", "r", "bl", "br", "b", "t"])
+            waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
             direction = ""
             walk_speed = walking_speed
             for x in range(max_steps):
@@ -917,8 +1062,9 @@ class Animal:
         else:
             # kijken of beer x groter kleiner dan player x en hetzelfde met y
             player_x, player_y = self.player.x + 24, self.player.y + 24
-            animal_x, animal_y = animal_rect.x + \
-                (animal_rect.w / 2), animal_rect.y + (animal_rect.h / 2)
+            animal_x, animal_y = animal_rect.x + (animal_rect.w / 2), animal_rect.y + (
+                animal_rect.h / 2
+            )
             x_diff = 0
             y_diff = 0
             x_diff = player_x - animal_x
@@ -973,8 +1119,7 @@ class Animal:
                 else:
                     animal[4] = True
                     animal[6] = random.randint(30, 150)
-                    animal[7], animal[10] = self.create_walk_plan(
-                        animal[6], 0.5)
+                    animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
                 animal[8] = time.perf_counter()
 
             if animal_walking:
@@ -990,18 +1135,24 @@ class Animal:
             on_tile = (int(animal_rect.x / 16), int(animal_rect.y / 16))
 
             if not animal_rect.x < -150 * 16 - 32 and not animal_rect.x > 150 * 16 - 32:
-                if not animal_rect.y < -150 * 16 - 32 and not animal_rect.y > 150 * 16 - 32:
+                if (
+                    not animal_rect.y < -150 * 16 - 32
+                    and not animal_rect.y > 150 * 16 - 32
+                ):
                     if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
                         plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
-            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 35:
+            if (
+                get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16)
+                < 35
+            ):
                 if "rat" in animal_type:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
 
                 if player.hitting:
-                    if 'bear' in animal_type:
-                        print('stoute man slaat een beer')
+                    if "bear" in animal_type:
+                        print("stoute man slaat een beer")
                         animal[18] = time.perf_counter() + self.attack_delay
                         animal[20] = True
                     pygame.mixer.Sound.play(self.damage_sound)
@@ -1016,24 +1167,34 @@ class Animal:
                         animal[4] = False
                     else:
                         animal[7], animal[10] = self.create_walk_plan(
-                            animal[6], 1.2, False)
+                            animal[6], 1.2, False
+                        )
                     animal[15] -= random.randint(30, 40)
                     animal_rect.y += random.randint(-5, 5)
                     animal_rect.x += random.randint(-5, 5)
                     player.hitting = False
 
-            if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 500:
+            if (
+                get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16)
+                < 500
+            ):
                 if animal[17] <= time.perf_counter() and animal[17] != 0:
                     animal[4] = True
                     animal[6] = random.randint(10, 20)
                     animal[7], animal[10] = self.create_walk_plan(
-                        animal[6], 1.2, True, animal_rect=animal[0])
+                        animal[6], 1.2, True, animal_rect=animal[0]
+                    )
             else:
                 animal[4] = False
 
             # bear attack player
             if animal[20]:
-                if get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16) < 30:
+                if (
+                    get_distance(
+                        animal_rect.x, animal_rect.y, player.x + 16, player.y + 16
+                    )
+                    < 30
+                ):
                     if time.perf_counter() - animal[18] > 1.5:
                         animal[18] = time.perf_counter()
                         player.health_value -= animal_damage
@@ -1051,16 +1212,17 @@ class Animal:
                         self.drop_item[animal_type],
                         animal_rect.x + random.choice([-60, 60, 55, -55]),
                         animal_rect.y + random.choice([-60, 60, 55, -55]),
-                        time.perf_counter()
+                        time.perf_counter(),
                     ]
                 else:
                     for _ in range(random.randint(1, 2)):
                         self.inventory.dropped_items[
-                            len(self.inventory.dropped_items)] = [
+                            len(self.inventory.dropped_items)
+                        ] = [
                             self.drop_item[animal_type],
                             animal_rect.x + random.choice([-60, 60, 55, -55]),
                             animal_rect.y + random.choice([-60, 60, 55, -55]),
-                            time.perf_counter()
+                            time.perf_counter(),
                         ]
                 for _ in range(30):
                     particles.append(HitParticle(animal[0].x, animal[0].y))
@@ -1078,13 +1240,14 @@ class Inventory:
         self.size = size
         self.pos = pos
         self.bar = pygame.Rect(pos, (size[0], size[1] + 2))
-        self.block = pygame.Rect(
-            (pos[0] + 8, pos[1] - 8), (size[0] - 16, size[1] - 8))
+        self.block = pygame.Rect((pos[0] + 8, pos[1] - 8), (size[0] - 16, size[1] - 8))
         self.backpack_margin = 55
         self.bar_backback = pygame.Rect(
-            (pos[0] + self.backpack_margin, pos[1]), (size[0]*2-2, size[1] + 2))
+            (pos[0] + self.backpack_margin, pos[1]), (size[0] * 2 - 2, size[1] + 2)
+        )
         self.backpack_block = pygame.Rect(
-            (pos[0] + 8 + self.backpack_margin, pos[1] - 8), (size[0] - 16, size[1] - 8))
+            (pos[0] + 8 + self.backpack_margin, pos[1] - 8), (size[0] - 16, size[1] - 8)
+        )
         self.blocks = []  # 9 normal always visible slots
         self.backpack_blocks = []  # 9 backback slots
         self.block_y = 0
@@ -1100,45 +1263,55 @@ class Inventory:
 
         self.pic_dict = {}
         self.pic_dict_small = {}
-        self.items_dict = {"tomato ": ["assets/floor/tile127.png", 30],
-                           "flower ": ["assets/floor/tile011.png", 30],
-                           "sword ": ["assets/tools/Sword-1.png", 37],
-                           "stone ": ["assets/floor/tile010.png", 30],
-                           "axe ": ["assets/tools/axe.png", 33],
-                           "log ": ["assets/floor/tile131.png", 33],
-                           "meat ": ["assets/food/26.png", 30],
-                           "tomato ": ["assets/floor/tile127.png", 30],
-                           "flower ": ["assets/floor/tile011.png", 30],
-                           "cookie ": ["assets/food/00.png", 30],
-                           "pickaxe ": ["assets/tools/pickaxe.png", 33],
-                           "rat's tail ": ["assets/food/73.png", 30]
-                           }
+        self.items_dict = {
+            "tomato ": ["assets/floor/tile127.png", 30],
+            "flower ": ["assets/floor/tile011.png", 30],
+            "sword ": ["assets/tools/Sword-1.png", 37],
+            "stone ": ["assets/floor/tile010.png", 30],
+            "axe ": ["assets/tools/axe.png", 33],
+            "log ": ["assets/floor/tile131.png", 33],
+            "meat ": ["assets/food/26.png", 30],
+            "tomato ": ["assets/floor/tile127.png", 30],
+            "flower ": ["assets/floor/tile011.png", 30],
+            "cookie ": ["assets/food/00.png", 30],
+            "pickaxe ": ["assets/tools/pickaxe.png", 33],
+            "rat's tail ": ["assets/food/73.png", 30],
+            "lantern image ": ["assets/tools/lantern.png", 30],
+        }
 
-        self.items_dict_small = {"tomato ": ["assets/floor/tile127.png", 15],
-                                 "flower ": ["assets/floor/tile011.png", 15],
-                                 "sword ": ["assets/tools/Sword-1.png", 12],
-                                 "stone ": ["assets/floor/tile010.png", 15],
-                                 "axe ": ["assets/tools/axe.png", 18],
-                                 "log ": ["assets/floor/tile131.png", 18],
-                                 "meat ": ["assets/food/26.png", 15],
-                                 "tomato ": ["assets/floor/tile127.png", 15],
-                                 "flower ": ["assets/floor/tile011.png", 15],
-                                 "cookie ": ["assets/food/00.png", 15],
-                                 "pickaxe ": ["assets/tools/pickaxe.png", 18],
-                                 "rat's tail ": ["assets/food/73.png", 15]
-                                 }
+        self.items_dict_small = {
+            "tomato ": ["assets/floor/tile127.png", 15],
+            "flower ": ["assets/floor/tile011.png", 15],
+            "sword ": ["assets/tools/Sword-1.png", 12],
+            "stone ": ["assets/floor/tile010.png", 15],
+            "axe ": ["assets/tools/axe.png", 18],
+            "log ": ["assets/floor/tile131.png", 18],
+            "meat ": ["assets/food/26.png", 15],
+            "tomato ": ["assets/floor/tile127.png", 15],
+            "flower ": ["assets/floor/tile011.png", 15],
+            "cookie ": ["assets/food/00.png", 15],
+            "pickaxe ": ["assets/tools/pickaxe.png", 18],
+            "rat's tail ": ["assets/food/73.png", 15],
+            "lantern image ": ["assets/tools/lantern.png", 10],
+        }
 
         for item in self.items_dict:
             self.pic_dict[item] = pygame.image.load(
-                f"{self.items_dict[item][0]}").convert_alpha()
+                f"{self.items_dict[item][0]}"
+            ).convert_alpha()
             self.pic_dict[item] = pygame.transform.scale(
-                self.pic_dict[item], (self.items_dict[item][1], self.items_dict[item][1]))
+                self.pic_dict[item],
+                (self.items_dict[item][1], self.items_dict[item][1]),
+            )
 
         for item in self.items_dict_small:
             self.pic_dict_small[item] = pygame.image.load(
-                f"{self.items_dict_small[item][0]}").convert_alpha()
+                f"{self.items_dict_small[item][0]}"
+            ).convert_alpha()
             self.pic_dict_small[item] = pygame.transform.scale(
-                self.pic_dict_small[item], (self.items_dict_small[item][1], self.items_dict_small[item][1]))
+                self.pic_dict_small[item],
+                (self.items_dict_small[item][1], self.items_dict_small[item][1]),
+            )
 
         # self.tomato_img = pygame.image.load("assets/floor/tile127.png").convert_alpha()
         # self.flower_img = pygame.image.load("assets/floor/tile011.png").convert_alpha()
@@ -1176,31 +1349,71 @@ class Inventory:
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
 
         self.full_key_dict = {
-
-            0: True, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False,
-            9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: False, 16: False, 17: False,
-            18: False, 19: False, 20: False, 21: False, 22: False, 23: False, 24: False, 25: False, 26: False
-
+            0: True,
+            1: True,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+            25: False,
+            26: False,
         }
 
         self.create_blocks()
 
     def create_blocks(self):
         for x in range(9):
-            self.blocks.append(pygame.Rect(
-                self.pos[0] + 8, self.pos[1] + self.block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+            self.blocks.append(
+                pygame.Rect(
+                    self.pos[0] + 8,
+                    self.pos[1] + self.block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.block_y += self.size[1] / 9
 
         for x in range(9):
-            self.blocks.append(pygame.Rect(self.pos[0] + 8 + self.backpack_margin, self.pos[1] +
-                               self.backpack_block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+            self.blocks.append(
+                pygame.Rect(
+                    self.pos[0] + 8 + self.backpack_margin,
+                    self.pos[1] + self.backpack_block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.backpack_block_y += self.size[1] / 9
 
         self.backpack_block_y = 0
 
         for x in range(9):
-            self.blocks.append(pygame.Rect(self.pos[0] + self.backpack_margin * 2, self.pos[1] +
-                               self.backpack_block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+            self.blocks.append(
+                pygame.Rect(
+                    self.pos[0] + self.backpack_margin * 2,
+                    self.pos[1] + self.backpack_block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.backpack_block_y += self.size[1] / 9
 
     def add_item(self, item):
@@ -1226,37 +1439,58 @@ class Inventory:
 
         for x in range(9):
             self.blocks.append(
-                pygame.Rect(pos[0] + 8, pos[1] + self.block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+                pygame.Rect(
+                    pos[0] + 8,
+                    pos[1] + self.block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.block_y += self.size[1] / 9
 
         self.backpack_margin = 55
         self.bar_backback = pygame.Rect(
-            (pos[0] + self.backpack_margin, pos[1]), (self.size[0]*2-2, self.size[1] + 2))
+            (pos[0] + self.backpack_margin, pos[1]),
+            (self.size[0] * 2 - 2, self.size[1] + 2),
+        )
         self.backpack_block = pygame.Rect(
-            (pos[0] + 8 + self.backpack_margin, pos[1] - 8), (self.size[0] - 16, self.size[1] - 8))
+            (pos[0] + 8 + self.backpack_margin, pos[1] - 8),
+            (self.size[0] - 16, self.size[1] - 8),
+        )
         self.backpack_block_y = 0
 
         self.block_y = 0
 
         for x in range(9):
             self.blocks.append(
-                pygame.Rect(pos[0] + 8 + self.backpack_margin, pos[1] + self.block_y + 8, self.size[0] - 16, self.size[1] / 10.5 - 8))
+                pygame.Rect(
+                    pos[0] + 8 + self.backpack_margin,
+                    pos[1] + self.block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.block_y += self.size[1] / 9
 
         self.backpack_block_y = 0
 
         for x in range(9):
             self.blocks.append(
-                pygame.Rect(pos[0] + self.backpack_margin * 2, pos[1] + self.backpack_block_y + 8,
-                            self.size[0] - 16, self.size[1] / 10.5 - 8))
+                pygame.Rect(
+                    pos[0] + self.backpack_margin * 2,
+                    pos[1] + self.backpack_block_y + 8,
+                    self.size[0] - 16,
+                    self.size[1] / 10.5 - 8,
+                )
+            )
             self.backpack_block_y += self.size[1] / 9
 
     def draw(self, screen, pos, scrollx, scrolly):
-        pygame.draw.rect(screen, pygame.Color(
-            "#212529"), self.bar, border_radius=8)
+        pygame.draw.rect(screen, pygame.Color("#212529"), self.bar, border_radius=8)
         if self.backpack_visible:
-            pygame.draw.rect(screen, pygame.Color("#212529"),
-                             self.bar_backback, border_radius=8)
+            pygame.draw.rect(
+                screen, pygame.Color("#212529"), self.bar_backback, border_radius=8
+            )
 
         # for index, block in enumerate(self.blocks):
         #
@@ -1273,8 +1507,7 @@ class Inventory:
             item = self.dropped_items[i]
             image_code = item[0]
             screen.blit(
-                self.pic_dict_small[image_code],
-                (item[1] - scrollx, item[2] - scrolly)
+                self.pic_dict_small[image_code], (item[1] - scrollx, item[2] - scrolly)
             )
             if time.perf_counter() - self.last_time > 0.5:
                 self.last_time = time.perf_counter()
@@ -1285,42 +1518,47 @@ class Inventory:
 
             item[2] += self.item_direction * self.item_speed
 
-            if get_distance(item[1], item[2], self.player.x + 12, self.player.y + 12) < 50:
+            if (
+                get_distance(item[1], item[2], self.player.x + 12, self.player.y + 12)
+                < 50
+            ):
                 item[1] -= (item[1] - self.player.x - 12) / 5
                 item[2] -= (item[2] - self.player.y) / 5
-                if get_distance(item[1], item[2], self.player.x + 12, self.player.y + 12) < 17:
+                if (
+                    get_distance(
+                        item[1], item[2], self.player.x + 12, self.player.y + 12
+                    )
+                    < 17
+                ):
                     self.add_item(item[0])
                     self.dropped_items.pop(i)
                     break
 
-            if time.perf_counter() - item[3] > 60*5:  # 5 minutes
+            if time.perf_counter() - item[3] > 60 * 5:  # 5 minutes
                 self.dropped_items.pop(i)
                 break
 
         for index, block in enumerate(self.blocks):
-
             if not index > 8:
                 if index == self.selected_block:
-                    pygame.draw.rect(screen, (200, 200, 200),
-                                     block, border_radius=4)
+                    pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
                 else:
-                    pygame.draw.rect(screen, self.block_color,
-                                     block, border_radius=4)
+                    pygame.draw.rect(screen, self.block_color, block, border_radius=4)
 
-                if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
-                    pygame.draw.rect(screen, (150, 150, 150),
-                                     block, border_radius=4)
+                if block.collidepoint(pos[0], pos[1]) and (
+                    self.holding_item or self.crafting_table.holding_item
+                ):
+                    pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
             elif self.backpack_visible:
                 if index == self.selected_block:
-                    pygame.draw.rect(screen, (200, 200, 200),
-                                     block, border_radius=4)
+                    pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
                 else:
-                    pygame.draw.rect(screen, self.block_color,
-                                     block, border_radius=4)
+                    pygame.draw.rect(screen, self.block_color, block, border_radius=4)
 
-                if block.collidepoint(pos[0], pos[1]) and (self.holding_item or self.crafting_table.holding_item):
-                    pygame.draw.rect(screen, (150, 150, 150),
-                                     block, border_radius=4)
+                if block.collidepoint(pos[0], pos[1]) and (
+                    self.holding_item or self.crafting_table.holding_item
+                ):
+                    pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
 
             # if self.block_fill[index] == "tomato ":
             #     screen.blit(self.tomato_img, block)
@@ -1350,10 +1588,10 @@ class Inventory:
             #     screen.blit(self.meat_img, block)
 
             if not index > 8:
-                if self.block_fill[index] != '':
+                if self.block_fill[index] != "":
                     screen.blit(self.pic_dict[self.block_fill[index]], block)
             elif self.backpack_visible:
-                if self.block_fill[index] != '':
+                if self.block_fill[index] != "":
                     screen.blit(self.pic_dict[self.block_fill[index]], block)
 
             self.color = random.choice(self.colors)
@@ -1390,7 +1628,10 @@ class Inventory:
 
             if self.block_fill[self.selected_block] == "tomato ":
                 if keys[2] and not self.player.on_interact:
-                    if keys[2] and self.player.food_value < 10000 - self.player.tomato_feeding:
+                    if (
+                        keys[2]
+                        and self.player.food_value < 10000 - self.player.tomato_feeding
+                    ):
                         self.player.food_value += self.player.tomato_feeding
                         self.block_fill[self.selected_block] = ""
                         pygame.mixer.Sound.play(self.eating_sound)
@@ -1401,7 +1642,10 @@ class Inventory:
 
             if self.block_fill[self.selected_block] == "cookie ":
                 if keys[2] and not self.player.on_interact:
-                    if keys[2] and self.player.food_value < 10000 - self.player.cookie_feeding:
+                    if (
+                        keys[2]
+                        and self.player.food_value < 10000 - self.player.cookie_feeding
+                    ):
                         self.player.food_value += self.player.cookie_feeding
                         self.block_fill[self.selected_block] = ""
                         pygame.mixer.Sound.play(self.eating_sound)
@@ -1412,7 +1656,10 @@ class Inventory:
 
             if self.block_fill[self.selected_block] == "meat ":
                 if keys[2] and not self.player.on_interact:
-                    if keys[2] and self.player.food_value < 10000 - self.player.cookie_feeding:
+                    if (
+                        keys[2]
+                        and self.player.food_value < 10000 - self.player.cookie_feeding
+                    ):
                         self.player.food_value += self.player.cookie_feeding
                         self.block_fill[self.selected_block] = ""
                         pygame.mixer.Sound.play(self.eating_sound)
@@ -1423,7 +1670,10 @@ class Inventory:
 
             if self.block_fill[self.selected_block] == "flower ":
                 if keys[2] and not self.player.on_interact:
-                    if keys[2] and self.player.energy_value < 100 - self.player.flower_power:
+                    if (
+                        keys[2]
+                        and self.player.energy_value < 100 - self.player.flower_power
+                    ):
                         self.player.energy_value += self.player.flower_power
                         self.block_fill[self.selected_block] = ""
                         pygame.mixer.Sound.play(self.eating_sound)
@@ -1455,21 +1705,31 @@ class Inventory:
                         if keys[0]:
                             self.selected_block = current_index
                     if self.block_fill[index] == "tomato ":
-                        self.description = "Tomato's will make you less hungry  |  [RMB] to consume"
+                        self.description = (
+                            "Tomato's will make you less hungry  |  [RMB] to consume"
+                        )
                     elif self.block_fill[index] == "flower ":
-                        self.description = "Flowers refill your energy  |  [RMB] to consume"
+                        self.description = (
+                            "Flowers refill your energy  |  [RMB] to consume"
+                        )
                     elif self.block_fill[index] == "sword ":
                         self.description = "With the sword you can attack living things  |  [LMB] to attack"
                     elif self.block_fill[index] == "pickaxe ":
-                        self.description = "With a pickaxe you can mine stone  |  [E] to mine"
+                        self.description = (
+                            "With a pickaxe you can mine stone  |  [E] to mine"
+                        )
                     elif self.block_fill[index] == "stone ":
                         self.description = "You can use stone to craft items  |  [TAB] to open crafting table"
                     elif self.block_fill[index] == "axe ":
-                        self.description = "With an axe you can cut down trees  |  [E] to cut"
+                        self.description = (
+                            "With an axe you can cut down trees  |  [E] to cut"
+                        )
                     elif self.block_fill[index] == "log ":
                         self.description = "With logs you can craft items |  [TAB] to open crafting table"
                     elif self.block_fill[index] == "cookie ":
-                        self.description = "Cookies are a great source of food  |  [RMB] to consume"
+                        self.description = (
+                            "Cookies are a great source of food  |  [RMB] to consume"
+                        )
                     elif self.block_fill[index] == "meat ":
                         self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
                     elif self.block_fill[index] == "rat's tail ":
@@ -1481,12 +1741,14 @@ class Inventory:
 
             if not index > 8 or self.backpack_visible:
                 if self.holding_item:
-                    screen.blit(
-                        self.pic_dict[self.clicked_item], (pos[0], pos[1]))
-        
+                    screen.blit(self.pic_dict[self.clicked_item], (pos[0], pos[1]))
 
-                if keys[1] and block.collidepoint(pos[0], pos[1]) and bool(
-                        self.block_fill[index]) and not self.holding_item:
+                if (
+                    keys[1]
+                    and block.collidepoint(pos[0], pos[1])
+                    and bool(self.block_fill[index])
+                    and not self.holding_item
+                ):
                     clicked_block = index
                     clicked_item = self.block_fill[clicked_block]
                     self.clicked_item = clicked_item
@@ -1495,45 +1757,63 @@ class Inventory:
 
                 # if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
                 #         self.block_fill[index]) and self.holding_item:
-                if keys[0] and block.collidepoint(pos[0], pos[1]) and self.block_fill[index] in ["", " "] and self.holding_item:
+                if (
+                    keys[0]
+                    and block.collidepoint(pos[0], pos[1])
+                    and self.block_fill[index] in ["", " "]
+                    and self.holding_item
+                ):
                     self.block_fill[index] = self.clicked_item
                     self.holding_item = False
                 # elif keys[0] and block.collidepoint(pos[0], pos[1]):
                 #    print(f"/{self.block_fill[index]}/", self.holding_item)
 
-                if keys[0] and block.collidepoint(pos[0], pos[1]) and bool(self.block_fill[index]) and self.holding_item:
+                if (
+                    keys[0]
+                    and block.collidepoint(pos[0], pos[1])
+                    and bool(self.block_fill[index])
+                    and self.holding_item
+                ):
                     item = self.block_fill[index]
                     self.block_fill[index] = self.clicked_item
                     self.clicked_item = item
                     self.holding_item = True
                     time.sleep(0.1)
 
-                if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
-                        self.block_fill[index]) and self.crafting_table.holding_item:
+                if (
+                    keys[0]
+                    and block.collidepoint(pos[0], pos[1])
+                    and not bool(self.block_fill[index])
+                    and self.crafting_table.holding_item
+                ):
                     self.block_fill[index] = self.crafting_table.interacted_item
                     self.crafting_table.holding_item = False
 
-                if self.holding_item and keys[0] and not self.hovering_menu and not self.crafting_table.opened:
+                if (
+                    self.holding_item
+                    and keys[0]
+                    and not self.hovering_menu
+                    and not self.crafting_table.opened
+                ):
                     if not self.clicked_item == "":
-                        self.dropped_items[
-                            len(self.dropped_items)] = [
+                        self.dropped_items[len(self.dropped_items)] = [
                             self.clicked_item,
-                            self.player.x +
-                                random.choice(
-                                    [-60, 60, 55, -55]), self.player.y + random.choice([-60, 60, 55, -55]),
-                            time.perf_counter()
+                            self.player.x + random.choice([-60, 60, 55, -55]),
+                            self.player.y + random.choice([-60, 60, 55, -55]),
+                            time.perf_counter(),
                         ]
                         self.clicked_item = ""
                         self.holding_item = False
 
-                if keyboard[pygame.K_q] and not self.block_fill[self.selected_block] == "":
-                    self.dropped_items[
-                        len(self.dropped_items)] = [
+                if (
+                    keyboard[pygame.K_q]
+                    and not self.block_fill[self.selected_block] == ""
+                ):
+                    self.dropped_items[len(self.dropped_items)] = [
                         self.block_fill[self.selected_block],
-                        self.player.x +
-                            random.choice(
-                                [-60, 60, 55, -55]), self.player.y + random.choice([-60, 60, 55, -55]),
-                        time.perf_counter()
+                        self.player.x + random.choice([-60, 60, 55, -55]),
+                        self.player.y + random.choice([-60, 60, 55, -55]),
+                        time.perf_counter(),
                     ]
                     self.block_fill[self.selected_block] = ""
 
@@ -1541,22 +1821,39 @@ class Inventory:
                 text_w, text_h = self.font.size(self.description)
                 text_render = self.font.render(self.description, True, "white")
                 bg_rect = pygame.Rect(
-                    (current_block.x + 50, current_block.y), (text_w + 15, text_h + 15))
+                    (current_block.x + 50, current_block.y), (text_w + 15, text_h + 15)
+                )
                 shadow_rect = pygame.Rect(
-                    (current_block.x + 52, current_block.y + 2), (text_w + 15, text_h + 15))
-                pygame.draw.rect(screen, pygame.Color(
-                    "#30363b"), shadow_rect, border_radius=8)
-                pygame.draw.rect(screen, pygame.Color(
-                    "#212529"), bg_rect, border_radius=8)
-                screen.blit(text_render, (current_block.x +
-                            50 + 7, current_block.y + 7))
-                
+                    (current_block.x + 52, current_block.y + 2),
+                    (text_w + 15, text_h + 15),
+                )
+                pygame.draw.rect(
+                    screen, pygame.Color("#30363b"), shadow_rect, border_radius=8
+                )
+                pygame.draw.rect(
+                    screen, pygame.Color("#212529"), bg_rect, border_radius=8
+                )
+                screen.blit(
+                    text_render, (current_block.x + 50 + 7, current_block.y + 7)
+                )
+
     def draw_holding_items(self, screen, scroll):
-        if not self.block_fill[self.selected_block] in ["sword ", "pickaxe ", "axe ", ""]:
+        if not self.block_fill[self.selected_block] in [
+            "sword ",
+            "pickaxe ",
+            "axe ",
+            "",
+        ]:
             if self.player.direction == "RIGHT" or self.player.direction_xy == "RIGHT":
-                screen.blit(self.pic_dict_small[self.block_fill[self.selected_block]], (self.player.x - scroll[0] + 35, self.player.y - scroll[1] + 10))
+                screen.blit(
+                    self.pic_dict_small[self.block_fill[self.selected_block]],
+                    (self.player.x - scroll[0] + 35, self.player.y - scroll[1] + 10),
+                )
             else:
-                screen.blit(self.pic_dict_small[self.block_fill[self.selected_block]], (self.player.x - scroll[0] - 5, self.player.y - scroll[1] + 10))
+                screen.blit(
+                    self.pic_dict_small[self.block_fill[self.selected_block]],
+                    (self.player.x - scroll[0] - 5, self.player.y - scroll[1] + 10),
+                )
 
     def mouse_update(self, mouse, joystick_input, joystick):
         if not joystick_input:  # no joystick connected
@@ -1593,106 +1890,121 @@ class CraftingTable:
         self.interacted_item = ""
         self.mouse_pos = None
         self.last_index = 0
-        self.scroll = (0,0)
+        self.scroll = (0, 0)
 
-        self.log_img = pygame.image.load(
-            "assets/floor/tile131.png").convert_alpha()
+        self.log_img = pygame.image.load("assets/floor/tile131.png").convert_alpha()
         self.log_img = pygame.transform.scale(self.log_img, (150, 150))
 
-        self.stone_img = pygame.image.load(
-            "assets/floor/tile010.png").convert_alpha()
+        self.stone_img = pygame.image.load("assets/floor/tile010.png").convert_alpha()
         self.stone_img = pygame.transform.scale(self.stone_img, (150, 150))
 
-        self.tomato_img = pygame.image.load(
-            "assets/floor/tile127.png").convert_alpha()
+        self.tomato_img = pygame.image.load("assets/floor/tile127.png").convert_alpha()
         self.tomato_img = pygame.transform.scale(self.tomato_img, (150, 150))
 
-        self.flower_img = pygame.image.load(
-            "assets/floor/tile011.png").convert_alpha()
+        self.flower_img = pygame.image.load("assets/floor/tile011.png").convert_alpha()
         self.flower_img = pygame.transform.scale(self.flower_img, (150, 150))
 
         self.large_pic_dict = {}
-        self.items_dict = {"tomato ": ["assets/floor/tile127.png", 30],
-                           "flower ": ["assets/floor/tile011.png", 30],
-                           "sword ": ["assets/tools/Sword-1.png", 37],
-                           "stone ": ["assets/floor/tile010.png", 30],
-                           "axe ": ["assets/tools/axe.png", 33],
-                           "log ": ["assets/floor/tile131.png", 33],
-                           "meat ": ["assets/food/26.png", 30],
-                           "tomato ": ["assets/floor/tile127.png", 30],
-                           "flower ": ["assets/floor/tile011.png", 30],
-                           "cookie ": ["assets/food/00.png", 30],
-                           "pickaxe ": ["assets/tools/pickaxe.png", 33]
-                           }
+        self.items_dict = {
+            "tomato ": ["assets/floor/tile127.png", 30],
+            "flower ": ["assets/floor/tile011.png", 30],
+            "sword ": ["assets/tools/Sword-1.png", 37],
+            "stone ": ["assets/floor/tile010.png", 30],
+            "axe ": ["assets/tools/axe.png", 33],
+            "log ": ["assets/floor/tile131.png", 33],
+            "meat ": ["assets/food/26.png", 30],
+            "tomato ": ["assets/floor/tile127.png", 30],
+            "flower ": ["assets/floor/tile011.png", 30],
+            "cookie ": ["assets/food/00.png", 30],
+            "pickaxe ": ["assets/tools/pickaxe.png", 33],
+        }
 
         for item in self.items_dict:
             self.large_pic_dict[item] = pygame.image.load(
-                f"{self.items_dict[item][0]}").convert_alpha()
-            self.large_pic_dict[item] = pygame.transform.scale(self.large_pic_dict[item],
-                                                               (self.items_dict[item][1] * 5, self.items_dict[item][1] * 5))
+                f"{self.items_dict[item][0]}"
+            ).convert_alpha()
+            self.large_pic_dict[item] = pygame.transform.scale(
+                self.large_pic_dict[item],
+                (self.items_dict[item][1] * 5, self.items_dict[item][1] * 5),
+            )
 
         self.bg_width = 500
         self.bg_height = 500
         self.bg_color = pygame.Color("#212529")
         self.background = pygame.Rect(
-            (self.screen_width / 2 - self.bg_width / 2,
-             self.screen_height / 2 - self.bg_height / 2),
-            (self.bg_width, self.bg_height)
+            (
+                self.screen_width / 2 - self.bg_width / 2,
+                self.screen_height / 2 - self.bg_height / 2,
+            ),
+            (self.bg_width, self.bg_height),
         )
         self.block_color = pygame.Color("#343a40")
         self.blocks = []
         self.block_fill = {
-
-            0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: ""
-
+            0: "",
+            1: "",
+            2: "",
+            3: "",
+            4: "",
+            5: "",
+            6: "",
+            7: "",
+            8: "",
+            9: "",
         }
 
         self.preview_block = pygame.Rect(
-            (self.background.right + 30, self.background.centery -
-             int(self.bg_height / 3 - 16) / 2),
-            (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16))
+            (
+                self.background.right + 30,
+                self.background.centery - int(self.bg_height / 3 - 16) / 2,
+            ),
+            (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16)),
         )
 
         padding = 10
         self.preview_background = pygame.Rect(
             (self.preview_block.x - padding, self.preview_block.y - padding),
-            (self.preview_block.width + padding * 2,
-             self.preview_block.height + padding * 2)
+            (
+                self.preview_block.width + padding * 2,
+                self.preview_block.height + padding * 2,
+            ),
         )
 
         self.recipes = {
-            "s  slls  ": "pickaxe ", "   ssl   ": "sword ", "ss sll   ": "axe ", "tff      ": "cookie "
+            "s  slls  ": "pickaxe ",
+            "   ssl   ": "sword ",
+            "ss sll   ": "axe ",
+            "tff      ": "cookie ",
         }
         self.mask_surf = pygame.Surface(
-            (self.screen_width, self.screen_height), pygame.SRCALPHA, 32)
+            (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
+        )
         self.mask_surf.fill((0, 0, 0, 100))
 
         for x in range(3):
             for y in range(3):
                 self.blocks.append(
                     pygame.Rect(
-                        (self.background.x + x * int(self.bg_width / 3) + 8,
-                         8 + self.background.y + y * (int(self.bg_height) / 3)),
-                        (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16))
+                        (
+                            self.background.x + x * int(self.bg_width / 3) + 8,
+                            8 + self.background.y + y * (int(self.bg_height) / 3),
+                        ),
+                        (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16)),
                     )
                 )
 
     def draw(self, screen, scrollx, scrolly, keyboard, joystick_input, joystick):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
-            pygame.draw.rect(screen, self.bg_color,
-                             self.background, border_radius=16)
+            pygame.draw.rect(screen, self.bg_color, self.background, border_radius=16)
             for index, block in enumerate(self.blocks):
                 if not block.collidepoint(self.mouse_pos[0], self.mouse_pos[1]):
-                    pygame.draw.rect(screen, self.block_color,
-                                     block, border_radius=8)
+                    pygame.draw.rect(screen, self.block_color, block, border_radius=8)
                 else:
-                    pygame.draw.rect(screen, (200, 200, 200),
-                                     block, border_radius=8)
+                    pygame.draw.rect(screen, (200, 200, 200), block, border_radius=8)
 
                 if self.block_fill[index] in self.large_pic_dict:
-                    screen.blit(
-                        self.large_pic_dict[self.block_fill[index]], block)
+                    screen.blit(self.large_pic_dict[self.block_fill[index]], block)
 
             recipe = ""
             for index, block in enumerate(self.blocks):
@@ -1700,29 +2012,41 @@ class CraftingTable:
                     recipe += self.block_fill[index][0]
                 else:
                     recipe += " "
-            pygame.draw.rect(screen, self.bg_color,
-                             self.preview_background, border_radius=16)
-            if not self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1]):
-                pygame.draw.rect(screen, self.block_color,
-                                 self.preview_block, border_radius=8)
+            pygame.draw.rect(
+                screen, self.bg_color, self.preview_background, border_radius=16
+            )
+            if not self.preview_block.collidepoint(
+                self.mouse_pos[0], self.mouse_pos[1]
+            ):
+                pygame.draw.rect(
+                    screen, self.block_color, self.preview_block, border_radius=8
+                )
             else:
-                pygame.draw.rect(screen, (200, 200, 200),
-                                 self.preview_block, border_radius=8)
+                pygame.draw.rect(
+                    screen, (200, 200, 200), self.preview_block, border_radius=8
+                )
 
             if recipe in self.recipes:
                 preview_item = self.recipes[recipe]
-                screen.blit(
-                    self.large_pic_dict[preview_item], self.preview_block)
+                screen.blit(self.large_pic_dict[preview_item], self.preview_block)
 
-            self.inventory.draw(
-                screen, pygame.mouse.get_pos(), scrollx, scrolly)
-            self.inventory.update(pygame.mouse.get_pressed(
-            ), pygame.mouse.get_pos(), screen, keyboard, joystick_input, joystick, self.scroll)
+            self.inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
+            self.inventory.update(
+                pygame.mouse.get_pressed(),
+                pygame.mouse.get_pos(),
+                screen,
+                keyboard,
+                joystick_input,
+                joystick,
+                self.scroll,
+            )
 
             if self.holding_item:
                 if self.interacted_item in self.inventory.pic_dict:
                     screen.blit(
-                        self.inventory.pic_dict[self.interacted_item], (self.mouse_pos[0], self.mouse_pos[1]))
+                        self.inventory.pic_dict[self.interacted_item],
+                        (self.mouse_pos[0], self.mouse_pos[1]),
+                    )
 
     def set_inventory(self, inventory):
         self.inventory = inventory
@@ -1731,26 +2055,33 @@ class CraftingTable:
         self.screen_width, self.screen_height = pygame.display.get_window_size()
 
         self.mask_surf = pygame.Surface(
-            (self.screen_width, self.screen_height), pygame.SRCALPHA, 32)
+            (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
+        )
         self.mask_surf.fill((0, 0, 0, 100))
 
         self.background = pygame.Rect(
-            (self.screen_width / 2 - self.bg_width / 2,
-             self.screen_height / 2 - self.bg_height / 2),
-            (self.bg_width, self.bg_height)
+            (
+                self.screen_width / 2 - self.bg_width / 2,
+                self.screen_height / 2 - self.bg_height / 2,
+            ),
+            (self.bg_width, self.bg_height),
         )
 
         self.preview_block = pygame.Rect(
-            (self.background.right + 30, self.background.centery -
-             int(self.bg_height / 3 - 16) / 2),
-            (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16))
+            (
+                self.background.right + 30,
+                self.background.centery - int(self.bg_height / 3 - 16) / 2,
+            ),
+            (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16)),
         )
 
         padding = 10
         self.preview_background = pygame.Rect(
             (self.preview_block.x - padding, self.preview_block.y - padding),
-            (self.preview_block.width + padding * 2,
-             self.preview_block.height + padding * 2)
+            (
+                self.preview_block.width + padding * 2,
+                self.preview_block.height + padding * 2,
+            ),
         )
 
         self.blocks = []
@@ -1759,9 +2090,11 @@ class CraftingTable:
             for y in range(3):
                 self.blocks.append(
                     pygame.Rect(
-                        (self.background.x + x * int(self.bg_width / 3) + 8,
-                         8 + self.background.y + y * (int(self.bg_height) / 3)),
-                        (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16))
+                        (
+                            self.background.x + x * int(self.bg_width / 3) + 8,
+                            8 + self.background.y + y * (int(self.bg_height) / 3),
+                        ),
+                        (int(self.bg_width / 3 - 16), int(self.bg_height / 3 - 16)),
                     )
                 )
 
@@ -1809,7 +2142,6 @@ class CraftingTable:
 
         mouse_click = list(mouse_click)
         if joystick_input:
-
             mouse_click[0] = eval(joystick_btn_dict["south-btn"])
             mouse_click[1] = eval(joystick_btn_dict["east-btn"])
             mouse_click[2] = eval(joystick_btn_dict["west-btn"])
@@ -1825,19 +2157,30 @@ class CraftingTable:
                     self.block_fill[index] = ""
                     self.holding_item = True
 
-                if mouse_click[0] and self.holding_item and not bool(self.block_fill[index]):
+                if (
+                    mouse_click[0]
+                    and self.holding_item
+                    and not bool(self.block_fill[index])
+                ):
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = ""
                     self.holding_item = False
 
-                if mouse_click[0] and self.holding_item and bool(self.block_fill[index]):
+                if (
+                    mouse_click[0]
+                    and self.holding_item
+                    and bool(self.block_fill[index])
+                ):
                     item = self.block_fill[index]
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = item
                     self.holding_item = True
                     time.sleep(0.1)
 
-        if self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1]) and mouse_click[1]:
+        if (
+            self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1])
+            and mouse_click[1]
+        ):
             recipe = ""
             for index, block in enumerate(self.blocks):
                 if bool(self.block_fill[index]):
@@ -1849,7 +2192,16 @@ class CraftingTable:
                     self.inventory.clicked_item = f"{self.recipes[recipe]}"
                     self.inventory.holding_item = True
                     self.block_fill = {
-                        0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: ""
+                        0: "",
+                        1: "",
+                        2: "",
+                        3: "",
+                        4: "",
+                        5: "",
+                        6: "",
+                        7: "",
+                        8: "",
+                        9: "",
                     }
 
         if keys[pygame.K_RETURN]:
@@ -1863,9 +2215,16 @@ class CraftingTable:
             if recipe in self.recipes:
                 self.inventory.add_item(self.recipes[recipe])
                 self.block_fill = {
-
-                    0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: ""
-
+                    0: "",
+                    1: "",
+                    2: "",
+                    3: "",
+                    4: "",
+                    5: "",
+                    6: "",
+                    7: "",
+                    8: "",
+                    9: "",
                 }
 
             time.sleep(0.1)
@@ -1882,13 +2241,13 @@ def load_img():
         else:
             tile_num = f"00{x}"
 
-        images[f"tile{x}"] = pygame.image.load(
-            f"assets/floor/tile{tile_num}.png")
+        images[f"tile{x}"] = pygame.image.load(f"assets/floor/tile{tile_num}.png")
 
     for x in os.listdir("assets/character"):
         images[f"{x[:-4]}"] = pygame.image.load((f"assets/character/{x}"))
         images[f"{x[:-4]}_flipped"] = pygame.transform.flip(
-            pygame.image.load((f"assets/character/{x}")), True, False)
+            pygame.image.load((f"assets/character/{x}")), True, False
+        )
 
     return images
 
@@ -1919,7 +2278,8 @@ def create_world(map_w, map_h, chance_index):
                 world[y, x] = 14
                 if random.randint(0, chance_index) == 1:
                     plants[y, x] = random.choice(
-                        [123, 124, 125, 126, 11, 8, 10, 110, 111, 112, 113, 127])
+                        [123, 124, 125, 126, 11, 8, 10, 110, 111, 112, 113, 127]
+                    )
                 else:
                     pass
                     # plants[y, x] = 12
@@ -1929,10 +2289,20 @@ def create_world(map_w, map_h, chance_index):
         for y in range(world.shape[0]):
             if world_copy[y, x] in [5, 6, 7]:
                 # rand van wereld
-                if not (x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1):
+                if not (
+                    x == 0
+                    or y == 0
+                    or x == world.shape[1] - 1
+                    or y == world.shape[1] - 1
+                ):
                     grass_code = ""
                     grass_count = 0
-                    for c in [world_copy[y - 1, x], world_copy[y, x + 1], world_copy[y + 1, x], world_copy[y, x - 1]]:
+                    for c in [
+                        world_copy[y - 1, x],
+                        world_copy[y, x + 1],
+                        world_copy[y + 1, x],
+                        world_copy[y, x - 1],
+                    ]:
                         if c == 14:
                             grass_count += 1
                             grass_code += "g"
@@ -1949,25 +2319,47 @@ def create_world(map_w, map_h, chance_index):
             if world_copy[y, x] in [5, 6, 7]:
                 convert = False
                 # rand van wereld
-                if x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1:
+                if (
+                    x == 0
+                    or y == 0
+                    or x == world.shape[1] - 1
+                    or y == world.shape[1] - 1
+                ):
                     convert = True
                     check_code = "ssss"  # tijdelijk
 
                     # boven                  # rechts                  # onder              # links
-                elif world_copy[y - 1, x] == 14 or world_copy[y, x + 1] == 14 or world_copy[y + 1, x] == 14 or \
-                        world_copy[y, x - 1] == 14:
+                elif (
+                    world_copy[y - 1, x] == 14
+                    or world_copy[y, x + 1] == 14
+                    or world_copy[y + 1, x] == 14
+                    or world_copy[y, x - 1] == 14
+                ):
                     convert = True
                     # check code: pos 0 = boven pos 1 = rechts pos 2 = onder, pos 3 = links
                     check_code = ""
 
-                    for c in [world_copy[y - 1, x], world_copy[y, x + 1], world_copy[y + 1, x], world_copy[y, x - 1]]:
+                    for c in [
+                        world_copy[y - 1, x],
+                        world_copy[y, x + 1],
+                        world_copy[y + 1, x],
+                        world_copy[y, x - 1],
+                    ]:
                         if c == 14:
                             check_code += "g"  # grass
                         else:  # 4,5,6
                             check_code += "s"  # sand
                 if convert:  # volgorde: boven, rechts, onder, links
-                    convert_dict = {"sssg": 15, "ssgs": 21, "sgss": 23, "gsss": 35, "gssg": 16, "ggss": 17, "ssgg": 20,
-                                    "sggs": 19}
+                    convert_dict = {
+                        "sssg": 15,
+                        "ssgs": 21,
+                        "sgss": 23,
+                        "gsss": 35,
+                        "gssg": 16,
+                        "ggss": 17,
+                        "ssgg": 20,
+                        "sggs": 19,
+                    }
                     if check_code in convert_dict:
                         world[y, x] = convert_dict[check_code]
 
@@ -1976,11 +2368,20 @@ def create_world(map_w, map_h, chance_index):
         for y in range(world.shape[0]):
             if world_copy_copy[y, x] in [5, 6, 7]:
                 # rand van wereld
-                if not (x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1):
+                if not (
+                    x == 0
+                    or y == 0
+                    or x == world.shape[1] - 1
+                    or y == world.shape[1] - 1
+                ):
                     generated_tiles = 0
                     gen_code = ""
-                    for c in [world_copy_copy[y - 1, x], world_copy_copy[y, x + 1], world_copy_copy[y + 1, x],
-                              world_copy_copy[y, x - 1]]:
+                    for c in [
+                        world_copy_copy[y - 1, x],
+                        world_copy_copy[y, x + 1],
+                        world_copy_copy[y + 1, x],
+                        world_copy_copy[y, x - 1],
+                    ]:
                         if c in [15, 21, 23, 35, 16, 17, 20, 19]:
                             generated_tiles += 1
                         if c in [5, 6, 7]:
@@ -1990,14 +2391,24 @@ def create_world(map_w, map_h, chance_index):
 
                     if generated_tiles == 2:  # boven, rechts, onder, links
                         gen_code = gen_code[:-1]
-                        convert_dict = {"17-35-5-5": 26, "17-17-5-5": 26, "23-17-5-5": 26, "23-35-5-5": 26,
-
-                                        "15-5-5-35": 28, "15-5-5-16": 28, "16-5-5-35": 28, "16-5-5-16": 28,
-
-                                        "5-21-19-5": 25, "5-19-23-5": 25, "5-19-19-5": 25, "5-21-23-5": 25,
-
-                                        "5-5-15-20": 34, "5-5-20-21": 34, "5-5-15-21": 34, "5-5-20-20": 34
-                                        }
+                        convert_dict = {
+                            "17-35-5-5": 26,
+                            "17-17-5-5": 26,
+                            "23-17-5-5": 26,
+                            "23-35-5-5": 26,
+                            "15-5-5-35": 28,
+                            "15-5-5-16": 28,
+                            "16-5-5-35": 28,
+                            "16-5-5-16": 28,
+                            "5-21-19-5": 25,
+                            "5-19-23-5": 25,
+                            "5-19-19-5": 25,
+                            "5-21-23-5": 25,
+                            "5-5-15-20": 34,
+                            "5-5-20-21": 34,
+                            "5-5-15-21": 34,
+                            "5-5-20-20": 34,
+                        }
 
                         if gen_code in convert_dict:
                             world[y, x] = convert_dict[gen_code]
@@ -2010,11 +2421,20 @@ def create_world(map_w, map_h, chance_index):
         for y in range(world.shape[0]):
             if world_copy_copy[y, x] in [5, 6, 7]:
                 # rand van wereld
-                if not (x == 0 or y == 0 or x == world.shape[1] - 1 or y == world.shape[1] - 1):
+                if not (
+                    x == 0
+                    or y == 0
+                    or x == world.shape[1] - 1
+                    or y == world.shape[1] - 1
+                ):
                     generated_tiles = 0
                     gen_code = ""
-                    for c in [world_copy_copy[y - 1, x], world_copy_copy[y, x + 1], world_copy_copy[y + 1, x],
-                              world_copy_copy[y, x - 1]]:
+                    for c in [
+                        world_copy_copy[y - 1, x],
+                        world_copy_copy[y, x + 1],
+                        world_copy_copy[y + 1, x],
+                        world_copy_copy[y, x - 1],
+                    ]:
                         if c in [15, 21, 23, 35, 16, 17, 20, 19, 26, 28, 25, 34]:
                             generated_tiles += 1
                         if c in [5, 6, 7]:
@@ -2042,7 +2462,12 @@ def create_world(map_w, map_h, chance_index):
         spawn_tree = True
         for sec_x in [x - 1, x, x + 1, x + 2]:
             for sec_y in [y - 1, y, y + 1, y + 2]:
-                if world[sec_y, sec_x] not in [14] or plants[sec_y, sec_x] in [48, 49, 61, 62]:
+                if world[sec_y, sec_x] not in [14] or plants[sec_y, sec_x] in [
+                    48,
+                    49,
+                    61,
+                    62,
+                ]:
                     spawn_tree = False
 
         if spawn_tree:
@@ -2051,12 +2476,14 @@ def create_world(map_w, map_h, chance_index):
             plants[y + 1, x] = 61
             plants[y + 1, x + 1] = 62
 
-    world = world[2:map_w-2, 2:map_h-2]
-    plants = plants[2:map_w-2, 2:map_h-2]
+    world = world[2 : map_w - 2, 2 : map_h - 2]
+    plants = plants[2 : map_w - 2, 2 : map_h - 2]
     return plants, world, world_rotation
 
 
-def render_world(screen, world, plants, world_rotation, images, scrollx, scrolly, screenW, screenH):
+def render_world(
+    screen, world, plants, world_rotation, images, scrollx, scrolly, screenW, screenH
+):
     world_h, world_w = world.shape
     tile_size = 16
 
@@ -2068,14 +2495,29 @@ def render_world(screen, world, plants, world_rotation, images, scrollx, scrolly
 
     for x in range(draw_x_from, min(draw_x_to, world_w)):
         for y in range(draw_y_from, min(draw_y_to, world_h)):
-            screen.blit(images[f"tile{world[y, x]}"], (x *
-                        tile_size - scrollx, y * tile_size - scrolly))
+            screen.blit(
+                images[f"tile{world[y, x]}"],
+                (x * tile_size - scrollx, y * tile_size - scrolly),
+            )
             if plants[y, x] != 0:
                 screen.blit(
-                    images[f"tile{plants[y, x]}"], (x * tile_size - scrollx, y * tile_size - scrolly))
+                    images[f"tile{plants[y, x]}"],
+                    (x * tile_size - scrollx, y * tile_size - scrolly),
+                )
 
 
-def render_plants(screen, world, plants, world_rotation, images, scrollx, scrolly, screenW, screenH, player):
+def render_plants(
+    screen,
+    world,
+    plants,
+    world_rotation,
+    images,
+    scrollx,
+    scrolly,
+    screenW,
+    screenH,
+    player,
+):
     world_h, world_w = world.shape
     tile_size = 16
 
@@ -2098,10 +2540,14 @@ def render_plants(screen, world, plants, world_rotation, images, scrollx, scroll
                 if plants[y, x] in [48, 49]:
                     if player.y + 16 + 4 - 16 < y * tile_size:
                         screen.blit(
-                            images[f"tile{plants[y, x]}"], (x * tile_size - scrollx, y * tile_size - scrolly))
+                            images[f"tile{plants[y, x]}"],
+                            (x * tile_size - scrollx, y * tile_size - scrolly),
+                        )
                 if player.y + 16 + 4 < y * tile_size:
                     screen.blit(
-                        images[f"tile{plants[y, x]}"], (x * tile_size - scrollx, y * tile_size - scrolly))
+                        images[f"tile{plants[y, x]}"],
+                        (x * tile_size - scrollx, y * tile_size - scrolly),
+                    )
 
 
 def spawn_particles(particle_perf, player, particles):
@@ -2110,15 +2556,10 @@ def spawn_particles(particle_perf, player, particles):
         particle_y_offset = 24
     if player.state == "run":
         if time.perf_counter() - particle_perf >= 0.001:
-            particles.append(WalkParticle(
-                player.x + 24, player.y + particle_y_offset))
+            particles.append(WalkParticle(player.x + 24, player.y + particle_y_offset))
             particle_perf = time.perf_counter()
     elif player.state == "walk":
         if time.perf_counter() - particle_perf >= 0.12:
-            particles.append(WalkParticle(
-                player.x + 24, player.y + particle_y_offset))
+            particles.append(WalkParticle(player.x + 24, player.y + particle_y_offset))
             particle_perf = time.perf_counter()
     return particles, particle_perf
-
-        
-        
