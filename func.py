@@ -1734,6 +1734,8 @@ class Inventory:
                         self.description = "Meat is a very nutritious type of food  |  [RMB] to consume"
                     elif self.block_fill[index] == "rat's tail ":
                         self.description = "With a rat's tail you're able to make different types of potions, not an edible product... | [TAB] to open crafting table"
+                    elif self.block_fill[index] == "lantern ":
+                        self.description = "With a lantern you can see in the dark."
                     else:
                         self.description = ""
             else:
