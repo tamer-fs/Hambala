@@ -2552,6 +2552,77 @@ def render_plants(
                     )
 
 
+def render_lantern(
+    screen,
+    world,
+    plants,
+    world_rotation,
+    images,
+    scrollx,
+    scrolly,
+    screenW,
+    screenH,
+    player,
+):
+    world_h, world_w = world.shape
+    tile_size = 16
+
+    grid_y, grid_x = player.player_tile[1] + 1, player.player_tile[0] + 1
+
+    # print(grid_x, grid_y)
+
+    draw_x_from, draw_x_to = grid_x, grid_x
+    draw_y_from, draw_y_to = grid_y, grid_y
+
+    draw_x_from -= 10
+    draw_y_from -= 10
+    draw_x_to += 10
+    draw_y_to += 10
+
+    add_surf = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_value = 75
+
+    draw_radius = 170 - math.sin(time.perf_counter() * 2) * 10
+    pygame.draw.circle(
+        add_surf, (add_value, add_value, int(add_value / 1.8)), (200, 200), draw_radius
+    )
+
+    # pygame.draw.rect(
+    #     add_surf,
+    #     (add_value, add_value, int(add_value / 1.8)),
+    #     ((0, 0), (400, 400)),
+    #     border_radius=10,
+    # )
+    # add_surf.set_alpha(15)
+
+    screen.blit(
+        add_surf,
+        (
+            player.x + 24 - int(add_surf.get_width() / 2) - scrollx,
+            player.y + 24 - int(add_surf.get_height() / 2) - scrolly,
+        ),
+        special_flags=pygame.BLEND_RGB_ADD,
+    )
+
+    # for x in range(draw_x_from, min(draw_x_to, world_w)):
+    #     for y in range(draw_y_from, min(draw_y_to, world_h)):
+    #         screen.blit(
+    #             add_surf,
+    #             (x * tile_size - scrollx, y * tile_size - scrolly),
+    #             special_flags=pygame.BLEND_RGB_ADD,
+    #         )
+
+    # screen.blit(
+    #         images[f"tile{world[y, x]}"],
+    #         (x * tile_size - scrollx, y * tile_size - scrolly),
+    #     )
+    # if plants[y, x] != 0:
+    #     screen.blit(
+    #         images[f"tile{plants[y, x]}"],
+    #         (x * tile_size - scrollx, y * tile_size - scrolly),
+    #     )
+
+
 def spawn_particles(particle_perf, player, particles):
     particle_y_offset = 34
     if player.direction_xy == "UP":
