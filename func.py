@@ -690,7 +690,7 @@ class Enemies:
                     screen.blit(
                         self.imgs[enemy["type"]][f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'], 
                         (blit_x, blit_y)
-                        )                
+                    )                
 
     def update(self, is_night):
         self.is_night = is_night
