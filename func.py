@@ -1292,7 +1292,7 @@ class Inventory:
             "cookie ": ["assets/food/00.png", 15],
             "pickaxe ": ["assets/tools/pickaxe.png", 18],
             "rat's tail ": ["assets/food/73.png", 15],
-            "lantern ": ["assets/tools/lantern.png", 10],
+            "lantern ": ["assets/tools/lantern.png", 15],
         }
 
         for item in self.items_dict:
