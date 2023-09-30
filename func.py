@@ -1276,7 +1276,7 @@ class Inventory:
             "cookie ": ["assets/food/00.png", 30],
             "pickaxe ": ["assets/tools/pickaxe.png", 33],
             "rat's tail ": ["assets/food/73.png", 30],
-            "lantern image ": ["assets/tools/lantern.png", 30],
+            "lantern ": ["assets/tools/lantern.png", 30],
         }
 
         self.items_dict_small = {
@@ -1292,7 +1292,7 @@ class Inventory:
             "cookie ": ["assets/food/00.png", 15],
             "pickaxe ": ["assets/tools/pickaxe.png", 18],
             "rat's tail ": ["assets/food/73.png", 15],
-            "lantern image ": ["assets/tools/lantern.png", 10],
+            "lantern ": ["assets/tools/lantern.png", 10],
         }
 
         for item in self.items_dict:
@@ -1342,7 +1342,7 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "axe ", 1: "pickaxe "}
+        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "lantern "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):
@@ -1351,7 +1351,7 @@ class Inventory:
         self.full_key_dict = {
             0: True,
             1: True,
-            2: False,
+            2: True,
             3: False,
             4: False,
             5: False,
