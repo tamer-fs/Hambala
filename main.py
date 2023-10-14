@@ -92,7 +92,7 @@ hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
 health_icon = pygame.image.load("assets/icons/health_icon.png").convert_alpha()
 
 mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
-sky_color = (0, 0, 0, 0)
+sky_color = (0, 0, 0, 150)
 mask_surf.fill(sky_color)
 is_night = False
 sky_time = 0
@@ -350,6 +350,19 @@ while playing:
         sky_time = time.perf_counter()
 
     mask_surf.fill(sky_color)
+
+    render_lantern(
+        screen,
+        world,
+        plants,
+        world_rotation,
+        images,
+        scrollx + shake_x,
+        scrolly + shake_y,
+        screenWidth,
+        screenHeight,
+        player,
+    )
 
     if sky_color[3] > 125:
         enemies_spawn = True
