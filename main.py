@@ -1,3 +1,8 @@
+# BUGS:
+# 1. Inventory switching item in Crafting table
+
+
+
 import numpy
 
 import pygame
@@ -337,7 +342,7 @@ while playing:
     player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick, joystick_input)
     player.update(plants, keys, screen, joystick, joystick_input, player_hp_bar)
 
-    enemies.update(enemies_spawn)
+    enemies.update(enemies_spawn, player)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -351,18 +356,19 @@ while playing:
 
     mask_surf.fill(sky_color)
 
-    render_lantern(
-        screen,
-        world,
-        plants,
-        world_rotation,
-        images,
-        scrollx + shake_x,
-        scrolly + shake_y,
-        screenWidth,
-        screenHeight,
-        player,
-    )
+    if player.holding_lantern:
+        render_lantern(
+            screen,
+            world,
+            plants,
+            world_rotation,
+            images,
+            scrollx + shake_x,
+            scrolly + shake_y,
+            screenWidth,
+            screenHeight,
+            player,
+        )
 
     if sky_color[3] > 125:
         enemies_spawn = True

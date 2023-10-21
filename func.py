@@ -7,6 +7,7 @@ import os
 import time
 import matplotlib
 import json
+import copy
 
 pygame.mixer.init()
 
@@ -152,6 +153,7 @@ class Player:
             "assets/icons/health_icon_red.png"
         ).convert_alpha()
         self.hp_icon = self.red_hp_icon
+        self.holding_lantern = False
 
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
@@ -411,7 +413,12 @@ class Player:
         if plants[self.player_tile[1] + 1, self.player_tile[0] + 1] in [
             127,
             11,
-            10,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
             61,
         ]:
             self.on_interact = True
@@ -420,10 +427,10 @@ class Player:
                 self.interact_message = "Harvest tomato"
             elif plant == 11:
                 self.interact_message = "Harvest flower"
-            elif plant == 10:
-                self.interact_message = "Mine stone (only with pickaxe)"
             elif plant == 61:
                 self.interact_message = "Cut down tree (only with axe)"
+            elif plant in [132, 133, 134, 135, 136, 137]:
+                self.interact_message = "Mine stone (only with pickaxe)"
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
                 (text_w + 15, text_h + 15), pygame.SRCALPHA
@@ -512,7 +519,10 @@ class Player:
                 self.pickaxe_frame = 0
             if self.stone_rect.width <= 0:
                 plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
-                self.inventory.add_item("stone ")
+                if random.randint(1, 3) == 1:
+                    self.inventory.add_item("coal ")
+                else:
+                    self.inventory.add_item("stone ")
                 self.pickaxe_frame = 0
 
         if (
@@ -742,10 +752,6 @@ class Enemies:
                     # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
                     # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
 
-        # TODO: remove later, testing
-        # for _ in range(0):
-        #     self.spawn_enemies(1, "zombie")
-
     def spawn_enemies(self, enemy_count, enemy_type):
         spawn_side = random.choice(["top", "bottom", "left", "right"])
         spawn_x, spawn_y = 0, 0
@@ -782,6 +788,7 @@ class Enemies:
             "walking": False,
             "start_walking_perf": time.perf_counter() + random.randint(3, 5),
             "stop_walking_perf": time.perf_counter() + random.randint(7, 9),
+            "following_player": False,
         }
 
         add_enemy["x"] = float(add_enemy["rect"].x)
@@ -804,7 +811,7 @@ class Enemies:
                         (blit_x, blit_y),
                     )
 
-    def update(self, is_night):
+    def update(self, is_night, player):
         self.is_night = is_night
 
         if is_night:
@@ -820,7 +827,7 @@ class Enemies:
                     enemy["current_animation_frame"]
                 ) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
 
-            if not enemy["walking"]:
+            if not enemy["walking"] and not enemy["following_player"]:
                 self.alive_enemies[i][
                     "start_walking_perf"
                 ] = time.perf_counter() + random.randint(3, 20)
@@ -851,6 +858,70 @@ class Enemies:
 
             self.alive_enemies[i]["rect"].x = round(enemy["x"])
             self.alive_enemies[i]["rect"].y = round(enemy["y"])
+
+            if (
+                get_distance(
+                    self.alive_enemies[i]["rect"].x,
+                    self.alive_enemies[i]["rect"].y,
+                    player.x,
+                    player.y,
+                )
+                < 300
+            ):
+                self.alive_enemies[i]["following_player"] = True
+
+                # how many steps
+                max_steps = round(
+                    get_distance(
+                        self.alive_enemies[i]["rect"].x,
+                        self.alive_enemies[i]["rect"].y,
+                        player.x,
+                        player.y,
+                    )
+                    * 2
+                )
+
+                self_x = self.alive_enemies[i]["rect"].x
+                self_y = self.alive_enemies[i]["rect"].y
+                self_w = self.alive_enemies[i]["rect"].w
+                self_h = self.alive_enemies[i]["rect"].h
+
+                # get distance between player & enemy
+                x_diff = self_x - player.x
+                y_diff = self_y - player.y
+
+                player_x, player_y = player.x + 24, player.y + 24
+                self_x, self_y = self_x + (self_w / 2), self_y + (self_h / 2)
+                x_diff = 0
+                y_diff = 0
+                x_diff = player_x - self_x
+                y_diff = player_y - self_y
+                step_x = min(x_diff / max_steps, 2.5)
+                step_y = min(y_diff / max_steps, 2.5)
+
+                walk_vx, walk_vy = step_x, step_y
+
+                self.alive_enemies[i]["walk_vx"] = walk_vx
+                self.alive_enemies[i]["walk_vy"] = walk_vy
+
+            elif (
+                get_distance(
+                    self.alive_enemies[i]["rect"].x,
+                    self.alive_enemies[i]["rect"].y,
+                    player.x,
+                    player.y,
+                )
+                > 600
+                and self.alive_enemies[i]["following_player"]
+            ):
+                self.alive_enemies[i]["walk_vx"] = 0
+                self.alive_enemies[i]["walk_vy"] = 0
+                self.alive_enemies[i]["following_player"] = False
+                self.alive_enemies[i]["current_action"] = "idle"
+                self.alive_enemies[i]["walking"] = False
+                self.alive_enemies[i][
+                    "start_walking_perf"
+                ] = time.perf_counter() + random.randint(3, 20)
 
 
 class Animal:
@@ -1152,7 +1223,6 @@ class Animal:
 
                 if player.hitting:
                     if "bear" in animal_type:
-                        print("stoute man slaat een beer")
                         animal[18] = time.perf_counter() + self.attack_delay
                         animal[20] = True
                     pygame.mixer.Sound.play(self.damage_sound)
@@ -1277,6 +1347,7 @@ class Inventory:
             "pickaxe ": ["assets/tools/pickaxe.png", 33],
             "rat's tail ": ["assets/food/73.png", 30],
             "lantern ": ["assets/tools/lantern.png", 30],
+            "coal ": ["assets/ores/coal.png", 30],
         }
 
         self.items_dict_small = {
@@ -1293,6 +1364,7 @@ class Inventory:
             "pickaxe ": ["assets/tools/pickaxe.png", 18],
             "rat's tail ": ["assets/food/73.png", 15],
             "lantern ": ["assets/tools/lantern.png", 15],
+            "coal ": ["assets/ores/coal.png", 16],
         }
 
         for item in self.items_dict:
@@ -1342,7 +1414,7 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "lantern "}
+        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "lantern ", 3: "coal "}
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):
@@ -1352,7 +1424,7 @@ class Inventory:
             0: True,
             1: True,
             2: True,
-            3: False,
+            3: True,
             4: False,
             5: False,
             6: False,
@@ -1626,6 +1698,10 @@ class Inventory:
                 keys[1] = eval(joystick_btn_dict["east-btn"])
                 keys[0] = eval(joystick_btn_dict["south-btn"])
 
+            self.player.holding_lantern = (
+                True if self.block_fill[self.selected_block] == "lantern " else False
+            )
+
             if self.block_fill[self.selected_block] == "tomato ":
                 if keys[2] and not self.player.on_interact:
                     if (
@@ -1736,6 +1812,8 @@ class Inventory:
                         self.description = "With a rat's tail you're able to make different types of potions, not an edible product... | [TAB] to open crafting table"
                     elif self.block_fill[index] == "lantern ":
                         self.description = "With a lantern you can see in the dark."
+                    elif self.block_fill[index] == "coal ":
+                        self.description = "A handy ore."
                     else:
                         self.description = ""
             else:
@@ -1919,6 +1997,8 @@ class CraftingTable:
             "flower ": ["assets/floor/tile011.png", 30],
             "cookie ": ["assets/food/00.png", 30],
             "pickaxe ": ["assets/tools/pickaxe.png", 33],
+            "coal ": ["assets/ores/coal.png", 30],
+            "lantern ": ["assets/tools/lantern.png", 30],
         }
 
         for item in self.items_dict:
@@ -1972,11 +2052,12 @@ class CraftingTable:
             ),
         )
 
-        self.recipes = {
+        self.recipes = {  # left to bottom, left one right to bottom, right to bottom
             "s  slls  ": "pickaxe ",
             "   ssl   ": "sword ",
             "ss sll   ": "axe ",
             "tff      ": "cookie ",
+            "lllccllll": "lantern ",
         }
         self.mask_surf = pygame.Surface(
             (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
@@ -2137,7 +2218,7 @@ class CraftingTable:
                         self.holding_item = False
                     time.sleep(0.15)
 
-        if self.background.collidepoint(mouse_pos[0], mouse_pos[1]):
+        if self.background.collidepoint(mouse_pos[0], mouse_pos[1]):  # TODO: croizent
             self.hovering = True
         else:
             self.hovering = False
@@ -2150,34 +2231,64 @@ class CraftingTable:
         for index, block in enumerate(self.blocks):
             if block.collidepoint(mouse_pos[0], mouse_pos[1]):
                 if mouse_click[0] and self.inventory.holding_item:
-                    if self.inventory.clicked_item[:2] in ["st", "lo", "to", "fl"]:
+                    if self.inventory.clicked_item[:2] in [
+                        "st",
+                        "lo",
+                        "to",
+                        "fl",
+                        "co",
+                    ]:
                         self.block_fill[index] = self.inventory.clicked_item
                         self.inventory.holding_item = False
-
-                if mouse_click[1] and not self.holding_item:
+                # pick up item from crafting table
+                if (
+                    mouse_click[1]
+                    and not self.holding_item
+                    and not self.inventory.holding_item
+                ):
                     self.interacted_item = self.block_fill[index]
                     self.block_fill[index] = ""
                     self.holding_item = True
 
+                # when placing item into crafting table
                 if (
                     mouse_click[0]
                     and self.holding_item
                     and not bool(self.block_fill[index])
                 ):
+                    print("test2")
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = ""
                     self.holding_item = False
 
-                if (
+                # switching item in crafting table and inventory holding item
+                # TODO: oplossen A.U.B
+                elif (
+                    mouse_click[0]
+                    and self.inventory.holding_item
+                    and bool(self.block_fill[index])
+                    and not self.holding_item
+                ):
+                    print("testttttttt")
+                    crafting_table_item = self.block_fill[index]
+                    holding_item = self.inventory.clicked_item
+                    self.block_fill[index] = holding_item
+                    self.interacted_item = crafting_table_item
+                    self.holding_item = True
+                    time.sleep(0.1)
+
+                # switching item in crafting table with crafting table
+                elif (
                     mouse_click[0]
                     and self.holding_item
                     and bool(self.block_fill[index])
                 ):
+                    print("test33")
                     item = self.block_fill[index]
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = item
                     self.holding_item = True
-                    time.sleep(0.1)
+                    time.sleep(0.01)
 
         if (
             self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1])
@@ -2235,7 +2346,7 @@ class CraftingTable:
 def load_img():
     images = {}
 
-    for x in range(130):
+    for x in range(138):
         if x > 99:
             tile_num = str(x)
         elif x > 9:
@@ -2243,7 +2354,9 @@ def load_img():
         else:
             tile_num = f"00{x}"
 
-        images[f"tile{x}"] = pygame.image.load(f"assets/floor/tile{tile_num}.png")
+        images[f"tile{x}"] = pygame.transform.scale(
+            pygame.image.load(f"assets/floor/tile{tile_num}.png"), (16, 16)
+        )
 
     for x in os.listdir("assets/character"):
         images[f"{x[:-4]}"] = pygame.image.load((f"assets/character/{x}"))
@@ -2271,6 +2384,12 @@ def create_world(map_w, map_h, chance_index):
     plants = numpy.zeros((map_h, map_w), dtype=int)
     world_rotation = numpy.zeros((map_h, map_w), dtype=int)
 
+    random_dict = {"plant": 10, "stone": 1, "flower": 7}
+    choose_list = []
+    for key in random_dict.keys():
+        for _ in range(random_dict[key]):
+            choose_list.append(str(key))
+
     for x in range(world.shape[1]):
         for y in range(world.shape[0]):
             if world_gen[y, x] > 0:
@@ -2279,9 +2398,42 @@ def create_world(map_w, map_h, chance_index):
             else:
                 world[y, x] = 14
                 if random.randint(0, chance_index) == 1:
-                    plants[y, x] = random.choice(
-                        [123, 124, 125, 126, 11, 8, 10, 110, 111, 112, 113, 127]
-                    )
+                    set_tile = random.choice(choose_list)
+
+                    if set_tile == "plant":
+                        plants[y, x] = random.choice(
+                            [
+                                123,
+                                124,
+                                125,
+                                126,
+                                11,
+                                8,
+                            ]
+                        )
+
+                    elif set_tile == "stone":
+                        plants[y, x] = random.choice(
+                            [
+                                132,
+                                133,
+                                134,
+                                135,
+                                136,
+                                137,
+                            ]
+                        )
+
+                    elif set_tile == "flower":
+                        plants[y, x] = random.choice(
+                            [
+                                110,
+                                111,
+                                112,
+                                113,
+                                127,
+                            ]
+                        )
                 else:
                     pass
                     # plants[y, x] = 12
@@ -2580,11 +2732,19 @@ def render_lantern(
     draw_y_to += 10
 
     add_surf = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_surf_bright = pygame.Surface((400, 400), pygame.SRCALPHA)
     add_value = 75
 
     draw_radius = 170 - math.sin(time.perf_counter() * 2) * 10
+    draw_radius_bright = 100 - math.sin(time.perf_counter() * 2) * 5
     pygame.draw.circle(
         add_surf, (add_value, add_value, int(add_value / 1.8)), (200, 200), draw_radius
+    )
+    pygame.draw.circle(
+        add_surf_bright,
+        (add_value - 10, add_value - 10, int(add_value / 1.8) - 10),
+        (200, 200),
+        draw_radius_bright,
     )
 
     # pygame.draw.rect(
@@ -2600,6 +2760,15 @@ def render_lantern(
         (
             player.x + 24 - int(add_surf.get_width() / 2) - scrollx,
             player.y + 24 - int(add_surf.get_height() / 2) - scrolly,
+        ),
+        special_flags=pygame.BLEND_RGB_ADD,
+    )
+
+    screen.blit(
+        add_surf_bright,
+        (
+            player.x + 24 - int(add_surf_bright.get_width() / 2) - scrollx,
+            player.y + 24 - int(add_surf_bright.get_height() / 2) - scrolly,
         ),
         special_flags=pygame.BLEND_RGB_ADD,
     )
