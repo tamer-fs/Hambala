@@ -2246,7 +2246,14 @@ class CraftingTable:
                         "fl",
                         "co",
                     ]:
-                        self.block_fill[index] = self.inventory.clicked_item
+                        if bool(self.block_fill[index]):
+                            item = self.block_fill[index]
+                            self.block_fill[index] = self.inventory.clicked_item
+                            self.inventory.clicked_item = ""
+                            self.interacted_item = item
+                            self.holding_item = True
+                        else:
+                            self.block_fill[index] = self.inventory.clicked_item
                         self.inventory.holding_item = False
                 # pick up item from crafting table
                 if (
@@ -2264,26 +2271,23 @@ class CraftingTable:
                     and self.holding_item
                     and not bool(self.block_fill[index])
                 ):
-                    print("test2")
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = ""
                     self.holding_item = False
 
                 # switching item in crafting table and inventory holding item
-                # TODO: oplossen A.U.B
-                elif (
-                    mouse_click[0]
-                    and self.inventory.holding_item
-                    and bool(self.block_fill[index])
-                    and not self.holding_item
-                ):
-                    print("testttttttt")
-                    crafting_table_item = self.block_fill[index]
-                    holding_item = self.inventory.clicked_item
-                    self.block_fill[index] = holding_item
-                    self.interacted_item = crafting_table_item
-                    self.holding_item = True
-                    time.sleep(0.1)
+                # elif (
+                #     mouse_click[0]
+                #     and self.inventory.holding_item
+                #     and bool(self.block_fill[index])
+                #     and not self.holding_item
+                # ):
+                #     crafting_table_item = self.block_fill[index]
+                #     holding_item = self.inventory.clicked_item
+                #     self.block_fill[index] = holding_item
+                #     self.interacted_item = crafting_table_item
+                #     self.holding_item = True
+                #     time.sleep(0.1)
 
                 # switching item in crafting table with crafting table
                 elif (
@@ -2291,12 +2295,11 @@ class CraftingTable:
                     and self.holding_item
                     and bool(self.block_fill[index])
                 ):
-                    print("test33")
                     item = self.block_fill[index]
                     self.block_fill[index] = self.interacted_item
                     self.interacted_item = item
                     self.holding_item = True
-                    time.sleep(0.01)
+                    time.sleep(0.1)
 
         if (
             self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1])
