@@ -602,6 +602,12 @@ class Player:
             self.health_value = 0
 
 
+def place_item(plants, item_id, tile_x, tile_y):
+    if not plants[tile_y, tile_x] in [61, 62, 48, 49]:  # prevent placement on tree tile
+        plants[tile_y, tile_x] = item_id
+        return plants
+
+
 class WalkParticle:
     def __init__(self, x, y):
         self.width = 6.3
@@ -1331,6 +1337,9 @@ class Inventory:
         self.item_direction = -1
         self.item_speed = 0.3
 
+        self.placeable_items = ["torch ", "tomato "]
+        self.can_place_item = False  # if currently held item can be placed or not
+
         self.pic_dict = {}
         self.pic_dict_small = {}
         self.items_dict = {
@@ -1379,11 +1388,8 @@ class Inventory:
             )
 
         for item in self.items_dict_small:
-            self.pic_dict_small[item] = pygame.image.load(
-                f"{self.items_dict_small[item][0]}"
-            ).convert_alpha()
             self.pic_dict_small[item] = pygame.transform.scale(
-                self.pic_dict_small[item],
+                pygame.image.load(f"{self.items_dict_small[item][0]}").convert_alpha(),
                 (self.items_dict_small[item][1], self.items_dict_small[item][1]),
             )
 
@@ -1427,6 +1433,8 @@ class Inventory:
         self.dropped_items = {}
         for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
+
+        self.item_code_dict = {"torch ": 138, "tomato ": 110}
 
         self.full_key_dict = {
             0: True,
@@ -1676,11 +1684,47 @@ class Inventory:
 
             self.color = random.choice(self.colors)
 
-    def update(self, keys, pos, screen, keyboard, joystick_input, joystick, scroll):
+    def update(
+        self, keys, pos, screen, keyboard, joystick_input, joystick, scroll, plants
+    ):
         holding_item = False
         clicked_item = ""
 
         keys = list(keys)
+
+        if joystick_input:
+            keys[2] = eval(joystick_btn_dict["west-btn"])
+            keys[1] = eval(joystick_btn_dict["east-btn"])
+            keys[0] = eval(joystick_btn_dict["south-btn"])
+
+        if self.can_place_item:
+            mouse_tile = (
+                int((scroll[0] + pos[0]) / 16),
+                int((scroll[1] + pos[1]) / 16),
+            )
+            # plants[mouse_tile[1]][mouse_tile[0]] = 11
+
+            # print(self.pic_dict_small["torch "])
+            surf = pygame.Surface(
+                self.pic_dict_small[self.block_fill[self.selected_block]].get_size(),
+                pygame.SRCALPHA,
+            )
+            surf.blit(self.pic_dict_small[self.block_fill[self.selected_block]], (0, 0))
+            surf.set_alpha(110)
+
+            screen.blit(
+                surf,
+                (mouse_tile[0] * 16 - scroll[0], mouse_tile[1] * 16 - scroll[1]),
+            )
+
+            if keys[0]:
+                plants = place_item(
+                    plants,
+                    self.item_code_dict[self.block_fill[self.selected_block]],
+                    mouse_tile[0],
+                    mouse_tile[1],
+                )
+                self.block_fill[self.selected_block] = ""
 
         if self.bar.collidepoint(pos[0], pos[1]) or self.bar_backback.collidepoint(pos):
             self.hovering_menu = True
@@ -1701,10 +1745,11 @@ class Inventory:
 
         for index, block in enumerate(self.blocks):
             current_block = pygame.Rect((-500, 0), (0, 0))
-            if joystick_input:
-                keys[2] = eval(joystick_btn_dict["west-btn"])
-                keys[1] = eval(joystick_btn_dict["east-btn"])
-                keys[0] = eval(joystick_btn_dict["south-btn"])
+
+            if self.block_fill[self.selected_block] in self.placeable_items:
+                self.can_place_item = True
+            else:
+                self.can_place_item = False
 
             self.player.holding_lantern = (
                 True if self.block_fill[self.selected_block] == "lantern " else False
@@ -2375,6 +2420,25 @@ def load_img():
             pygame.image.load((f"assets/character/{x}")), True, False
         )
 
+    # load torch images
+
+    for i in range(32):  # 31 frames total
+        if i < 10:
+            load_num = "0" + str(i)
+        else:
+            load_num = str(i)
+        torch_img = pygame.image.load(f"assets/tools/torch/torch_{load_num}.png")
+
+        cropped_surface = pygame.Surface(
+            (torch_img.get_width() / 2, torch_img.get_height() / 2), pygame.SRCALPHA
+        )
+        cropped_surface.blit(
+            torch_img,
+            (-int(torch_img.get_width() / 4), -int(torch_img.get_height() / 2)),
+        )
+        cropped_surface = pygame.transform.scale(cropped_surface, (16, 16))
+        images[f"torch{i}"] = cropped_surface
+
     return images
 
 
@@ -2647,7 +2711,17 @@ def create_world(map_w, map_h, chance_index):
 
 
 def render_world(
-    screen, world, plants, world_rotation, images, scrollx, scrolly, screenW, screenH
+    screen,
+    world,
+    plants,
+    world_rotation,
+    images,
+    scrollx,
+    scrolly,
+    screenW,
+    screenH,
+    torch_animation_frame,
+    torch_update_frame,
 ):
     world_h, world_w = world.shape
     tile_size = 16
@@ -2658,6 +2732,10 @@ def render_world(
     draw_y_from = int(scrolly / tile_size)
     draw_y_to = int((scrolly + screenH) / tile_size) + 1
 
+    if time.perf_counter() - torch_update_frame > 0.0825:
+        torch_update_frame = time.perf_counter()
+        torch_animation_frame = (torch_animation_frame + 1) % 31
+
     for x in range(draw_x_from, min(draw_x_to, world_w)):
         for y in range(draw_y_from, min(draw_y_to, world_h)):
             screen.blit(
@@ -2665,10 +2743,18 @@ def render_world(
                 (x * tile_size - scrollx, y * tile_size - scrolly),
             )
             if plants[y, x] != 0:
-                screen.blit(
-                    images[f"tile{plants[y, x]}"],
-                    (x * tile_size - scrollx, y * tile_size - scrolly),
-                )
+                if plants[y, x] != 138:
+                    screen.blit(
+                        images[f"tile{plants[y, x]}"],
+                        (x * tile_size - scrollx, y * tile_size - scrolly),
+                    )
+                else:
+                    screen.blit(
+                        images[f"torch{torch_animation_frame}"],
+                        (x * tile_size - scrollx, y * tile_size - scrolly),
+                    )
+
+    return torch_animation_frame, torch_update_frame
 
 
 def render_plants(
@@ -2709,10 +2795,11 @@ def render_plants(
                             (x * tile_size - scrollx, y * tile_size - scrolly),
                         )
                 if player.y + 16 + 4 < y * tile_size:
-                    screen.blit(
-                        images[f"tile{plants[y, x]}"],
-                        (x * tile_size - scrollx, y * tile_size - scrolly),
-                    )
+                    if plants[y, x] != 138:
+                        screen.blit(
+                            images[f"tile{plants[y, x]}"],
+                            (x * tile_size - scrollx, y * tile_size - scrolly),
+                        )
 
 
 def render_lantern(

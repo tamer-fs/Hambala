@@ -125,6 +125,9 @@ main_inventory.set_crafting_table(main_crafting_table)
 animals = Animal(random.randint(25, 45), screenWidth, screenHeight)
 animals.set_inventory(main_inventory)
 
+torch_update_frame = -1
+torch_animation_frame = 0
+
 
 enemies = Enemies(
     {"zombie": random.randint(20, 100)},
@@ -239,7 +242,7 @@ while playing:
             mask_surf.fill(sky_color)
 
     screen.fill((0, 0, 0))
-    render_world(
+    torch_animation_frame, torch_update_frame = render_world(
         screen,
         world,
         plants,
@@ -249,6 +252,8 @@ while playing:
         scrolly + shake_y,
         screenWidth,
         screenHeight,
+        torch_animation_frame,
+        torch_update_frame,
     )
     animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
     enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
@@ -394,6 +399,7 @@ while playing:
         joystick_input,
         joystick,
         (scrollx, scrolly),
+        plants,
     )
 
     main_crafting_table.draw(
@@ -409,7 +415,11 @@ while playing:
     )
 
     cursor_rect.topleft = pygame.mouse.get_pos()
-    if not main_inventory.holding_item and not main_crafting_table.holding_item:
+    if (
+        not main_inventory.holding_item
+        and not main_crafting_table.holding_item
+        and not main_inventory.can_place_item
+    ):
         screen.blit(cursor, cursor_rect)
 
     if joystick_input:
