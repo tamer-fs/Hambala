@@ -1348,6 +1348,7 @@ class Inventory:
             "rat's tail ": ["assets/food/73.png", 30],
             "lantern ": ["assets/tools/lantern.png", 30],
             "coal ": ["assets/ores/coal.png", 30],
+            "torch ": ["assets/tools/torch.png", 30],
         }
 
         self.items_dict_small = {
@@ -1365,6 +1366,7 @@ class Inventory:
             "rat's tail ": ["assets/food/73.png", 15],
             "lantern ": ["assets/tools/lantern.png", 15],
             "coal ": ["assets/ores/coal.png", 16],
+            "torch ": ["assets/tools/torch.png", 16],
         }
 
         for item in self.items_dict:
@@ -1414,7 +1416,13 @@ class Inventory:
         self.holding_pickaxe = False
         self.holding_axe = False
         self.dropped_items = []
-        self.given_items = {0: "axe ", 1: "pickaxe ", 2: "lantern ", 3: "coal "}
+        self.given_items = {
+            0: "axe ",
+            1: "pickaxe ",
+            2: "lantern ",
+            3: "coal ",
+            4: "torch ",
+        }
         self.block_fill = {}
         self.dropped_items = {}
         for i in range(27):
@@ -1425,7 +1433,7 @@ class Inventory:
             1: True,
             2: True,
             3: True,
-            4: False,
+            4: True,
             5: False,
             6: False,
             7: False,

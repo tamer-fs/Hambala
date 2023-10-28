@@ -1,8 +1,6 @@
 # BUGS:
 # 1. Inventory switching item in Crafting table
 
-
-
 import numpy
 
 import pygame
