@@ -867,7 +867,7 @@ class Enemies:
                     enemy["current_animation_frame"]
                 ) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
 
-            if enemy["near_torch"]:
+            if enemy["near_torch"] and not enemy["running_from_torch"]:
                 self.alive_enemies[i]["walking"] = False
                 self.alive_enemies[i]["following_player"] = False
 
@@ -886,7 +886,13 @@ class Enemies:
                     and not self.alive_enemies[i]["running_from_torch"]
                 ):
                     if len(self.alive_enemies[i]["range_torch_locations"]) > 1:
-                        pass  # TODO: later
+                        torch_x = []
+                        torch_y = []
+                        for loc in enemy["range_torch_locations"]:
+                            torch_x.append(loc[0])
+                            torch_y.append(loc[1])
+
+                        lantern_loc = (sum(torch_x) / len(torch_x), sum(torch_y) / len(torch_y))
                     else:
                         lantern_loc = self.alive_enemies[i]["range_torch_locations"][0]
 
@@ -905,7 +911,7 @@ class Enemies:
                             lantern_loc[0],
                             lantern_loc[1],
                         )
-                        * 2
+                        * 1
                     )
 
                     lantern_x, lantern_y = lantern_loc[0] + 8, lantern_loc[1] + 8
@@ -922,17 +928,19 @@ class Enemies:
                     self.alive_enemies[i]["walk_vx"] = walk_vx * -1
                     self.alive_enemies[i]["walk_vy"] = walk_vy * -1
 
-                    print("walked away from torch")
+                    # print(self.alive_enemies[i]["walk_vx"], self.alive_enemies[i]["walk_vy"])
+                    # print("walked away from torch")
 
                     self.alive_enemies[i]["walking"] = True
                     self.alive_enemies[i]["current_action"] = "walk"
                     self.alive_enemies[i]["running_from_torch"] = True
                     self.alive_enemies[i][
                         "start_walking_perf"
-                    ] = time.perf_counter() + random.randint(3, 20)
+                    ] = time.perf_counter() - 0.1
                     self.alive_enemies[i][
                         "stop_walking_perf"
-                    ] = time.perf_counter() + random.randint(100, 101)
+                    ] = time.perf_counter() + random.randint(3, 5)
+                    self.alive_enemies[i]["following_player"] = False
 
                 else:
                     self.alive_enemies[i]["walk_vx"] = random.randint(-8, 8) / 10
@@ -1524,6 +1532,12 @@ class Inventory:
             3: "coal ",
             4: "torch ",
             5: "torch ",
+            6: "torch ",
+            7: "torch ",
+            8: "torch ",
+            9: "torch ",
+            10: "torch ",
+            11: "torch ",
         }
         self.block_fill = {}
         self.dropped_items = {}
