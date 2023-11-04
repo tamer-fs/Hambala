@@ -114,6 +114,8 @@ player_hunger_bar = ValueBar(
     (screenWidth - 208, screenHeight - 66 - 8), (200, 25), 8, 10000
 )
 
+torch_locations_list = []
+
 player_hp_bar = ValueBar(
     (screenWidth / 2 - screenWidth / 8, screenHeight - 33), (screenWidth / 4, 25), 8, 10
 )
@@ -345,7 +347,7 @@ while playing:
     player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick, joystick_input)
     player.update(plants, keys, screen, joystick, joystick_input, player_hp_bar)
 
-    enemies.update(enemies_spawn, player)
+    enemies.update(enemies_spawn, player, torch_locations_list)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -372,6 +374,18 @@ while playing:
             screenHeight,
             player,
         )
+
+    torch_locations_list = render_torch(
+        screen,
+        world,
+        plants,
+        world_rotation,
+        images,
+        screenWidth,
+        screenHeight,
+        scrollx,
+        scrolly,
+    )
 
     if sky_color[3] > 125:
         enemies_spawn = True
