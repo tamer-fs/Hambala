@@ -2129,7 +2129,7 @@ class CraftingTable:
                     )
                 )
 
-    def draw(self, screen, scrollx, scrolly, keyboard, joystick_input, joystick):
+    def draw(self, screen, scrollx, scrolly, keyboard, joystick_input, joystick, plants):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
             pygame.draw.rect(screen, self.bg_color, self.background, border_radius=16)
@@ -2175,6 +2175,7 @@ class CraftingTable:
                 joystick_input,
                 joystick,
                 self.scroll,
+                plants
             )
 
             if self.holding_item:

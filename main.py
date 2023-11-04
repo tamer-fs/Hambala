@@ -403,7 +403,7 @@ while playing:
     )
 
     main_crafting_table.draw(
-        screen, scrollx, scrolly, pygame.key.get_pressed(), joystick_input, joystick
+        screen, scrollx, scrolly, pygame.key.get_pressed(), joystick_input, joystick, plants
     )
     main_crafting_table.update(
         keys,
