@@ -420,6 +420,7 @@ class Player:
             136,
             137,
             61,
+            138,
         ]:
             self.on_interact = True
             plant = plants[self.player_tile[1] + 1, self.player_tile[0] + 1]
@@ -431,6 +432,9 @@ class Player:
                 self.interact_message = "Cut down tree (only with axe)"
             elif plant in [132, 133, 134, 135, 136, 137]:
                 self.interact_message = "Mine stone (only with pickaxe)"
+            elif plant == 138:
+                self.interact_message = "Pick up torch"
+
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
                 (text_w + 15, text_h + 15), pygame.SRCALPHA
@@ -464,6 +468,14 @@ class Player:
         else:
             e_pressed = keys[pygame.K_e]
 
+        if (
+            self.on_interact
+            and self.interact_message == "Pick up torch"
+            and e_pressed
+            and self.inventory.can_fill
+        ):
+            plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
+            self.inventory.add_item("torch ")
         if (
             self.on_interact
             and self.interact_message == "Harvest tomato"
@@ -795,6 +807,9 @@ class Enemies:
             "start_walking_perf": time.perf_counter() + random.randint(3, 5),
             "stop_walking_perf": time.perf_counter() + random.randint(7, 9),
             "following_player": False,
+            "near_torch": False,
+            "range_torch_locations": [],  # torch locations that are in range of the enemy
+            "running_from_torch": False,
         }
 
         add_enemy["x"] = float(add_enemy["rect"].x)
@@ -817,7 +832,7 @@ class Enemies:
                         (blit_x, blit_y),
                     )
 
-    def update(self, is_night, player):
+    def update(self, is_night, player, torch_locations_list):
         self.is_night = is_night
 
         if is_night:
@@ -826,12 +841,35 @@ class Enemies:
                 self.zombie_spawn_perf = time.perf_counter() + 0.25
 
         for i, enemy in enumerate(self.alive_enemies):
+            detected_torch = False
+            self.alive_enemies[i]["range_torch_locations"] = []
+            for torch_loc in torch_locations_list:
+                if (
+                    get_distance(
+                        torch_loc[0] * 16,
+                        torch_loc[1] * 16,
+                        self.alive_enemies[i]["rect"].x,
+                        self.alive_enemies[i]["rect"].y,
+                    )
+                    < 200
+                ):
+                    detected_torch = True
+                    self.alive_enemies[i]["range_torch_locations"].append(
+                        (torch_loc[0] * 16, torch_loc[1] * 16)
+                    )
+
+            self.alive_enemies[i]["near_torch"] = detected_torch
+
             # walk animation
             if enemy["next_frame_perf"] + 0.1 < time.perf_counter():
                 self.alive_enemies[i]["next_frame_perf"] = time.perf_counter()
                 self.alive_enemies[i]["current_animation_frame"] = (
                     enemy["current_animation_frame"]
                 ) % self.num_of_frames[enemy["type"]][enemy["current_action"]] + 1
+
+            if enemy["near_torch"]:
+                self.alive_enemies[i]["walking"] = False
+                self.alive_enemies[i]["following_player"] = False
 
             if not enemy["walking"] and not enemy["following_player"]:
                 self.alive_enemies[i][
@@ -842,10 +880,67 @@ class Enemies:
                     + random.randint(1, 3)
                     + self.alive_enemies[i]["start_walking_perf"]
                 )
-                self.alive_enemies[i]["walk_vx"] = random.randint(-8, 8) / 10
-                self.alive_enemies[i]["walk_vy"] = random.randint(-8, 8) / 10
-                self.alive_enemies[i]["walking"] = True
-                self.alive_enemies[i]["current_action"] = "idle"
+
+                if (
+                    self.alive_enemies[i]["near_torch"]
+                    and not self.alive_enemies[i]["running_from_torch"]
+                ):
+                    if len(self.alive_enemies[i]["range_torch_locations"]) > 1:
+                        pass  # TODO: later
+                    else:
+                        lantern_loc = self.alive_enemies[i]["range_torch_locations"][0]
+
+                    self_x = self.alive_enemies[i]["rect"].x
+                    self_y = self.alive_enemies[i]["rect"].y
+                    self_w = self.alive_enemies[i]["rect"].w
+                    self_h = self.alive_enemies[i]["rect"].h
+
+                    x_diff = self_x - lantern_loc[0]
+                    y_diff = self_y - lantern_loc[1]
+
+                    max_steps = round(
+                        get_distance(
+                            self.alive_enemies[i]["rect"].x,
+                            self.alive_enemies[i]["rect"].y,
+                            lantern_loc[0],
+                            lantern_loc[1],
+                        )
+                        * 2
+                    )
+
+                    lantern_x, lantern_y = lantern_loc[0] + 8, lantern_loc[1] + 8
+                    self_x, self_y = self_x + (self_w / 2), self_y + (self_h / 2)
+                    x_diff = 0
+                    y_diff = 0
+                    x_diff = lantern_x - self_x
+                    y_diff = lantern_y - self_y
+                    step_x = min(x_diff / max_steps, 2.5)
+                    step_y = min(y_diff / max_steps, 2.5)
+
+                    walk_vx, walk_vy = step_x, step_y
+
+                    self.alive_enemies[i]["walk_vx"] = walk_vx * -1
+                    self.alive_enemies[i]["walk_vy"] = walk_vy * -1
+
+                    print("walked away from torch")
+
+                    self.alive_enemies[i]["walking"] = True
+                    self.alive_enemies[i]["current_action"] = "walk"
+                    self.alive_enemies[i]["running_from_torch"] = True
+                    self.alive_enemies[i][
+                        "start_walking_perf"
+                    ] = time.perf_counter() + random.randint(3, 20)
+                    self.alive_enemies[i][
+                        "stop_walking_perf"
+                    ] = time.perf_counter() + random.randint(100, 101)
+
+                else:
+                    self.alive_enemies[i]["walk_vx"] = random.randint(-8, 8) / 10
+                    self.alive_enemies[i]["walk_vy"] = random.randint(-8, 8) / 10
+
+                    self.alive_enemies[i]["walking"] = True
+                    self.alive_enemies[i]["current_action"] = "idle"
+
             else:
                 if time.perf_counter() >= enemy["start_walking_perf"]:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
@@ -872,7 +967,7 @@ class Enemies:
                     player.x,
                     player.y,
                 )
-                < 300
+                < 0  # TODO change back to 300
             ):
                 self.alive_enemies[i]["following_player"] = True
 
@@ -1428,6 +1523,7 @@ class Inventory:
             2: "lantern ",
             3: "coal ",
             4: "torch ",
+            5: "torch ",
         }
         self.block_fill = {}
         self.dropped_items = {}
@@ -1442,7 +1538,7 @@ class Inventory:
             2: True,
             3: True,
             4: True,
-            5: False,
+            5: True,
             6: False,
             7: False,
             8: False,
@@ -1697,7 +1793,7 @@ class Inventory:
             keys[1] = eval(joystick_btn_dict["east-btn"])
             keys[0] = eval(joystick_btn_dict["south-btn"])
 
-        if self.can_place_item:
+        if self.can_place_item and self.block_fill[self.selected_block] != "":
             mouse_tile = (
                 int((scroll[0] + pos[0]) / 16),
                 int((scroll[1] + pos[1]) / 16),
@@ -1705,6 +1801,7 @@ class Inventory:
             # plants[mouse_tile[1]][mouse_tile[0]] = 11
 
             # print(self.pic_dict_small["torch "])
+
             surf = pygame.Surface(
                 self.pic_dict_small[self.block_fill[self.selected_block]].get_size(),
                 pygame.SRCALPHA,
@@ -2736,12 +2833,33 @@ def render_world(
         torch_update_frame = time.perf_counter()
         torch_animation_frame = (torch_animation_frame + 1) % 31
 
+    draw_radius = 170 - math.sin(time.perf_counter() * 2) * 10
+    draw_radius_bright = 100 - math.sin(time.perf_counter() * 2) * 5
+
+    add_surf = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_surf_bright = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_value = 75
+
+    pygame.draw.circle(
+        add_surf,
+        (add_value, add_value, int(add_value / 1.8)),
+        (200, 200),
+        draw_radius,
+    )
+    pygame.draw.circle(
+        add_surf_bright,
+        (add_value - 10, add_value - 10, int(add_value / 1.8) - 10),
+        (200, 200),
+        draw_radius_bright,
+    )
+
     for x in range(draw_x_from, min(draw_x_to, world_w)):
         for y in range(draw_y_from, min(draw_y_to, world_h)):
             screen.blit(
                 images[f"tile{world[y, x]}"],
                 (x * tile_size - scrollx, y * tile_size - scrolly),
             )
+
             if plants[y, x] != 0:
                 if plants[y, x] != 138:
                     screen.blit(
@@ -2800,6 +2918,76 @@ def render_plants(
                             images[f"tile{plants[y, x]}"],
                             (x * tile_size - scrollx, y * tile_size - scrolly),
                         )
+
+
+def render_torch(
+    screen,
+    world,
+    plants,
+    world_rotation,
+    images,
+    screenW,
+    screenH,
+    scrollx,
+    scrolly,
+):
+    world_h, world_w = world.shape
+
+    tile_size = 16
+    draw_x_from = int(scrollx / tile_size)
+    draw_x_to = int((scrollx + screenW) / tile_size) + 1
+
+    draw_y_from = int(scrolly / tile_size)
+    draw_y_to = int((scrolly + screenH) / tile_size) + 1
+
+    add_surf = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_surf_bright = pygame.Surface((400, 400), pygame.SRCALPHA)
+    add_value = 50
+
+    draw_radius = 130 - math.cos(time.perf_counter() * 2) * 10
+    draw_radius_bright = 80 - math.cos(time.perf_counter() * 2) * 5
+    pygame.draw.circle(
+        add_surf, (add_value, add_value, int(add_value / 2.5)), (200, 200), draw_radius
+    )
+    pygame.draw.circle(
+        add_surf_bright,
+        (add_value - 10, add_value - 10, int(add_value / 2.5) - 10),
+        (200, 200),
+        draw_radius_bright,
+    )
+
+    torch_locations_list = []
+
+    for x in range(draw_x_from, min(draw_x_to, world_w)):
+        for y in range(draw_y_from, min(draw_y_to, world_h)):
+            if plants[y, x] == 138:
+                screen.blit(
+                    add_surf,
+                    (
+                        x * tile_size - scrollx - int(add_surf.get_width() / 2) + 8,
+                        y * tile_size - scrolly - int(add_surf.get_height() / 2) + 8,
+                    ),
+                    special_flags=pygame.BLEND_RGB_ADD,
+                )
+
+                screen.blit(
+                    add_surf_bright,
+                    (
+                        x * tile_size
+                        - scrollx
+                        - int(add_surf_bright.get_width() / 2)
+                        + 8,
+                        y * tile_size
+                        - scrolly
+                        - int(add_surf_bright.get_height() / 2)
+                        + 8,
+                    ),
+                    special_flags=pygame.BLEND_RGB_ADD,
+                )
+
+                torch_locations_list.append([x, y])
+
+    return torch_locations_list
 
 
 def render_lantern(
