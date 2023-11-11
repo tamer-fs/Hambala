@@ -2,6 +2,7 @@ import pygame
 import time
 from func import *
 from scripts.particle import *
+from scripts.placeItem import *
 
 ##############################
 #         Value bar          #
@@ -435,7 +436,16 @@ class Inventory:
             self.color = random.choice(self.colors)
 
     def update(
-        self, keys, pos, screen, keyboard, joystick_input, joystick, scroll, plants
+        self,
+        keys,
+        pos,
+        screen,
+        keyboard,
+        joystick_input,
+        joystick,
+        scroll,
+        plants,
+        main_inventory,
     ):
         holding_item = False
         clicked_item = ""
@@ -469,13 +479,17 @@ class Inventory:
             )
 
             if keys[0]:
-                plants = place_item(
+                placed_item = place_item(
                     plants,
                     self.item_code_dict[self.block_fill[self.selected_block]],
                     mouse_tile[0],
                     mouse_tile[1],
+                    main_inventory,
                 )
-                self.block_fill[self.selected_block] = ""
+                if not type(placed_item) is bool:
+                    plants = placed_item
+                    # placed
+                    self.block_fill[self.selected_block] = ""
 
         if self.bar.collidepoint(pos[0], pos[1]) or self.bar_backback.collidepoint(pos):
             self.hovering_menu = True
@@ -899,7 +913,15 @@ class CraftingTable:
                 )
 
     def draw(
-        self, screen, scrollx, scrolly, keyboard, joystick_input, joystick, plants
+        self,
+        screen,
+        scrollx,
+        scrolly,
+        keyboard,
+        joystick_input,
+        joystick,
+        plants,
+        main_inventory,
     ):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
@@ -947,6 +969,7 @@ class CraftingTable:
                 joystick,
                 self.scroll,
                 plants,
+                main_inventory,
             )
 
             if self.holding_item:

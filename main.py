@@ -418,6 +418,7 @@ while playing:
         joystick,
         (scrollx, scrolly),
         plants,
+        main_inventory,
     )
 
     main_crafting_table.draw(
@@ -428,6 +429,7 @@ while playing:
         joystick_input,
         joystick,
         plants,
+        main_inventory,
     )
     main_crafting_table.update(
         keys,

@@ -10,6 +10,8 @@ import json
 import copy
 from scripts.particle import *
 
+# from scripts.ui import *
+
 pygame.mixer.init()
 
 with open("controller_type.txt") as f:
@@ -28,12 +30,6 @@ def get_distance(x1, y1, x2, y2):
     c = math.sqrt(c2)
     return c
 
-
-def place_item(plants, item_id, tile_x, tile_y):
-    if not plants[tile_y, tile_x] in [61, 62, 48, 49]:  # prevent placement on tree tile
-        plants[tile_y, tile_x] = item_id
-        return plants
-    
 
 class Animal:
     def __init__(self, max_spawn, width, height):
@@ -411,7 +407,6 @@ class Animal:
             self.animal_dict.pop(delete_animal)
 
         return particles
-
 
 
 def load_img():

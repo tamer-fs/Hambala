@@ -1,6 +1,7 @@
 import pygame
 from func import *
 from scripts.particle import *
+from scripts.placeItem import *
 import random
 
 
