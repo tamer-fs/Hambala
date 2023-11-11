@@ -1,5 +1,6 @@
 import pygame
 from func import *
+from scripts.particle import *
 import random
 
 
@@ -589,7 +590,4 @@ class Player:
             self.health_value = 0
 
 
-def place_item(plants, item_id, tile_x, tile_y):
-    if not plants[tile_y, tile_x] in [61, 62, 48, 49]:  # prevent placement on tree tile
-        plants[tile_y, tile_x] = item_id
-        return plants
+

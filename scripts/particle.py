@@ -3,6 +3,11 @@ import random
 import time
 import math
 
+##############################
+#         Walk Particle      #
+##############################
+
+
 class WalkParticle:
     def __init__(self, x, y):
         self.width = 6.3
@@ -34,6 +39,11 @@ class WalkParticle:
             self.color = (159, 127, 86)
         else:
             self.color = (100, 124, 68)
+
+
+##############################
+#         Hit Particle       #
+##############################
 
 
 class HitParticle:
