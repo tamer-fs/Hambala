@@ -654,7 +654,7 @@ class WalkParticle:
 
 
 class HitParticle:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color="red"):
         self.width = 6.3
         self.height = 6.3
         self.x, self.y = x, y
@@ -668,7 +668,7 @@ class HitParticle:
 
         self.delete_timer = time.perf_counter()
         self.player_tile = (0, 0)
-        self.color = "red"
+        self.color = color
 
     def draw(self, screen):
         if int(self.width) < 5:
@@ -865,10 +865,10 @@ class Enemies:
             if player.hitting:
                 if (
                     get_distance(
-                        player.x,
-                        player.y,
-                        self.alive_enemies[i]["rect"].x,
-                        self.alive_enemies[i]["rect"].y,
+                        player.x + 24,
+                        player.y + 24,
+                        self.alive_enemies[i]["rect"].x + 16,
+                        self.alive_enemies[i]["rect"].y + 16,
                     )
                     < 25
                 ):
@@ -876,17 +876,19 @@ class Enemies:
                     for _ in range(15):
                         particles.append(
                             HitParticle(
-                                self.alive_enemies[i]["rect"].x,
-                                self.alive_enemies[i]["rect"].y,
+                                self.alive_enemies[i]["rect"].x + 16,
+                                self.alive_enemies[i]["rect"].y + 16,
+                                color="green",
                             )
                         )
                     if self.alive_enemies[i]["hp"] <= 0:
                         pygame.mixer.Sound.play(self.damage_sound)
-                        for _ in range(100000):
+                        for _ in range(50):
                             particles.append(
                                 HitParticle(
-                                    self.alive_enemies[i]["rect"].x,
-                                    self.alive_enemies[i]["rect"].y,
+                                    self.alive_enemies[i]["rect"].x + 16,
+                                    self.alive_enemies[i]["rect"].y + 16,
+                                    color="green",
                                 )
                             )
                         self.alive_enemies.remove(self.alive_enemies[i])
