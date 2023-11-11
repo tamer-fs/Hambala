@@ -52,6 +52,7 @@ from scripts.enemies import *
 from scripts.particle import *
 from scripts.player import *
 from scripts.ui import *
+from scripts.animal import *
 
 
 # joystick_btn_dict = {
