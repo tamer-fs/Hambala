@@ -2,6 +2,7 @@
 # 1. Inventory switching item in Crafting table
 
 import numpy
+import random
 
 import pygame
 import time
@@ -47,7 +48,7 @@ else:
         f.write(str(""))
 
 from func import *
-import random
+from scripts.enemies import *
 
 
 # joystick_btn_dict = {
@@ -417,7 +418,13 @@ while playing:
     )
 
     main_crafting_table.draw(
-        screen, scrollx, scrolly, pygame.key.get_pressed(), joystick_input, joystick, plants
+        screen,
+        scrollx,
+        scrolly,
+        pygame.key.get_pressed(),
+        joystick_input,
+        joystick,
+        plants,
     )
     main_crafting_table.update(
         keys,
