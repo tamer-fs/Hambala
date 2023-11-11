@@ -49,6 +49,8 @@ else:
 
 from func import *
 from scripts.enemies import *
+from scripts.particle import *
+from scripts.player import *
 
 
 # joystick_btn_dict = {
