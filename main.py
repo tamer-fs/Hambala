@@ -347,7 +347,7 @@ while playing:
     player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick, joystick_input)
     player.update(plants, keys, screen, joystick, joystick_input, player_hp_bar)
 
-    enemies.update(enemies_spawn, player, torch_locations_list)
+    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 

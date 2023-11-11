@@ -769,6 +769,7 @@ class Enemies:
 
                     # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
                     # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
+        self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
 
     def spawn_enemies(self, enemy_count, enemy_type):
         spawn_side = random.choice(["top", "bottom", "left", "right"])
@@ -832,7 +833,7 @@ class Enemies:
                         (blit_x, blit_y),
                     )
 
-    def update(self, is_night, player, torch_locations_list):
+    def update(self, is_night, player, torch_locations_list, particles):
         self.is_night = is_night
 
         if is_night:
@@ -859,6 +860,38 @@ class Enemies:
                     )
 
             self.alive_enemies[i]["near_torch"] = detected_torch
+
+            # getting hit
+            if player.hitting:
+                if (
+                    get_distance(
+                        player.x,
+                        player.y,
+                        self.alive_enemies[i]["rect"].x,
+                        self.alive_enemies[i]["rect"].y,
+                    )
+                    < 25
+                ):
+                    self.alive_enemies[i]["hp"] -= random.randint(15, 25)
+                    for _ in range(15):
+                        particles.append(
+                            HitParticle(
+                                self.alive_enemies[i]["rect"].x,
+                                self.alive_enemies[i]["rect"].y,
+                            )
+                        )
+                    if self.alive_enemies[i]["hp"] <= 0:
+                        pygame.mixer.Sound.play(self.damage_sound)
+                        for _ in range(100000):
+                            particles.append(
+                                HitParticle(
+                                    self.alive_enemies[i]["rect"].x,
+                                    self.alive_enemies[i]["rect"].y,
+                                )
+                            )
+                        self.alive_enemies.remove(self.alive_enemies[i])
+
+                    player.hitting = False
 
             # walk animation
             if enemy["next_frame_perf"] + 0.1 < time.perf_counter():
@@ -892,7 +925,10 @@ class Enemies:
                             torch_x.append(loc[0])
                             torch_y.append(loc[1])
 
-                        lantern_loc = (sum(torch_x) / len(torch_x), sum(torch_y) / len(torch_y))
+                        lantern_loc = (
+                            sum(torch_x) / len(torch_x),
+                            sum(torch_y) / len(torch_y),
+                        )
                     else:
                         lantern_loc = self.alive_enemies[i]["range_torch_locations"][0]
 
@@ -934,9 +970,9 @@ class Enemies:
                     self.alive_enemies[i]["walking"] = True
                     self.alive_enemies[i]["current_action"] = "walk"
                     self.alive_enemies[i]["running_from_torch"] = True
-                    self.alive_enemies[i][
-                        "start_walking_perf"
-                    ] = time.perf_counter() - 0.1
+                    self.alive_enemies[i]["start_walking_perf"] = (
+                        time.perf_counter() - 0.1
+                    )
                     self.alive_enemies[i][
                         "stop_walking_perf"
                     ] = time.perf_counter() + random.randint(3, 5)
@@ -1031,6 +1067,8 @@ class Enemies:
                 self.alive_enemies[i][
                     "start_walking_perf"
                 ] = time.perf_counter() + random.randint(3, 20)
+
+        return particles
 
 
 class Animal:
@@ -1341,7 +1379,6 @@ class Animal:
                     animal[4] = True
                     animal[6] = random.randint(300, 350)
                     if animal_type in ["bearbrown", "bearblue"]:
-                        print("kaas 2.0")
                         animal[17] = time.perf_counter() + 1
                         animal[4] = False
                     else:
@@ -1530,14 +1567,14 @@ class Inventory:
             1: "pickaxe ",
             2: "lantern ",
             3: "coal ",
-            4: "torch ",
-            5: "torch ",
-            6: "torch ",
-            7: "torch ",
-            8: "torch ",
-            9: "torch ",
-            10: "torch ",
-            11: "torch ",
+            4: "sword ",
+            5: "",
+            6: "",
+            7: "",
+            8: "",
+            9: "",
+            10: "",
+            11: "",
         }
         self.block_fill = {}
         self.dropped_items = {}
@@ -1552,7 +1589,7 @@ class Inventory:
             2: True,
             3: True,
             4: True,
-            5: True,
+            5: False,
             6: False,
             7: False,
             8: False,
@@ -1978,6 +2015,8 @@ class Inventory:
                         self.description = "With a lantern you can see in the dark."
                     elif self.block_fill[index] == "coal ":
                         self.description = "A handy ore."
+                    elif self.block_fill[index] == "torch ":
+                        self.description = "Primaly used to scare away zombies."
                     else:
                         self.description = ""
             else:
@@ -2240,7 +2279,9 @@ class CraftingTable:
                     )
                 )
 
-    def draw(self, screen, scrollx, scrolly, keyboard, joystick_input, joystick, plants):
+    def draw(
+        self, screen, scrollx, scrolly, keyboard, joystick_input, joystick, plants
+    ):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
             pygame.draw.rect(screen, self.bg_color, self.background, border_radius=16)
@@ -2286,7 +2327,7 @@ class CraftingTable:
                 joystick_input,
                 joystick,
                 self.scroll,
-                plants
+                plants,
             )
 
             if self.holding_item:
