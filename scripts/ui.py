@@ -81,7 +81,7 @@ class Inventory:
         self.item_direction = -1
         self.item_speed = 0.3
 
-        self.placeable_items = ["torch ", "tomato "]
+        self.placeable_items = ["torch ", "tomato ", "wood "]
         self.can_place_item = False  # if currently held item can be placed or not
 
         self.pic_dict = {}
@@ -102,6 +102,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 30],
             "coal ": ["assets/ores/coal.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
+            "wood ": ["assets/floor/tile139.png", 30],
         }
 
         self.items_dict_small = {
@@ -120,6 +121,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 15],
             "coal ": ["assets/ores/coal.png", 16],
             "torch ": ["assets/tools/torch.png", 16],
+            "wood ": ["assets/floor/tile139.png", 16],
         }
 
         for item in self.items_dict:
@@ -172,7 +174,7 @@ class Inventory:
             2: "lantern ",
             3: "coal ",
             4: "sword ",
-            5: "",
+            5: "wood ",
             6: "",
             7: "",
             8: "",
@@ -185,7 +187,7 @@ class Inventory:
         for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
 
-        self.item_code_dict = {"torch ": 138, "tomato ": 110}
+        self.item_code_dict = {"torch ": 138, "tomato ": 110, "wood ": 139}
 
         self.full_key_dict = {
             0: True,
@@ -193,7 +195,7 @@ class Inventory:
             2: True,
             3: True,
             4: True,
-            5: False,
+            5: True,
             6: False,
             7: False,
             8: False,
@@ -446,6 +448,7 @@ class Inventory:
         scroll,
         plants,
         main_inventory,
+        joystick_btn_dict,
     ):
         holding_item = False
         clicked_item = ""
@@ -486,6 +489,7 @@ class Inventory:
                     mouse_tile[1],
                     main_inventory,
                 )
+
                 if not type(placed_item) is bool:
                     plants = placed_item
                     # placed
@@ -755,7 +759,7 @@ class Inventory:
                     (self.player.x - scroll[0] - 5, self.player.y - scroll[1] + 10),
                 )
 
-    def mouse_update(self, mouse, joystick_input, joystick):
+    def mouse_update(self, mouse, joystick_input, joystick, joystick_btn_dict):
         if not joystick_input:  # no joystick connected
             if mouse > 0:
                 if self.selected_block == 0:
@@ -825,6 +829,7 @@ class CraftingTable:
             "coal ": ["assets/ores/coal.png", 30],
             "lantern ": ["assets/tools/lantern.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
+            "wood ": ["assets/floor/tile139.png", 30],
         }
 
         for item in self.items_dict:
@@ -894,6 +899,15 @@ class CraftingTable:
             "    cl   ": "torch ",
             "      cl ": "torch ",
             "       cl": "torch ",
+            "l        ": "wood ",
+            " l       ": "wood ",
+            "  l      ": "wood ",
+            "   l     ": "wood ",
+            "    l    ": "wood ",
+            "     l   ": "wood ",
+            "      l  ": "wood ",
+            "       l ": "wood ",
+            "        l": "wood ",
         }
         self.mask_surf = pygame.Surface(
             (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
@@ -922,6 +936,7 @@ class CraftingTable:
         joystick,
         plants,
         main_inventory,
+        joystick_btn_dict,
     ):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
@@ -970,6 +985,7 @@ class CraftingTable:
                 self.scroll,
                 plants,
                 main_inventory,
+                joystick_btn_dict,
             )
 
             if self.holding_item:
@@ -1029,7 +1045,16 @@ class CraftingTable:
                     )
                 )
 
-    def update(self, keys, mouse_pos, mouse_click, joystick_input, joystick, scroll):
+    def update(
+        self,
+        keys,
+        mouse_pos,
+        mouse_click,
+        joystick_input,
+        joystick,
+        scroll,
+        joystick_btn_dict,
+    ):
         self.scroll = scroll
         self.mouse_pos = mouse_pos
         if not joystick_input:

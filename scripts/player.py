@@ -135,7 +135,7 @@ class Player:
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
 
-    def walking(self, keys, deltaT, mouse, joystick, joystick_input):
+    def walking(self, keys, deltaT, mouse, joystick, joystick_input, joystick_btn_dict):
         self.state = "idle"
         if joystick_input:
             axis_x, axis_y = (joystick.get_axis(0), joystick.get_axis(1))
@@ -380,7 +380,7 @@ class Player:
     def get_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, keys, screen, joystick, joystick_input, health_bar):
+    def update(self, plants, keys, screen, joystick, joystick_input, health_bar, joystick_btn_dict):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
         if self.damaging:
@@ -589,6 +589,3 @@ class Player:
 
         if self.health_value < 0:
             self.health_value = 0
-
-
-

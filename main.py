@@ -23,18 +23,19 @@ joystick_input = None
 controller_type = None
 joystick_btn_dict = None
 
+check_controller_perf = -1
+
 
 def get_joysticks():
     global joystick, joystick_input, controller_type, joystick_btn_dict
     if pygame.joystick.get_count() == 1:
         joystick = pygame.joystick.Joystick(0)
         joystick.init()
-        print("Joystick found!!!")
-        joystick_input = True
+        # print("Joystick found!!!")
     else:
         joystick = None
         joystick_input = False
-        print("No joystick connected")
+        # print("No joystick connected")
 
     if joystick:
         controller_type = joystick.get_name()
@@ -210,9 +211,13 @@ while playing:
             or event.type == pygame.JOYHATMOTION
         ):
             if not joystick_input and hasattr(event, "y"):
-                main_inventory.mouse_update(event.y, joystick_input, joystick)
+                main_inventory.mouse_update(
+                    event.y, joystick_input, joystick, joystick_btn_dict
+                )
             else:
-                main_inventory.mouse_update(0, joystick_input, joystick)
+                main_inventory.mouse_update(
+                    0, joystick_input, joystick, joystick_btn_dict
+                )
 
         if joystick:
             if event.type == pygame.JOYBUTTONDOWN:
@@ -279,6 +284,12 @@ while playing:
     prev_player_x = player.x
     prev_player_y = player.y
     player.draw(screen, scrollx, scrolly)
+
+    # get joystick
+
+    if time.perf_counter() - check_controller_perf > 1.5:
+        joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
+        check_controller_perf = time.perf_counter()
 
     render_plants(
         screen,
@@ -359,8 +370,17 @@ while playing:
 
     main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-    player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick, joystick_input)
-    player.update(plants, keys, screen, joystick, joystick_input, player_hp_bar)
+    player.walking(
+        keys,
+        deltaT,
+        pygame.mouse.get_pressed(),
+        joystick,
+        joystick_input,
+        joystick_btn_dict,
+    )
+    player.update(
+        plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict
+    )
 
     particles = enemies.update(enemies_spawn, player, torch_locations_list, particles)
 
@@ -430,6 +450,7 @@ while playing:
         (scrollx, scrolly),
         plants,
         main_inventory,
+        joystick_btn_dict,
     )
 
     main_crafting_table.draw(
@@ -441,6 +462,7 @@ while playing:
         joystick,
         plants,
         main_inventory,
+        joystick_btn_dict,
     )
     main_crafting_table.update(
         keys,
@@ -449,6 +471,7 @@ while playing:
         joystick_input,
         joystick,
         (scrollx, scrolly),
+        joystick_btn_dict,
     )
 
     cursor_rect.topleft = pygame.mouse.get_pos()
