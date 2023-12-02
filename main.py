@@ -2,6 +2,7 @@
 # 1. Inventory switching item in Crafting table
 
 import numpy
+import random
 
 import pygame
 import time
@@ -17,37 +18,51 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
-
-joystick_input = False
-if pygame.joystick.get_count() == 1:
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
-    print("Joystick found!!!")
-    joystick_input = True
-else:
-    joystick = None
-    joystick_input = False
-    print("No joystick connected")
+joystick = None
+joystick_input = None
+controller_type = None
+joystick_btn_dict = None
 
 
-if joystick:
-    controller_type = joystick.get_name()
-else:
-    controller_type = None
+def get_joysticks():
+    global joystick, joystick_input, controller_type, joystick_btn_dict
+    if pygame.joystick.get_count() == 1:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+        print("Joystick found!!!")
+        joystick_input = True
+    else:
+        joystick = None
+        joystick_input = False
+        print("No joystick connected")
 
-if controller_type in ["PS4 Controller", "Xbox 360 Controller"]:
-    with open("joystick_btn_dict.json") as f:
-        joystick_btn_dict = json.load(f)
-        joystick_btn_dict = joystick_btn_dict[controller_type]
+    if joystick:
+        controller_type = joystick.get_name()
+    else:
+        controller_type = None
 
-    with open("controller_type.txt", "w") as f:
-        f.write(str(controller_type))
-else:
-    with open("controller_type.txt", "w") as f:
-        f.write(str(""))
+    if controller_type in ["PS4 Controller", "Xbox 360 Controller"]:
+        with open("joystick_btn_dict.json") as f:
+            joystick_btn_dict = json.load(f)
+            joystick_btn_dict = joystick_btn_dict[controller_type]
+
+        with open("controller_type.txt", "w") as f:
+            f.write(str(controller_type))
+    else:
+        with open("controller_type.txt", "w") as f:
+            f.write(str(""))
+
+    return joystick, joystick_input, controller_type, joystick_btn_dict
+
+
+joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
 
 from func import *
-import random
+from scripts.enemies import *
+from scripts.particle import *
+from scripts.player import *
+from scripts.ui import *
+from scripts.animal import *
 
 
 # joystick_btn_dict = {
@@ -347,7 +362,7 @@ while playing:
     player.walking(keys, deltaT, pygame.mouse.get_pressed(), joystick, joystick_input)
     player.update(plants, keys, screen, joystick, joystick_input, player_hp_bar)
 
-    enemies.update(enemies_spawn, player, torch_locations_list)
+    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -414,10 +429,18 @@ while playing:
         joystick,
         (scrollx, scrolly),
         plants,
+        main_inventory,
     )
 
     main_crafting_table.draw(
-        screen, scrollx, scrolly, pygame.key.get_pressed(), joystick_input, joystick, plants
+        screen,
+        scrollx,
+        scrolly,
+        pygame.key.get_pressed(),
+        joystick_input,
+        joystick,
+        plants,
+        main_inventory,
     )
     main_crafting_table.update(
         keys,
