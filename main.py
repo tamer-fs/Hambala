@@ -18,34 +18,44 @@ fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
 screenWidth = 1000
 screenHeight = 600
 
-
-joystick_input = False
-if pygame.joystick.get_count() == 1:
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
-    print("Joystick found!!!")
-    joystick_input = True
-else:
-    joystick = None
-    joystick_input = False
-    print("No joystick connected")
+joystick = None
+joystick_input = None
+controller_type = None
+joystick_btn_dict = None
 
 
-if joystick:
-    controller_type = joystick.get_name()
-else:
-    controller_type = None
+def get_joysticks():
+    global joystick, joystick_input, controller_type, joystick_btn_dict
+    if pygame.joystick.get_count() == 1:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+        print("Joystick found!!!")
+        joystick_input = True
+    else:
+        joystick = None
+        joystick_input = False
+        print("No joystick connected")
 
-if controller_type in ["PS4 Controller", "Xbox 360 Controller"]:
-    with open("joystick_btn_dict.json") as f:
-        joystick_btn_dict = json.load(f)
-        joystick_btn_dict = joystick_btn_dict[controller_type]
+    if joystick:
+        controller_type = joystick.get_name()
+    else:
+        controller_type = None
 
-    with open("controller_type.txt", "w") as f:
-        f.write(str(controller_type))
-else:
-    with open("controller_type.txt", "w") as f:
-        f.write(str(""))
+    if controller_type in ["PS4 Controller", "Xbox 360 Controller"]:
+        with open("joystick_btn_dict.json") as f:
+            joystick_btn_dict = json.load(f)
+            joystick_btn_dict = joystick_btn_dict[controller_type]
+
+        with open("controller_type.txt", "w") as f:
+            f.write(str(controller_type))
+    else:
+        with open("controller_type.txt", "w") as f:
+            f.write(str(""))
+
+    return joystick, joystick_input, controller_type, joystick_btn_dict
+
+
+joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
 
 from func import *
 from scripts.enemies import *
