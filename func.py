@@ -32,23 +32,24 @@ def get_distance(x1, y1, x2, y2):
 def load_img():
     images = {}
 
-    for x in range(138):
-        if x > 99:
-            tile_num = str(x)
-        elif x > 9:
-            tile_num = f"0{x}"
-        else:
-            tile_num = f"00{x}"
+    for x in range(140):
+        if x not in [138]:
+            if x > 99:
+                tile_num = str(x)
+            elif x > 9:
+                tile_num = f"0{x}"
+            else:
+                tile_num = f"00{x}"
 
-        images[f"tile{x}"] = pygame.transform.scale(
-            pygame.image.load(f"assets/floor/tile{tile_num}.png"), (16, 16)
-        )
+            images[f"tile{x}"] = pygame.transform.scale(
+                pygame.image.load(f"assets/floor/tile{tile_num}.png"), (16, 16)
+            )
 
-    for x in os.listdir("assets/character"):
-        images[f"{x[:-4]}"] = pygame.image.load((f"assets/character/{x}"))
-        images[f"{x[:-4]}_flipped"] = pygame.transform.flip(
-            pygame.image.load((f"assets/character/{x}")), True, False
-        )
+        for x in os.listdir("assets/character"):
+            images[f"{x[:-4]}"] = pygame.image.load((f"assets/character/{x}"))
+            images[f"{x[:-4]}_flipped"] = pygame.transform.flip(
+                pygame.image.load((f"assets/character/{x}")), True, False
+            )
 
     # load torch images
 

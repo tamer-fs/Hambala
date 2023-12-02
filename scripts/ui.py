@@ -102,7 +102,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 30],
             "coal ": ["assets/ores/coal.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
-            "wood ": ["assets/floor/tile138.png", 30],
+            "wood ": ["assets/floor/tile139.png", 30],
         }
 
         self.items_dict_small = {
@@ -121,7 +121,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 15],
             "coal ": ["assets/ores/coal.png", 16],
             "torch ": ["assets/tools/torch.png", 16],
-            "wood ": ["assets/floor/tile138.png", 16],
+            "wood ": ["assets/floor/tile139.png", 16],
         }
 
         for item in self.items_dict:
@@ -187,7 +187,7 @@ class Inventory:
         for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
 
-        self.item_code_dict = {"torch ": 138, "tomato ": 110}
+        self.item_code_dict = {"torch ": 138, "tomato ": 110, "wood ": 139}
 
         self.full_key_dict = {
             0: True,
@@ -195,7 +195,7 @@ class Inventory:
             2: True,
             3: True,
             4: True,
-            5: False,
+            5: True,
             6: False,
             7: False,
             8: False,
@@ -829,6 +829,7 @@ class CraftingTable:
             "coal ": ["assets/ores/coal.png", 30],
             "lantern ": ["assets/tools/lantern.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
+            "wood ": ["assets/floor/tile139.png", 30],
         }
 
         for item in self.items_dict:
@@ -898,6 +899,15 @@ class CraftingTable:
             "    cl   ": "torch ",
             "      cl ": "torch ",
             "       cl": "torch ",
+            "l        ": "wood ",
+            " l       ": "wood ",
+            "  l      ": "wood ",
+            "   l     ": "wood ",
+            "    l    ": "wood ",
+            "     l   ": "wood ",
+            "      l  ": "wood ",
+            "       l ": "wood ",
+            "        l": "wood ",
         }
         self.mask_surf = pygame.Surface(
             (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
