@@ -377,6 +377,7 @@ while playing:
         joystick,
         joystick_input,
         joystick_btn_dict,
+        plants,
     )
     player.update(
         plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict

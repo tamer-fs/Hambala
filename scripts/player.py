@@ -135,7 +135,9 @@ class Player:
     def set_window_size(self, screen):
         self.screen_size = screen.get_size()
 
-    def walking(self, keys, deltaT, mouse, joystick, joystick_input, joystick_btn_dict):
+    def walking(
+        self, keys, deltaT, mouse, joystick, joystick_input, joystick_btn_dict, plants
+    ):
         self.state = "idle"
         if joystick_input:
             axis_x, axis_y = (joystick.get_axis(0), joystick.get_axis(1))
@@ -143,6 +145,13 @@ class Player:
                 self.x += axis_x * 10 * self.speed
             if abs(axis_y) > 0.1:
                 self.y += axis_y * 10 * self.speed
+
+            self.collision_tile = (int((self.x + 24) / 16), int((self.y + 24) / 16))
+            if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
+                if abs(axis_x) > 0.1:
+                    self.x -= axis_x * 10 * self.speed
+                if abs(axis_y) > 0.1:
+                    self.y -= axis_y * 10 * self.speed
 
             # button X on controller pressed
             if eval(joystick_btn_dict["south-btn"]) and self.energy_value > 0:
@@ -248,6 +257,7 @@ class Player:
                 self.attacking = False
                 self.hitting = False
 
+            prev_x, prev_y = self.x, self.y
             if keys[pygame.K_d] and keys[pygame.K_w]:
                 self.x += 100 * self.speed / numpy.sqrt(200)
                 self.y -= 100 * self.speed / numpy.sqrt(200)
@@ -298,6 +308,11 @@ class Player:
                     if self.state != "run":
                         self.state = "walk"
                     self.direction_xy = "UP"
+
+            self.collision_tile = (int((self.x + 24) / 16), int((self.y + 24) / 16))
+            if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
+                self.x = prev_x
+                self.y = prev_y
 
         if time.perf_counter() - self.update_frame > 0.0825:
             self.update_frame = time.perf_counter()
@@ -380,7 +395,16 @@ class Player:
     def get_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, keys, screen, joystick, joystick_input, health_bar, joystick_btn_dict):
+    def update(
+        self,
+        plants,
+        keys,
+        screen,
+        joystick,
+        joystick_input,
+        health_bar,
+        joystick_btn_dict,
+    ):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
         if self.damaging:
@@ -398,6 +422,7 @@ class Player:
             137,
             61,
             138,
+            139,
         ]:
             self.on_interact = True
             plant = plants[self.player_tile[1] + 1, self.player_tile[0] + 1]
@@ -411,6 +436,8 @@ class Player:
                 self.interact_message = "Mine stone (only with pickaxe)"
             elif plant == 138:
                 self.interact_message = "Pick up torch"
+            elif plant == 139:
+                self.interact_message = "Pick up wood"
 
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
@@ -453,6 +480,14 @@ class Player:
         ):
             plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
             self.inventory.add_item("torch ")
+        if (
+            self.on_interact
+            and self.interact_message == "Pick up wood"
+            and e_pressed
+            and self.inventory.can_fill
+        ):
+            plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
+            self.inventory.add_item("wood ")
         if (
             self.on_interact
             and self.interact_message == "Harvest tomato"

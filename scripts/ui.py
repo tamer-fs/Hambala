@@ -102,7 +102,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 30],
             "coal ": ["assets/ores/coal.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
-            "wood ": ["assets/floor/tile139.png", 30],
+            "wood ": ["assets/Images/log.png", 24],
         }
 
         self.items_dict_small = {
@@ -121,7 +121,7 @@ class Inventory:
             "lantern ": ["assets/tools/lantern.png", 15],
             "coal ": ["assets/ores/coal.png", 16],
             "torch ": ["assets/tools/torch.png", 16],
-            "wood ": ["assets/floor/tile139.png", 16],
+            "wood ": ["assets/Images/log.png", 16],
         }
 
         for item in self.items_dict:
@@ -430,10 +430,22 @@ class Inventory:
 
             if not index > 8:
                 if self.block_fill[index] != "":
-                    screen.blit(self.pic_dict[self.block_fill[index]], block)
+                    if self.block_fill[index] == "wood ":
+                        screen.blit(
+                            self.pic_dict[self.block_fill[index]],
+                            (block.x + 5, block.y + 3),
+                        )
+                    else:
+                        screen.blit(self.pic_dict[self.block_fill[index]], block)
             elif self.backpack_visible:
                 if self.block_fill[index] != "":
-                    screen.blit(self.pic_dict[self.block_fill[index]], block)
+                    if self.block_fill[index] == "wood ":
+                        screen.blit(
+                            self.pic_dict[self.block_fill[index]],
+                            (block.x + 5, block.y + 3),
+                        )
+                    else:
+                        screen.blit(self.pic_dict[self.block_fill[index]], block)
 
             self.color = random.choice(self.colors)
 
@@ -829,7 +841,7 @@ class CraftingTable:
             "coal ": ["assets/ores/coal.png", 30],
             "lantern ": ["assets/tools/lantern.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
-            "wood ": ["assets/floor/tile139.png", 30],
+            "wood ": ["assets/images/log.png", 30],
         }
 
         for item in self.items_dict:
