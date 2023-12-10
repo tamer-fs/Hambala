@@ -160,6 +160,7 @@ class Inventory:
 
         self.description = ""
         self.font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 12)
+        self.count_font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 15)
         self.clicked_item = ""
         self.holding_item = False
         self.can_fill = True
@@ -184,8 +185,45 @@ class Inventory:
         }
         self.block_fill = {}
         self.dropped_items = {}
+        self.item_count_dict = {
+            0: 0,
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            7: 0,
+            8: 0,
+            9: 0,
+            10: 0,
+            11: 0,
+            12: 0,
+            13: 0,
+            14: 0,
+            15: 0,
+            16: 0,
+            17: 0,
+            18: 0,
+            19: 0,
+            20: 0,
+            21: 0,
+            22: 0,
+            23: 0,
+            24: 0,
+            25: 0,
+            26: 0,
+        }
+
+        self.not_stackable_items = ["pickaxe ", "axe ", "lantern ", "sword "]
+
         for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""
+            self.item_count_dict[i] = (
+                1 if i in self.given_items and self.given_items[i] != "" else 0
+            )
+
+        print(self.item_count_dict)
 
         self.item_code_dict = {"torch ": 138, "tomato ": 110, "wood ": 139}
 
@@ -260,11 +298,20 @@ class Inventory:
     def add_item(self, item):
         if not bool(self.block_fill[self.selected_block]):
             self.block_fill[self.selected_block] = item
+            self.item_count_dict[self.selected_block] += 1
         else:
             for x in range(27):
                 if not bool(self.block_fill[x]):
                     self.block_fill[x] = item
+                    self.item_count_dict[x] += 1
                     break
+                else:
+                    if (
+                        item not in self.not_stackable_items
+                        and item == self.block_fill[x]
+                    ):
+                        self.item_count_dict[x] += 1
+                        break
 
     def get_player(self, player):
         self.player = player
@@ -390,6 +437,7 @@ class Inventory:
                     self.holding_item or self.crafting_table.holding_item
                 ):
                     pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
+
             elif self.backpack_visible:
                 if index == self.selected_block:
                     pygame.draw.rect(screen, (200, 200, 200), block, border_radius=4)
@@ -428,6 +476,10 @@ class Inventory:
             # if self.block_fill[index] == "meat ":
             #     screen.blit(self.meat_img, block)
 
+            def render_text(text, pos, color):
+                text_render = self.count_font.render(str(text), True, color)
+                screen.blit(text_render, pos)
+
             if not index > 8:
                 if self.block_fill[index] != "":
                     if self.block_fill[index] == "wood ":
@@ -437,6 +489,38 @@ class Inventory:
                         )
                     else:
                         screen.blit(self.pic_dict[self.block_fill[index]], block)
+
+                    if (
+                        self.block_fill[index] != ""
+                        and self.block_fill[index] not in self.not_stackable_items
+                    ):
+                        render_text(
+                            self.item_count_dict[index],
+                            (block.x + 25, block.y + 12),
+                            "black",
+                        )
+                        render_text(
+                            self.item_count_dict[index],
+                            (block.x + 25, block.y + 14),
+                            "black",
+                        )
+                        render_text(
+                            self.item_count_dict[index],
+                            (block.x + 23, block.y + 12),
+                            "black",
+                        )
+                        render_text(
+                            self.item_count_dict[index],
+                            (block.x + 23, block.y + 14),
+                            "black",
+                        )
+
+                        render_text(
+                            self.item_count_dict[index],
+                            (block.x + 24, block.y + 13),
+                            "white",
+                        )
+
             elif self.backpack_visible:
                 if self.block_fill[index] != "":
                     if self.block_fill[index] == "wood ":
@@ -464,8 +548,9 @@ class Inventory:
     ):
         holding_item = False
         clicked_item = ""
-
         keys = list(keys)
+
+        print(self.item_count_dict[6])
 
         if joystick_input:
             keys[2] = eval(joystick_btn_dict["west-btn"])
@@ -493,21 +578,29 @@ class Inventory:
                 (mouse_tile[0] * 16 - scroll[0], mouse_tile[1] * 16 - scroll[1]),
             )
 
-            if keys[0]:
-                placed_item = place_item(
-                    plants,
-                    self.item_code_dict[self.block_fill[self.selected_block]],
-                    mouse_tile[0],
-                    mouse_tile[1],
-                    main_inventory,
-                )
+            if keys[0] and not self.hovering_menu and not self.crafting_table.opened:
+                if (
+                    plants[mouse_tile[1], mouse_tile[0]]
+                    != self.item_code_dict[self.block_fill[self.selected_block]]
+                ):
+                    placed_item = place_item(
+                        plants,
+                        self.item_code_dict[self.block_fill[self.selected_block]],
+                        mouse_tile[0],
+                        mouse_tile[1],
+                        main_inventory,
+                    )
 
-                if not type(placed_item) is bool:
-                    plants = placed_item
-                    # placed
-                    self.block_fill[self.selected_block] = ""
+                    if not type(placed_item) is bool:
+                        plants = placed_item
+                        # placed
+                        self.item_count_dict[self.selected_block] -= 1
+                        if self.item_count_dict[self.selected_block] == 0:
+                            self.block_fill[self.selected_block] = ""
 
-        if self.bar.collidepoint(pos[0], pos[1]) or self.bar_backback.collidepoint(pos):
+        if self.bar.collidepoint(pos[0], pos[1]) or (
+            self.backpack_visible and self.bar_backback.collidepoint(pos)
+        ):
             self.hovering_menu = True
         else:
             self.hovering_menu = False
@@ -668,7 +761,10 @@ class Inventory:
                     clicked_block = index
                     clicked_item = self.block_fill[clicked_block]
                     self.clicked_item = clicked_item
-                    self.block_fill[clicked_block] = ""
+                    self.item_count_dict[clicked_block] -= 1
+
+                    if self.item_count_dict[clicked_block] <= 0:
+                        self.block_fill[clicked_block] = ""
                     self.holding_item = True
 
                 # if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
@@ -680,6 +776,7 @@ class Inventory:
                     and self.holding_item
                 ):
                     self.block_fill[index] = self.clicked_item
+                    self.item_count_dict[index] += 1
                     self.holding_item = False
                 # elif keys[0] and block.collidepoint(pos[0], pos[1]):
                 #    print(f"/{self.block_fill[index]}/", self.holding_item)
@@ -691,10 +788,19 @@ class Inventory:
                     and self.holding_item
                 ):
                     item = self.block_fill[index]
-                    self.block_fill[index] = self.clicked_item
-                    self.clicked_item = item
-                    self.holding_item = True
-                    time.sleep(0.1)
+                    if (
+                        self.block_fill[index] not in self.not_stackable_items
+                        and self.clicked_item == item
+                    ):
+                        # increment item count
+                        self.item_count_dict[index] += 1
+                        self.holding_item = False
+                        self.clicked_item = ""
+                    else:
+                        self.block_fill[index] = self.clicked_item
+                        self.clicked_item = item
+                        self.holding_item = True
+                        time.sleep(0.1)
 
                 if (
                     keys[0]
