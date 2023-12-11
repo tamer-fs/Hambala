@@ -158,6 +158,8 @@ class Inventory:
         # self.log_img = pygame.transform.scale(self.log_img, (33, 33))
         # self.cookie_img = pygame.transform.scale(self.cookie_img, (30, 30))
 
+        self.eat_cooldown = -1
+        self.can_eat = True
         self.description = ""
         self.font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 12)
         self.count_font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 15)
@@ -315,6 +317,12 @@ class Inventory:
 
     def get_player(self, player):
         self.player = player
+        self.food_nutrition = {
+            "tomato ": ["food", self.player.tomato_feeding],
+            "flower ": ["energy", self.player.flower_power],
+            "meat ": ["food", self.player.cookie_feeding],
+            "cookie ": ["food", self.player.cookie_feeding],
+        }
 
     def set_crafting_table(self, crafting_table):
         self.crafting_table = crafting_table
@@ -533,6 +541,37 @@ class Inventory:
 
             self.color = random.choice(self.colors)
 
+    # TODO: Fix this, make a dictionary that will add the food values
+    def eat_item(self, block_fill, index):
+        if (
+            not self.player.on_interact
+            and block_fill in self.food_nutrition.keys()
+            and self.can_eat
+        ):
+            if self.food_nutrition[block_fill][0] == "food":
+                if self.player.food_value < 10000:
+                    self.player.food_value += self.food_nutrition[block_fill][1]
+                elif (
+                    self.player.food_value < 10000 - self.food_nutrition[block_fill][1]
+                ):
+                    self.player.food_value = 10000
+
+            elif self.food_nutrition[block_fill][0] == "energy":
+                if self.player.energy_value < 100:
+                    self.player.energy_value += self.food_nutrition[block_fill][1]
+                elif (
+                    self.player.energy_value < 100 - self.food_nutrition[block_fill][1]
+                ):
+                    self.player.energy_value = 100
+
+            self.eat_cooldown = time.perf_counter()
+            self.can_eat = False
+
+            pygame.mixer.Sound.play(self.eating_sound)
+            self.item_count_dict[index] -= 1
+            if self.item_count_dict[index] <= 0:
+                self.block_fill[index] = ""
+
     def update(
         self,
         keys,
@@ -550,7 +589,8 @@ class Inventory:
         clicked_item = ""
         keys = list(keys)
 
-        print(self.item_count_dict[6])
+        if time.perf_counter() - self.eat_cooldown > 0.8 and self.can_eat == False:
+            self.can_eat = True
 
         if joystick_input:
             keys[2] = eval(joystick_btn_dict["west-btn"])
@@ -629,61 +669,8 @@ class Inventory:
                 True if self.block_fill[self.selected_block] == "lantern " else False
             )
 
-            if self.block_fill[self.selected_block] == "tomato ":
-                if keys[2] and not self.player.on_interact:
-                    if (
-                        keys[2]
-                        and self.player.food_value < 10000 - self.player.tomato_feeding
-                    ):
-                        self.player.food_value += self.player.tomato_feeding
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-                    elif keys[2] and self.player.food_value < 10000:
-                        self.player.food_value = 10000
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-
-            if self.block_fill[self.selected_block] == "cookie ":
-                if keys[2] and not self.player.on_interact:
-                    if (
-                        keys[2]
-                        and self.player.food_value < 10000 - self.player.cookie_feeding
-                    ):
-                        self.player.food_value += self.player.cookie_feeding
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-                    elif keys[2] and self.player.food_value < 10000:
-                        self.player.food_value = 10000
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-
-            if self.block_fill[self.selected_block] == "meat ":
-                if keys[2] and not self.player.on_interact:
-                    if (
-                        keys[2]
-                        and self.player.food_value < 10000 - self.player.cookie_feeding
-                    ):
-                        self.player.food_value += self.player.cookie_feeding
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-                    elif keys[2] and self.player.food_value < 10000:
-                        self.player.food_value = 10000
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-
-            if self.block_fill[self.selected_block] == "flower ":
-                if keys[2] and not self.player.on_interact:
-                    if (
-                        keys[2]
-                        and self.player.energy_value < 100 - self.player.flower_power
-                    ):
-                        self.player.energy_value += self.player.flower_power
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
-                    elif keys[2] and self.player.energy_value < 100:
-                        self.player.energy_value = 100
-                        self.block_fill[self.selected_block] = ""
-                        pygame.mixer.Sound.play(self.eating_sound)
+            if keys[2]:
+                self.eat_item(self.block_fill[self.selected_block], self.selected_block)
 
             if self.block_fill[self.selected_block] == "sword ":
                 self.player.sword_selected = True
