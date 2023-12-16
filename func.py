@@ -23,6 +23,20 @@ if controller_type != "":
         print(joystick_btn_dict)
 
 
+def render_text(text, pos, color, font, screen):
+    text_render = font.render(str(text), True, color)
+    screen.blit(text_render, pos)
+
+
+def render_text_with_outline(text, pos, colorBG, colorFG, font, screen):
+    render_text(text, (pos[0] + 1, pos[1] - 1), colorBG, font, screen)
+    render_text(text, (pos[0] + 1, pos[1] + 1), colorBG, font, screen)
+    render_text(text, (pos[0] - 1, pos[1] - 1), colorBG, font, screen)
+    render_text(text, (pos[0] - 1, pos[1] + 1), colorBG, font, screen)
+
+    render_text(text, (pos[0], pos[1]), colorFG, font, screen)
+
+
 def get_distance(x1, y1, x2, y2):
     c2 = math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2)
     c = math.sqrt(c2)

@@ -457,37 +457,6 @@ class Inventory:
                 ):
                     pygame.draw.rect(screen, (150, 150, 150), block, border_radius=4)
 
-            # if self.block_fill[index] == "tomato ":
-            #     screen.blit(self.tomato_img, block)
-            #
-            # if self.block_fill[index] == "flower ":
-            #     screen.blit(self.flower_img, block)
-            #
-            # if self.block_fill[index] == "sword ":
-            #     screen.blit(self.sword_img, block)
-            #
-            # if self.block_fill[index] == "stone ":
-            #     screen.blit(self.stone_img, block)
-            #
-            # if self.block_fill[index] == "pickaxe ":
-            #     screen.blit(self.pickaxe_img, block)
-            #
-            # if self.block_fill[index] == "axe ":
-            #     screen.blit(self.axe_img, block)
-            #
-            # if self.block_fill[index] == "log ":
-            #     screen.blit(self.log_img, block)
-            #
-            # if self.block_fill[index] == "cookie ":
-            #     screen.blit(self.cookie_img, block)
-            #
-            # if self.block_fill[index] == "meat ":
-            #     screen.blit(self.meat_img, block)
-
-            def render_text(text, pos, color):
-                text_render = self.count_font.render(str(text), True, color)
-                screen.blit(text_render, pos)
-
             if not index > 8:
                 if self.block_fill[index] != "":
                     if self.block_fill[index] == "wood ":
@@ -502,31 +471,13 @@ class Inventory:
                         self.block_fill[index] != ""
                         and self.block_fill[index] not in self.not_stackable_items
                     ):
-                        render_text(
+                        render_text_with_outline(
                             self.item_count_dict[index],
-                            (block.x + 25, block.y + 12),
+                            (block.x + 23, block.y + 11),
                             "black",
-                        )
-                        render_text(
-                            self.item_count_dict[index],
-                            (block.x + 25, block.y + 14),
-                            "black",
-                        )
-                        render_text(
-                            self.item_count_dict[index],
-                            (block.x + 23, block.y + 12),
-                            "black",
-                        )
-                        render_text(
-                            self.item_count_dict[index],
-                            (block.x + 23, block.y + 14),
-                            "black",
-                        )
-
-                        render_text(
-                            self.item_count_dict[index],
-                            (block.x + 24, block.y + 13),
                             "white",
+                            self.count_font,
+                            screen,
                         )
 
             elif self.backpack_visible:
@@ -539,9 +490,21 @@ class Inventory:
                     else:
                         screen.blit(self.pic_dict[self.block_fill[index]], block)
 
+                    if (
+                        self.block_fill[index] != ""
+                        and self.block_fill[index] not in self.not_stackable_items
+                    ):
+                        render_text_with_outline(
+                            self.item_count_dict[index],
+                            (block.x + 23, block.y + 11),
+                            "black",
+                            "white",
+                            self.count_font,
+                            screen,
+                        )
+
             self.color = random.choice(self.colors)
 
-    # TODO: Fix this, make a dictionary that will add the food values
     def eat_item(self, block_fill, index):
         if (
             not self.player.on_interact
@@ -552,7 +515,7 @@ class Inventory:
                 if self.player.food_value < 10000:
                     self.player.food_value += self.food_nutrition[block_fill][1]
                 elif (
-                    self.player.food_value < 10000 - self.food_nutrition[block_fill][1]
+                    self.player.food_value >= 10000 - self.food_nutrition[block_fill][1]
                 ):
                     self.player.food_value = 10000
 
@@ -560,7 +523,7 @@ class Inventory:
                 if self.player.energy_value < 100:
                     self.player.energy_value += self.food_nutrition[block_fill][1]
                 elif (
-                    self.player.energy_value < 100 - self.food_nutrition[block_fill][1]
+                    self.player.energy_value >= 100 - self.food_nutrition[block_fill][1]
                 ):
                     self.player.energy_value = 100
 
