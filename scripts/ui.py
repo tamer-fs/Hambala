@@ -742,7 +742,7 @@ class Inventory:
                         self.block_fill[index] not in self.not_stackable_items
                         and self.clicked_item == item
                     ):
-                        # increment item count
+                        # increment item counts
                         self.item_count_dict[index] += 1
                         self.holding_item = False
                         self.clicked_item = ""
@@ -755,11 +755,17 @@ class Inventory:
                 if (
                     keys[0]
                     and block.collidepoint(pos[0], pos[1])
-                    and not bool(self.block_fill[index])
                     and self.crafting_table.holding_item
                 ):
-                    self.block_fill[index] = self.crafting_table.interacted_item
-                    self.crafting_table.holding_item = False
+                    if (
+                        self.crafting_table.interacted_item == self.block_fill[index]
+                        or self.block_fill[index] == ""
+                    ):
+                        self.block_fill[index] = self.crafting_table.interacted_item
+                        self.item_count_dict[
+                            index
+                        ] += self.crafting_table.interacted_item_count
+                        self.crafting_table.holding_item = False
 
                 if (
                     self.holding_item
@@ -865,9 +871,11 @@ class CraftingTable:
         self.hovering = False
         self.holding_item = False
         self.interacted_item = ""
+        self.interacted_item_count = 0
         self.mouse_pos = None
         self.last_index = 0
         self.scroll = (0, 0)
+        self.count_font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 25)
 
         self.log_img = pygame.image.load("assets/floor/tile131.png").convert_alpha()
         self.log_img = pygame.transform.scale(self.log_img, (150, 150))
@@ -932,6 +940,19 @@ class CraftingTable:
             7: "",
             8: "",
             9: "",
+        }
+
+        self.item_count = {
+            0: 0,
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            7: 0,
+            8: 0,
+            9: 0,
         }
 
         self.preview_block = pygame.Rect(
@@ -1017,6 +1038,17 @@ class CraftingTable:
 
                 if self.block_fill[index] in self.large_pic_dict:
                     screen.blit(self.large_pic_dict[self.block_fill[index]], block)
+
+                # draw text for count
+                if self.block_fill[index] != "":
+                    render_text_with_outline(
+                        self.item_count[index],
+                        (block.x + block.w - 20, block.y + block.h - 35),
+                        "black",
+                        "white",
+                        self.count_font,
+                        screen,
+                    )
 
             recipe = ""
             for index, block in enumerate(self.blocks):
@@ -1125,6 +1157,7 @@ class CraftingTable:
     ):
         self.scroll = scroll
         self.mouse_pos = mouse_pos
+        print(self.item_count)
         if not joystick_input:
             if keys[pygame.K_TAB]:
                 if not self.opened:
@@ -1159,7 +1192,7 @@ class CraftingTable:
                         self.holding_item = False
                     time.sleep(0.15)
 
-        if self.background.collidepoint(mouse_pos[0], mouse_pos[1]):  # TODO: croizent
+        if self.background.collidepoint(mouse_pos[0], mouse_pos[1]):
             self.hovering = True
         else:
             self.hovering = False
@@ -1187,6 +1220,9 @@ class CraftingTable:
                             self.holding_item = True
                         else:
                             self.block_fill[index] = self.inventory.clicked_item
+
+                        self.item_count[index] += 1
+                        self.interacted_item_count = 0
                         self.inventory.holding_item = False
                 # pick up item from crafting table
                 if (
@@ -1194,9 +1230,21 @@ class CraftingTable:
                     and not self.holding_item
                     and not self.inventory.holding_item
                 ):
-                    self.interacted_item = self.block_fill[index]
-                    self.block_fill[index] = ""
-                    self.holding_item = True
+                    if keys[pygame.K_LCTRL]:  # grab whole stack of items
+                        self.interacted_item = self.block_fill[index]
+                        self.interacted_item_count = self.item_count[index]
+                        self.holding_item = True
+                        self.item_count[index] = 0
+                        self.block_fill[index] = ""
+                    else:  # grab only 1 item
+                        self.interacted_item = self.block_fill[index]
+                        self.interacted_item_count = 1
+                        self.item_count[index] -= 1
+
+                        if self.item_count[index] <= 0:
+                            self.block_fill[index] = ""
+
+                        self.holding_item = True
 
                 # when placing item into crafting table
                 if (
@@ -1205,6 +1253,7 @@ class CraftingTable:
                     and not bool(self.block_fill[index])
                 ):
                     self.block_fill[index] = self.interacted_item
+                    self.item_count[index] += self.interacted_item_count
                     self.interacted_item = ""
                     self.holding_item = False
 
@@ -1228,60 +1277,49 @@ class CraftingTable:
                     and self.holding_item
                     and bool(self.block_fill[index])
                 ):
+                    # if item is the same as holding
                     item = self.block_fill[index]
-                    self.block_fill[index] = self.interacted_item
-                    self.interacted_item = item
-                    self.holding_item = True
+                    if item == self.interacted_item:
+                        self.item_count[index] += self.interacted_item_count
+                        self.holding_item = False
+                    else:
+                        self.block_fill[index] = self.interacted_item
+                        self.interacted_item = item
+                        self.holding_item = True
                     time.sleep(0.1)
 
         if (
-            self.preview_block.collidepoint(self.mouse_pos[0], self.mouse_pos[1])
-            and mouse_click[1]
+            (
+                (
+                    self.preview_block.collidepoint(
+                        self.mouse_pos[0], self.mouse_pos[1]
+                    )
+                    and mouse_click[1]
+                )
+                or (keys[pygame.K_RETURN])
+            )
+            and not self.inventory.holding_item
+            and not self.holding_item
         ):
             recipe = ""
             for index, block in enumerate(self.blocks):
+            
                 if bool(self.block_fill[index]):
                     recipe += self.block_fill[index][0]
                 else:
                     recipe += " "
-
-                if recipe in self.recipes:
-                    self.inventory.clicked_item = f"{self.recipes[recipe]}"
-                    self.inventory.holding_item = True
-                    self.block_fill = {
-                        0: "",
-                        1: "",
-                        2: "",
-                        3: "",
-                        4: "",
-                        5: "",
-                        6: "",
-                        7: "",
-                        8: "",
-                        9: "",
-                    }
-
-        if keys[pygame.K_RETURN]:
-            recipe = ""
-            for index, block in enumerate(self.blocks):
-                if bool(self.block_fill[index]):
-                    recipe += self.block_fill[index][0]
-                else:
-                    recipe += " "
+                    
 
             if recipe in self.recipes:
-                self.inventory.add_item(self.recipes[recipe])
-                self.block_fill = {
-                    0: "",
-                    1: "",
-                    2: "",
-                    3: "",
-                    4: "",
-                    5: "",
-                    6: "",
-                    7: "",
-                    8: "",
-                    9: "",
-                }
+                self.inventory.clicked_item = f"{self.recipes[recipe]}"
+                self.inventory.holding_item = True
+                
+                for index, block in enumerate(self.blocks):
+                    if self.block_fill[index] != "":
+                        self.item_count[index] -= 1
+                    if self.item_count[index] <= 0:
+                        self.block_fill[index] = ""
+                        
+                recipe = ""
 
             time.sleep(0.1)
