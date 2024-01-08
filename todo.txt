@@ -1,0 +1,28 @@
+Spel.nl 
+Zieke hambala spel
+
+beschrijving:
+In het spel moet je waves van steeds sterkere en gevaarlijkere wezens overleven om meer punten te scoren je kunt tools en voedsel halen 
+uit de map. Elke wave die gebeurt in de nacht en dan heb je maar een korte tijd om weer te healen en tools te maken voordat de volgende
+wave weer begint.
+
+Wat er nog moet worden gemaakt voordat het spel af is:
+[✔] 0. Inventory item counts
+[✘] 1. Meer soorten monsters (en monsters doen schade)
+[✘] 2. Meer soorten voedsel
+[✘] 3. Meer soorten ores en wapens (en tools?)
+[✘] 4. In-Game UI
+[✘] 5. Score en Highscore opslaan
+[✘] 6. Wereld opslaan
+[✘] 7. Menu scherm
+[✘] 8. Dood gaan
+[✘] 9. EXE file maken
+
+Misschien nog leuk toe te voegen maar niet heel belangrijk:
+[✘] 1. Mooie camera effecten
+[✘] 2. Meer particles
+[✘] 3. Mooiere value bars
+[✘] 4. Health bar voor wezens
+[✘] 5. Enchantments
+[✘] 6.
+[✘] 7.

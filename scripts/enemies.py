@@ -288,13 +288,14 @@ class Enemies:
             self.alive_enemies[i]["rect"].y = round(enemy["y"])
 
             if (
-                get_distance(
+                (get_distance(
                     self.alive_enemies[i]["rect"].x,
                     self.alive_enemies[i]["rect"].y,
                     player.x,
                     player.y,
                 )
-                < 0  # TODO change back to 300
+                < 300) and not self.alive_enemies[i]["running_from_torch"]
+                
             ):
                 self.alive_enemies[i]["following_player"] = True
 
@@ -341,6 +342,7 @@ class Enemies:
                 )
                 > 600
                 and self.alive_enemies[i]["following_player"]
+                and not self.alive_enemies[i]["running_from_torch"]
             ):
                 self.alive_enemies[i]["walk_vx"] = 0
                 self.alive_enemies[i]["walk_vy"] = 0

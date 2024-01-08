@@ -1,5 +1,6 @@
 import pygame
 import time
+import copy
 from func import *
 from scripts.particle import *
 from scripts.placeItem import *
@@ -164,6 +165,7 @@ class Inventory:
         self.font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 12)
         self.count_font = pygame.font.Font("assets/Font/SpaceMono-Regular.ttf", 15)
         self.clicked_item = ""
+        self.clicked_item_count = 0
         self.holding_item = False
         self.can_fill = True
         self.eating_sound = pygame.mixer.Sound("assets/sounds/eating.wav")
@@ -178,8 +180,8 @@ class Inventory:
             3: "coal ",
             4: "sword ",
             5: "wood ",
-            6: "",
-            7: "",
+            6: "torch ",
+            7: "torch ",
             8: "",
             9: "",
             10: "",
@@ -224,8 +226,6 @@ class Inventory:
             self.item_count_dict[i] = (
                 1 if i in self.given_items and self.given_items[i] != "" else 0
             )
-
-        print(self.item_count_dict)
 
         self.item_code_dict = {"torch ": 138, "tomato ": 110, "wood ": 139}
 
@@ -711,7 +711,13 @@ class Inventory:
                     clicked_block = index
                     clicked_item = self.block_fill[clicked_block]
                     self.clicked_item = clicked_item
-                    self.item_count_dict[clicked_block] -= 1
+                    if not keyboard[pygame.K_LCTRL]:
+                        self.clicked_item_count += 1
+                        self.item_count_dict[clicked_block] -= 1
+                    else:
+                        self.clicked_item_count = self.item_count_dict[clicked_block]
+                        self.item_count_dict[clicked_block] = 0
+                        
 
                     if self.item_count_dict[clicked_block] <= 0:
                         self.block_fill[clicked_block] = ""
@@ -720,14 +726,15 @@ class Inventory:
                 # if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
                 #         self.block_fill[index]) and self.holding_item:
                 if (
-                    keys[0]
+                    keys[0] 
                     and block.collidepoint(pos[0], pos[1])
                     and self.block_fill[index] in ["", " "]
                     and self.holding_item
                 ):
                     self.block_fill[index] = self.clicked_item
-                    self.item_count_dict[index] += 1
+                    self.item_count_dict[index] += self.clicked_item_count
                     self.holding_item = False
+                    self.clicked_item_count = 0
                 # elif keys[0] and block.collidepoint(pos[0], pos[1]):
                 #    print(f"/{self.block_fill[index]}/", self.holding_item)
 
@@ -743,13 +750,17 @@ class Inventory:
                         and self.clicked_item == item
                     ):
                         # increment item counts
-                        self.item_count_dict[index] += 1
+                        self.item_count_dict[index] += self.clicked_item_count
                         self.holding_item = False
                         self.clicked_item = ""
+                        self.clicked_item_count = 0
                     else:
                         self.block_fill[index] = self.clicked_item
+                        first_item_count = self.item_count_dict[index]
+                        self.item_count_dict[index] = self.clicked_item_count
                         self.clicked_item = item
                         self.holding_item = True
+                        self.clicked_item_count = first_item_count
                         time.sleep(0.1)
 
                 if (
@@ -1212,17 +1223,26 @@ class CraftingTable:
                         "fl",
                         "co",
                     ]:
+                        #PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
                         if bool(self.block_fill[index]):
-                            item = self.block_fill[index]
+                            # self.interacted_item_count = 0
+                            item = copy.deepcopy(self.block_fill[index])
+                            itemc = copy.deepcopy(self.item_count[index])
                             self.block_fill[index] = self.inventory.clicked_item
+                            self.item_count[index] = self.inventory.clicked_item_count
                             self.inventory.clicked_item = ""
-                            self.interacted_item = item
-                            self.holding_item = True
+                            self.interacted_item = item                                 #PROBLEEM
+                            self.holding_item = True                                    #PROBLEEM
+                            self.interacted_item_count = itemc                          #PROBLEEM
+                        #PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
+                        
                         else:
                             self.block_fill[index] = self.inventory.clicked_item
+                            self.item_count[index] = self.inventory.clicked_item_count
+                            self.interacted_item_count = 0
+                            self.inventory.clicked_item = ""
 
-                        self.item_count[index] += 1
-                        self.interacted_item_count = 0
+                        self.inventory.clicked_item_count = 0
                         self.inventory.holding_item = False
                 # pick up item from crafting table
                 if (
@@ -1279,12 +1299,15 @@ class CraftingTable:
                 ):
                     # if item is the same as holding
                     item = self.block_fill[index]
+                    item_c = self.item_count[index]
                     if item == self.interacted_item:
                         self.item_count[index] += self.interacted_item_count
                         self.holding_item = False
-                    else:
+                    else:                 
                         self.block_fill[index] = self.interacted_item
+                        self.item_count[index] = self.interacted_item_count
                         self.interacted_item = item
+                        self.interacted_item_count = item_c
                         self.holding_item = True
                     time.sleep(0.1)
 
@@ -1312,6 +1335,7 @@ class CraftingTable:
 
             if recipe in self.recipes:
                 self.inventory.clicked_item = f"{self.recipes[recipe]}"
+                self.inventory.clicked_item_count = 1
                 self.inventory.holding_item = True
                 
                 for index, block in enumerate(self.blocks):
