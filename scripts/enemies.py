@@ -113,6 +113,8 @@ class Enemies:
                         ],
                         (blit_x, blit_y),
                     )
+                    # if enemy["running_from_torch"]: #debug
+                    #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
     def update(self, is_night, player, torch_locations_list, particles):
         self.is_night = is_night
@@ -186,6 +188,11 @@ class Enemies:
             if enemy["near_torch"] and not enemy["running_from_torch"]:
                 self.alive_enemies[i]["walking"] = False
                 self.alive_enemies[i]["following_player"] = False
+
+            if not enemy["near_torch"] and enemy["running_from_torch"]:
+                self.alive_enemies[i]["running_from_torch"] = False
+                self.alive_enemies[i]["walking"] = False
+
 
             if not enemy["walking"] and not enemy["following_player"]:
                 self.alive_enemies[i][

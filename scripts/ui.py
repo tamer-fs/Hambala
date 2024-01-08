@@ -1168,7 +1168,7 @@ class CraftingTable:
     ):
         self.scroll = scroll
         self.mouse_pos = mouse_pos
-        print(self.item_count)
+        # print(self.item_count)
         if not joystick_input:
             if keys[pygame.K_TAB]:
                 if not self.opened:
