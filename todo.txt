@@ -24,5 +24,3 @@ Misschien nog leuk toe te voegen maar niet heel belangrijk:
 [✘] 3. Mooiere value bars
 [✔] 4. Health bar voor wezens
 [✘] 5. Enchantments
-[✘] 6.
-[✘] 7.
