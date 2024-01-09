@@ -3,6 +3,7 @@ import random
 import time
 
 from func import *
+from scripts.ui import HealthBar
 
 
 class Enemies:
@@ -20,6 +21,7 @@ class Enemies:
                 "speed": self.speed["zombie"],
             }
         }
+        self.scrollx, self.scrolly = 0, 0
 
         self.alive_enemies = []
 
@@ -92,6 +94,8 @@ class Enemies:
             "near_torch": False,
             "range_torch_locations": [],  # torch locations that are in range of the enemy
             "running_from_torch": False,
+            "health_bar": HealthBar((0, 0), (50, 5), 2, 100),
+            "last_attack": -1,
         }
 
         add_enemy["x"] = float(add_enemy["rect"].x)
@@ -100,10 +104,15 @@ class Enemies:
         self.alive_enemies.append(add_enemy)
 
     def draw_enemies(self, screen, scrollx, scrolly):
+        self.scrollx, self.scrolly = scrollx, scrolly
         width, height = screen.get_size()
-        for enemy in self.alive_enemies:
+        for i, enemy in enumerate(self.alive_enemies):
             blit_x = round(enemy["x"] - scrollx)
             blit_y = round(enemy["y"] - scrolly)
+            if time.perf_counter() - self.alive_enemies[i]["last_attack"] < 10:
+                self.alive_enemies[i]["health_bar"].draw(
+                    screen, "black", "darkgray", "green", 2, 2
+                )
 
             if blit_x > 0 - 100 and blit_x < width:
                 if blit_y > 0 - 100 and blit_y < height:
@@ -125,6 +134,14 @@ class Enemies:
                 self.zombie_spawn_perf = time.perf_counter() + 0.25
 
         for i, enemy in enumerate(self.alive_enemies):
+            self.alive_enemies[i]["health_bar"].update(
+                self.alive_enemies[i]["hp"],
+                (
+                    self.alive_enemies[i]["rect"].x - self.scrollx - (enemy["rect"].w / 2) + 12,
+                    self.alive_enemies[i]["rect"].y - self.scrolly - 10,
+                ),
+            )
+
             detected_torch = False
             self.alive_enemies[i]["range_torch_locations"] = []
             for torch_loc in torch_locations_list:
@@ -155,6 +172,7 @@ class Enemies:
                     )
                     < 25
                 ):
+                    self.alive_enemies[i]["last_attack"] = time.perf_counter()
                     self.alive_enemies[i]["hp"] -= random.randint(15, 25)
                     for _ in range(15):
                         particles.append(
@@ -192,7 +210,6 @@ class Enemies:
             if not enemy["near_torch"] and enemy["running_from_torch"]:
                 self.alive_enemies[i]["running_from_torch"] = False
                 self.alive_enemies[i]["walking"] = False
-
 
             if not enemy["walking"] and not enemy["following_player"]:
                 self.alive_enemies[i][
@@ -295,15 +312,14 @@ class Enemies:
             self.alive_enemies[i]["rect"].y = round(enemy["y"])
 
             if (
-                (get_distance(
+                get_distance(
                     self.alive_enemies[i]["rect"].x,
                     self.alive_enemies[i]["rect"].y,
                     player.x,
                     player.y,
                 )
-                < 300) and not self.alive_enemies[i]["running_from_torch"]
-                
-            ):
+                < 300
+            ) and not self.alive_enemies[i]["running_from_torch"]:
                 self.alive_enemies[i]["following_player"] = True
 
                 # how many steps

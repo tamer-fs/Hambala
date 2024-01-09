@@ -1,6 +1,7 @@
 import pygame
 import time
 from func import *
+from scripts.ui import HealthBar
 
 
 class Animal:
@@ -142,6 +143,8 @@ class Animal:
                     time.perf_counter(),  # animal kill/attack player 18
                     random.randint(2, 4),  # damage to player 19
                     False,  # animal boos 20
+                    HealthBar((0, 0), (50, 5), 2, hp),  # hp bar 21
+                    -1,  # last attack 22
                 ]
 
     def reset_screen_size(self, width, height):
@@ -149,6 +152,7 @@ class Animal:
         self.screen_height = height
 
     def draw(self, screen, scrollx, scrolly):
+        self.scrollx, self.scrolly = scrollx, scrolly
         for animal_key in self.animal_dict:
             animal = self.animal_dict[animal_key]
             animal_rect = animal[0]
@@ -159,6 +163,11 @@ class Animal:
             animal_frame = animal[11]
             animal_frame_timer = animal[12]
             animal_size = animal[13]
+            hp_bar = animal[21]
+            last_attack = animal[22]
+
+            if time.perf_counter() - last_attack < 10:
+                hp_bar.draw(screen, "black", "darkgray", "red", 2, 2)
 
             if (
                 animal_walking and time.perf_counter() - animal_frame_timer > 0.2
@@ -262,6 +271,16 @@ class Animal:
             # perf counter for animal attacking player
             animal_attack_player = animal[18]
             animal_damage = animal[19]  # amount of damage animal does
+            hp_bar = animal[21]
+            last_attack = animal[22]
+
+            hp_bar.update(
+                animal_hp,
+                (
+                    animal_rect.x - self.scrollx - (animal_rect.w / 2) - 8,
+                    animal_rect.y - self.scrolly - 10,
+                ),
+            )
 
             if time.perf_counter() - animal_perf > animal_break_time:
                 if animal_walking:
@@ -301,6 +320,7 @@ class Animal:
                     player.poison_time = time.perf_counter()
 
                 if player.hitting:
+                    animal[22] = time.perf_counter()
                     if "bear" in animal_type:
                         animal[18] = time.perf_counter() + self.attack_delay
                         animal[20] = True

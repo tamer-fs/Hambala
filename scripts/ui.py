@@ -5,6 +5,47 @@ from func import *
 from scripts.particle import *
 from scripts.placeItem import *
 
+
+class HealthBar:
+    def __init__(self, pos, size, margin=5, max_val=100):
+        self.background = pygame.Rect(pos, size)
+        self.foreground = pygame.Rect(
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
+        self.shadow = pygame.Rect(
+            (pos[0] + margin / 2, pos[1] + margin / 2),
+            (size[0] - margin, size[1] - margin),
+        )
+        self.value = 0
+        self.max_value = max_val
+        self.width = self.foreground.w
+        self.pos = pos
+        self.margin = margin
+        self.size = size
+        self.last_val = 0
+
+    def draw(self, screen, bg_color, shadow_color, fg_color, padding, radius):
+        pygame.draw.rect(screen, bg_color, self.background, border_radius=radius)
+        #pygame.draw.rect(screen, shadow_color, self.shadow, border_radius=radius - 2)
+        pygame.draw.rect(screen, fg_color, self.foreground, border_radius=radius - 2)
+
+    def update(self, value, pos):
+        self.pos = pos
+
+        self.background = pygame.Rect(pos, self.size)
+        self.foreground = pygame.Rect(
+            (pos[0] + self.margin / 2, pos[1] + self.margin / 2),
+            (self.size[0] - self.margin, self.size[1] - self.margin),
+        )
+        self.shadow = pygame.Rect(
+            (pos[0] + self.margin / 2, pos[1] + self.margin / 2),
+            (self.size[0] - self.margin, self.size[1] - self.margin),
+        )
+
+        self.foreground.w = value * (self.width / self.max_value)
+
+
 ##############################
 #         Value bar          #
 ##############################
@@ -717,7 +758,6 @@ class Inventory:
                     else:
                         self.clicked_item_count = self.item_count_dict[clicked_block]
                         self.item_count_dict[clicked_block] = 0
-                        
 
                     if self.item_count_dict[clicked_block] <= 0:
                         self.block_fill[clicked_block] = ""
@@ -726,7 +766,7 @@ class Inventory:
                 # if keys[0] and block.collidepoint(pos[0], pos[1]) and not bool(
                 #         self.block_fill[index]) and self.holding_item:
                 if (
-                    keys[0] 
+                    keys[0]
                     and block.collidepoint(pos[0], pos[1])
                     and self.block_fill[index] in ["", " "]
                     and self.holding_item
@@ -1223,7 +1263,7 @@ class CraftingTable:
                         "fl",
                         "co",
                     ]:
-                        #PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
+                        # PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
                         if bool(self.block_fill[index]):
                             # self.interacted_item_count = 0
                             item = copy.deepcopy(self.block_fill[index])
@@ -1231,11 +1271,11 @@ class CraftingTable:
                             self.block_fill[index] = self.inventory.clicked_item
                             self.item_count[index] = self.inventory.clicked_item_count
                             self.inventory.clicked_item = ""
-                            self.interacted_item = item                                 #PROBLEEM
-                            self.holding_item = True                                    #PROBLEEM
-                            self.interacted_item_count = itemc                          #PROBLEEM
-                        #PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
-                        
+                            self.interacted_item = item  # PROBLEEM
+                            self.holding_item = True  # PROBLEEM
+                            self.interacted_item_count = itemc  # PROBLEEM
+                        # PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
+
                         else:
                             self.block_fill[index] = self.inventory.clicked_item
                             self.item_count[index] = self.inventory.clicked_item_count
@@ -1303,7 +1343,7 @@ class CraftingTable:
                     if item == self.interacted_item:
                         self.item_count[index] += self.interacted_item_count
                         self.holding_item = False
-                    else:                 
+                    else:
                         self.block_fill[index] = self.interacted_item
                         self.item_count[index] = self.interacted_item_count
                         self.interacted_item = item
@@ -1326,24 +1366,22 @@ class CraftingTable:
         ):
             recipe = ""
             for index, block in enumerate(self.blocks):
-            
                 if bool(self.block_fill[index]):
                     recipe += self.block_fill[index][0]
                 else:
                     recipe += " "
-                    
 
             if recipe in self.recipes:
                 self.inventory.clicked_item = f"{self.recipes[recipe]}"
                 self.inventory.clicked_item_count = 1
                 self.inventory.holding_item = True
-                
+
                 for index, block in enumerate(self.blocks):
                     if self.block_fill[index] != "":
                         self.item_count[index] -= 1
                     if self.item_count[index] <= 0:
                         self.block_fill[index] = ""
-                        
+
                 recipe = ""
 
             time.sleep(0.1)
