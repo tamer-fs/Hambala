@@ -151,6 +151,7 @@ enemies = Enemies(
     {"zombie": random.randint(20, 100)},
     {"zombie": random.randint(50, 60)},
     {"zombie": random.randint(20, 30)},
+    {"zombie": random.randint(70, 120)},
 )
 enemies_spawn = False
 

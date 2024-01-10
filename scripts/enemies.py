@@ -7,10 +7,11 @@ from scripts.ui import HealthBar
 
 
 class Enemies:
-    def __init__(self, spawn_rate, strength, speed):
+    def __init__(self, spawn_rate, strength, speed, health):
         self.spawn_rate = spawn_rate
         self.strength = strength
         self.speed = speed
+        self.health = health
         # speed = {"zombie": random.randint(10,16)}
         self.max_spawn = {"zombie": 1000}
         self.is_night = False
@@ -19,6 +20,7 @@ class Enemies:
                 "spawn_rate": self.spawn_rate["zombie"],
                 "strength": self.strength["zombie"],
                 "speed": self.speed["zombie"],
+                "hp": self.health["zombie"],
             }
         }
         self.scrollx, self.scrolly = 0, 0
@@ -76,7 +78,7 @@ class Enemies:
             "rect": self.imgs[enemy_type]["idle1right"].get_rect(
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
-            "hp": 100,
+            "hp": self.health[enemy_type],
             "strength": self.strength[enemy_type],
             "speed": self.speed[enemy_type],
             "current_animation_frame": random.randint(1, 3),
@@ -94,7 +96,7 @@ class Enemies:
             "near_torch": False,
             "range_torch_locations": [],  # torch locations that are in range of the enemy
             "running_from_torch": False,
-            "health_bar": HealthBar((0, 0), (50, 5), 2, 100),
+            "health_bar": HealthBar((0, 0), (50, 5), 2, self.health[enemy_type]),
             "last_attack": -1,
         }
 
@@ -137,7 +139,10 @@ class Enemies:
             self.alive_enemies[i]["health_bar"].update(
                 self.alive_enemies[i]["hp"],
                 (
-                    self.alive_enemies[i]["rect"].x - self.scrollx - (enemy["rect"].w / 2) + 12,
+                    self.alive_enemies[i]["rect"].x
+                    - self.scrollx
+                    - (enemy["rect"].w / 2)
+                    + 12,
                     self.alive_enemies[i]["rect"].y - self.scrolly - 10,
                 ),
             )
@@ -172,8 +177,9 @@ class Enemies:
                     )
                     < 25
                 ):
+                    self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                    self.alive_enemies[i]["hp"] -= random.randint(15, 25)
+                    self.alive_enemies[i]["hp"] -= random.randint(30, 50)
                     for _ in range(15):
                         particles.append(
                             HitParticle(

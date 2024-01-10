@@ -320,6 +320,7 @@ class Animal:
                     player.poison_time = time.perf_counter()
 
                 if player.hitting:
+                    hp_bar.damage()
                     animal[22] = time.perf_counter()
                     if "bear" in animal_type:
                         animal[18] = time.perf_counter() + self.attack_delay

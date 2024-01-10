@@ -24,11 +24,19 @@ class HealthBar:
         self.margin = margin
         self.size = size
         self.last_val = 0
+        self.timer = -1
+        self.took_damage = False
+        self.shadow_w = size[0] - margin
+        self.move_shadow_bar = False
 
     def draw(self, screen, bg_color, shadow_color, fg_color, padding, radius):
         pygame.draw.rect(screen, bg_color, self.background, border_radius=radius)
-        #pygame.draw.rect(screen, shadow_color, self.shadow, border_radius=radius - 2)
+        pygame.draw.rect(screen, shadow_color, self.shadow, border_radius=radius - 2)
         pygame.draw.rect(screen, fg_color, self.foreground, border_radius=radius - 2)
+
+    def damage(self):
+        self.timer = time.perf_counter()
+        self.took_damage = True
 
     def update(self, value, pos):
         self.pos = pos
@@ -40,8 +48,19 @@ class HealthBar:
         )
         self.shadow = pygame.Rect(
             (pos[0] + self.margin / 2, pos[1] + self.margin / 2),
-            (self.size[0] - self.margin, self.size[1] - self.margin),
+            (self.shadow_w - self.margin, self.size[1] - self.margin),
         )
+
+        if self.took_damage:
+            if time.perf_counter() - self.timer > 1:
+                self.took_damage = False
+                self.move_shadow_bar = True
+
+        if self.move_shadow_bar:
+            if self.shadow_w > value * (self.width / self.max_value):
+                self.shadow_w -= 0.8
+            else:
+                self.move_shadow_bar = False
 
         self.foreground.w = value * (self.width / self.max_value)
 
