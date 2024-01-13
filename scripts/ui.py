@@ -1,9 +1,77 @@
 import pygame
 import time
 import copy
+import numpy
 from func import *
 from scripts.particle import *
 from scripts.placeItem import *
+
+
+##############################
+#         Cllock             #
+##############################
+
+class Clock:
+    def __init__(self, pos, size, sky_color, is_night):
+        self.pos = pos
+        self.size = size
+        self.sky_color = sky_color
+        self.time_ticks = self.sky_color[3]
+        #0 is most day, 200 is most night (enemies spawn at 125)
+        self.is_night = False
+        self.time = 0
+        self.night_time = False
+        
+        self.dark_clock = {
+            "bg_color": (255, 255, 255),
+            "fg_color": (33, 37, 41),
+        }    
+        
+        self.light_clock = {
+            "bg_color": (33, 37, 41),
+            "fg_color": (255, 255, 255),
+        }
+
+        self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        
+        self.clock_fg = pygame.Rect(pos, (size[0] - 5, size[0] - 5)) # fg = foreground
+        self.clock_bg = pygame.Rect(pos, size)
+        self.hand_centre_pos = [self.size[0] / 2, self.size[0] / 2]
+        self.hand_pos = copy.deepcopy(self.hand_centre_pos) # temp
+        self.hand_length = (self.clock_fg.w / 2) - 12
+
+    def draw(self, screen):
+        if self.night_time:
+            pygame.draw.circle(self.surface, self.dark_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+            pygame.draw.circle(self.surface, self.dark_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)
+            pygame.draw.line(self.surface, "white", self.hand_centre_pos, self.hand_pos, 2)
+        else:
+            pygame.draw.circle(self.surface, self.light_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+            pygame.draw.circle(self.surface, self.light_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)        
+            pygame.draw.line(self.surface, "black", self.hand_centre_pos, self.hand_pos, 2)
+        
+        self.surface.set_alpha(150)
+        screen.blit(self.surface, self.pos)
+        
+
+        
+
+    def update(self, sky_color, is_night):
+        self.is_night = is_night
+        self.sky_color = sky_color
+        self.time_ticks = max(self.sky_color[3], 1) # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
+        self.night_time = True if self.time_ticks >= 100 else False
+
+        if self.is_night:
+            self.hand_degrees = (360 * (abs(200 - self.time_ticks) + 200) / 200) - 90        
+        else:
+            self.hand_degrees = (360 * self.time_ticks / 200) - 90
+
+        print(self.time_ticks, self.hand_degrees)
+        self.hand_pos[0] = self.hand_centre_pos[0] + numpy.cos(numpy.radians(self.hand_degrees)) * self.hand_length
+        self.hand_pos[1] = self.hand_centre_pos[1] + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
+
+            
 
 
 class HealthBar:

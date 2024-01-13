@@ -111,7 +111,7 @@ hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
 health_icon = pygame.image.load("assets/icons/health_icon.png").convert_alpha()
 
 mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
-sky_color = (0, 0, 0, 150)
+sky_color = (0, 0, 0, 0)
 mask_surf.fill(sky_color)
 is_night = False
 sky_time = 0
@@ -190,6 +190,8 @@ cursor_rect = cursor.get_rect()
 
 shake_time = time.perf_counter()
 started_shake = False
+
+ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 
 
 def shake(shakeTime, scrollx, scrolly):
@@ -388,11 +390,11 @@ while playing:
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
-    if time.perf_counter() - sky_time > 0.8:
+    if time.perf_counter() - sky_time > 0.01:
         if not is_night:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.25)
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.01)
         else:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.25)
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.01)
 
         sky_time = time.perf_counter()
 
@@ -433,6 +435,9 @@ while playing:
         is_night = True
     elif sky_color[3] < 1:
         is_night = False
+        
+    ui_clock.update(sky_color, is_night)
+    ui_clock.draw(screen)
 
     scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
     scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)

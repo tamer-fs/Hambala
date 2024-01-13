@@ -12,6 +12,7 @@ Wat er nog moet worden gemaakt voordat het spel af is:
 [✘] 2. Meer soorten voedsel
 [✘] 3. Meer soorten ores en wapens (en tools?)
 [✘] 4. In-Game UI
+    [✔] Klok
 [✘] 5. Score en Highscore opslaan
 [✘] 6. Wereld opslaan
 [✘] 7. Menu scherm
