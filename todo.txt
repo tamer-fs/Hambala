@@ -8,16 +8,19 @@ wave weer begint.
 
 Wat er nog moet worden gemaakt voordat het spel af is:
 [✔] 0. Inventory item counts
-[✘] 1. Meer soorten monsters (en monsters doen schade)
-[✘] 2. Meer soorten voedsel
-[✘] 3. Meer soorten ores en wapens (en tools?)
-[✘] 4. In-Game UI
+[✔] 1. Monsters doen schade
+[✘] 2. Meer soorten monsters
+[✘] 3. Meer soorten voedsel
+[✘] 4. Meer soorten ores en wapens (en tools?)
+[✘] 5. In-Game UI
     [✔] Klok
-[✘] 5. Score en Highscore opslaan
-[✘] 6. Wereld opslaan
-[✘] 7. Menu scherm
-[✘] 8. Dood gaan
-[✘] 9. EXE file maken
+    [✔] Overgang klok
+[✘] 6. Score en Highscore opslaan
+[✘] 7. Wereld opslaan
+[✘] 8. Menu scherm
+[✘] 9. Dood gaan
+[✘] 10. EXE file maken
+[✔] 11. EXE file testen
 
 Misschien nog leuk toe te voegen maar niet heel belangrijk:
 [✘] 1. Mooie camera effecten
@@ -25,3 +28,11 @@ Misschien nog leuk toe te voegen maar niet heel belangrijk:
 [✘] 3. Mooiere value bars
 [✔] 4. Health bar voor wezens
 [✘] 5. Enchantments
+
+Leuke dingen om toe te voegen maar zeer onmogelijk en iets waardoor je 3 weken slapeloze nachten van krijgt:
+[✘] 1. Camera Zoom
+[✘] 2. Shaders en shadows
+[✘] 3. VR Game van maken in pygame
+[✘] 4. Op Steam/Epic zetten (en achievements)
+[✘] 5. (React) website store page voor het spel
+

@@ -8,7 +8,7 @@ from scripts.placeItem import *
 
 
 ##############################
-#         Cllock             #
+#          Clock             #
 ##############################
 
 class Clock:
@@ -40,15 +40,37 @@ class Clock:
         self.hand_pos = copy.deepcopy(self.hand_centre_pos) # temp
         self.hand_length = (self.clock_fg.w / 2) - 12
 
+        self.prev_night_time = False
+        self.in_transition = False # if in transition 
+        self.transition_frame = 0
+        self.transition_direction = 1
+        self.max_transition_frame = 100
+
     def draw(self, screen):
-        if self.night_time:
-            pygame.draw.circle(self.surface, self.dark_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
-            pygame.draw.circle(self.surface, self.dark_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)
-            pygame.draw.line(self.surface, "white", self.hand_centre_pos, self.hand_pos, 2)
+        if not self.in_transition:
+            if self.night_time:
+                pygame.draw.circle(self.surface, self.dark_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+                pygame.draw.circle(self.surface, self.dark_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)
+                pygame.draw.line(self.surface, "white", self.hand_centre_pos, self.hand_pos, 2)
+            else:
+                pygame.draw.circle(self.surface, self.light_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+                pygame.draw.circle(self.surface, self.light_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)        
+                pygame.draw.line(self.surface, "black", self.hand_centre_pos, self.hand_pos, 2)
         else:
-            pygame.draw.circle(self.surface, self.light_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
-            pygame.draw.circle(self.surface, self.light_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)        
-            pygame.draw.line(self.surface, "black", self.hand_centre_pos, self.hand_pos, 2)
+            bg_r = 33 + (self.transition_frame / self.max_transition_frame) * (255-33)
+            bg_g = 37 + (self.transition_frame / self.max_transition_frame) * (255-37)
+            bg_b = 41 + (self.transition_frame / self.max_transition_frame) * (255-41)
+            
+            pygame.draw.circle(self.surface, (bg_r, bg_g, bg_b), (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+
+            fg_r = 255 - (self.transition_frame / self.max_transition_frame) * (255-33)
+            fg_g = 255 - (self.transition_frame / self.max_transition_frame) * (255-37)
+            fg_b = 255 - (self.transition_frame / self.max_transition_frame) * (255-41)
+
+            pygame.draw.circle(self.surface, (fg_r, fg_g, fg_b), (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2) 
+
+            hand_color = (self.transition_frame / self.max_transition_frame) * 255            
+            pygame.draw.line(self.surface, (hand_color, hand_color, hand_color), self.hand_centre_pos, self.hand_pos, 2)
         
         self.surface.set_alpha(150)
         screen.blit(self.surface, self.pos)
@@ -62,12 +84,23 @@ class Clock:
         self.time_ticks = max(self.sky_color[3], 1) # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
         self.night_time = True if self.time_ticks >= 100 else False
 
+        if self.night_time != self.prev_night_time:
+            self.in_transition = True
+            self.transition_direction = 1 if self.night_time else -1
+            self.transition_frame = 0 if self.night_time else self.max_transition_frame
+            self.prev_night_time = self.night_time
+        
+        if self.in_transition:
+            self.transition_frame += self.transition_direction
+            if self.transition_frame == 0 or self.transition_frame == self.max_transition_frame:
+                self.in_transition = False
+
+
         if self.is_night:
             self.hand_degrees = (360 * (abs(200 - self.time_ticks) + 200) / 200) - 90        
         else:
             self.hand_degrees = (360 * self.time_ticks / 200) - 90
 
-        print(self.time_ticks, self.hand_degrees)
         self.hand_pos[0] = self.hand_centre_pos[0] + numpy.cos(numpy.radians(self.hand_degrees)) * self.hand_length
         self.hand_pos[1] = self.hand_centre_pos[1] + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
 

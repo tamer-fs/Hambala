@@ -78,9 +78,9 @@ class Enemies:
             "rect": self.imgs[enemy_type]["idle1right"].get_rect(
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
-            "hp": self.health[enemy_type],
-            "strength": self.strength[enemy_type],
-            "speed": self.speed[enemy_type],
+            "hp": random.randint(self.health[enemy_type][0], self.health[enemy_type][1]),
+            "strength": random.randint(self.strength[enemy_type][0], self.strength[enemy_type][1]),
+            "speed": random.randint(self.speed[enemy_type][0], self.speed[enemy_type][1]),
             "current_animation_frame": random.randint(1, 3),
             "current_action": "walk",
             "next_frame_perf": -1,
@@ -96,8 +96,10 @@ class Enemies:
             "near_torch": False,
             "range_torch_locations": [],  # torch locations that are in range of the enemy
             "running_from_torch": False,
-            "health_bar": HealthBar((0, 0), (50, 5), 2, self.health[enemy_type]),
+            "health_bar": HealthBar((0, 0), (50, 5), 2, random.randint(self.health[enemy_type][0], self.health[enemy_type][1])),
             "last_attack": -1,
+            "attack_cooldown": -1,
+            "attack_cooldown_duration": 2,
         }
 
         add_enemy["x"] = float(add_enemy["rect"].x)
@@ -166,7 +168,23 @@ class Enemies:
 
             self.alive_enemies[i]["near_torch"] = detected_torch
 
-            # getting hit
+            # zombie hitting player
+            
+            if (
+                get_distance(
+                    player.x + 24,
+                    player.y + 24,
+                    self.alive_enemies[i]["rect"].x + 16,
+                    self.alive_enemies[i]["rect"].y + 16,
+                )
+                < 20
+            ):
+                if time.perf_counter() - self.alive_enemies[i]["attack_cooldown"] > self.alive_enemies[i]["attack_cooldown_duration"]:
+                    self.alive_enemies[i]["attack_cooldown"] = time.perf_counter()
+                    player.health_value -= int(self.alive_enemies[i]["strength"] / 10)
+                    player.health_value = max(0, player.health_value)
+            
+            #player hitting zombie
             if player.hitting:
                 if (
                     get_distance(
@@ -175,7 +193,7 @@ class Enemies:
                         self.alive_enemies[i]["rect"].x + 16,
                         self.alive_enemies[i]["rect"].y + 16,
                     )
-                    < 25
+                    < 30
                 ):
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()

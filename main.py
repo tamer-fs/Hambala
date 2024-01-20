@@ -148,10 +148,10 @@ torch_animation_frame = 0
 
 
 enemies = Enemies(
-    {"zombie": random.randint(20, 100)},
-    {"zombie": random.randint(50, 60)},
-    {"zombie": random.randint(20, 30)},
-    {"zombie": random.randint(70, 120)},
+    {"zombie": (20, 100)},
+    {"zombie": (10, 20)},
+    {"zombie": (20, 30)},
+    {"zombie": (70, 120)},
 )
 enemies_spawn = False
 
@@ -188,7 +188,7 @@ cursor = pygame.image.load("assets/icons/cursor.png").convert_alpha()
 pygame.mouse.set_visible(False)
 cursor_rect = cursor.get_rect()
 
-shake_time = time.perf_counter()
+shake_time = 3
 started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
@@ -196,11 +196,11 @@ ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 
 def shake(shakeTime, scrollx, scrolly):
     global started_shake
-    if time.perf_counter() - shake_time < shakeTime:
+    if  time.perf_counter() > shakeTime + 0.5:
+        started_shake = False 
+    else:
         scrollx += random.randint(-2, 2)
         scrolly += random.randint(-2, 2)
-    else:
-        started_shake = False
 
 
 while playing:
@@ -307,13 +307,7 @@ while playing:
         player,
     )
 
-    if animals.hit:
-        # if not started_shake:
-        #     shake_time = time.perf_counter()
-        #     started_shake = True
-        # shake(shake_time, scrollx, scrolly)
-        shake_frame = 1
-        animals.hit = False
+    
 
     if shake_frame > 0:
         shake_frame += 1
@@ -386,15 +380,23 @@ while playing:
         plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict
     )
 
+    if player.hitting or started_shake:
+        started_shake = True
+        if not started_shake:
+            shake_time = time.perf_counter()
+        shake(shake_time, scrollx, scrolly)
+        shake_frame = 1
+        # animals.hit = False
+
     particles = enemies.update(enemies_spawn, player, torch_locations_list, particles)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
     if time.perf_counter() - sky_time > 0.01:
         if not is_night:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.01)
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.5)
         else:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.01)
+            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.5)
 
         sky_time = time.perf_counter()
 
