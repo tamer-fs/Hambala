@@ -7,21 +7,33 @@ from scripts.ui import HealthBar
 
 
 class Enemies:
-    def __init__(self, spawn_rate, strength, speed, health):
-        self.spawn_rate = spawn_rate
+    def __init__(self, strength, speed, health):
         self.strength = strength
+        self.spawn_rate = {
+            "zombie": [100, 0],
+            "zombie-big": [20, 0],
+        }
         self.speed = speed
         self.health = health
         # speed = {"zombie": random.randint(10,16)}
-        self.max_spawn = {"zombie": 1000}
+        self.max_spawn = {"zombie": 1000} # nog niet gebruikt
         self.is_night = False
         self.enemies = {
             "zombie": {
-                "spawn_rate": self.spawn_rate["zombie"],
+                "strength": self.strength["zombie"],
+                "speed": self.speed["zombie"],
+                "hp": self.health["zombie"],
+            },
+            "zombie-big": {
                 "strength": self.strength["zombie"],
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
             }
+        }
+
+        self.enemies_size = {
+            "zombie": (32, 32),
+            "zombie-big": (60, 60)
         }
         self.scrollx, self.scrolly = 0, 0
 
@@ -29,9 +41,16 @@ class Enemies:
 
         self.zombie_spawn_perf = -1  # perf counter for spawning enemy zombie
 
-        self.imgs = {"zombie": {}}
+        self.imgs = {"zombie": {}, "zombie-big": {}}
         self.num_of_frames = {
             "zombie": {
+                "idle": 7,
+                "attack": 6,
+                "special_attack": 21,
+                "walk": 7,
+                "die": 7,
+            },
+            "zombie-big": {
                 "idle": 7,
                 "attack": 6,
                 "special_attack": 21,
@@ -44,11 +63,18 @@ class Enemies:
                 self.num_of_frames[enemy].keys()
             ):  # list(self.num_of_frames.keys()) = ["idle", "attack", ...]
                 for frame in range(self.num_of_frames[enemy][load_img]):
+                    if "-" in enemy:
+                        enemy_img = enemy.split("-")[0]
+                    else:
+                        enemy_img = enemy
+                        
                     image = pygame.image.load(
-                        f"./assets/{enemy}/{load_img}{frame+1}.png"
+                        f"./assets/{enemy_img}/{load_img}{frame+1}.png"
                     ).convert_alpha()
                     image_flip = pygame.transform.flip(image, True, False)
-
+                    image = pygame.transform.scale(image, self.enemies_size[enemy])
+                    image_flip = pygame.transform.scale(image_flip, self.enemies_size[enemy])
+                    
                     self.imgs[enemy][f"{load_img}{frame+1}right"] = image
                     self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
 
@@ -96,7 +122,7 @@ class Enemies:
             "near_torch": False,
             "range_torch_locations": [],  # torch locations that are in range of the enemy
             "running_from_torch": False,
-            "health_bar": HealthBar((0, 0), (50, 5), 2, random.randint(self.health[enemy_type][0], self.health[enemy_type][1])),
+            "health_bar": HealthBar((0, 0), ((self.enemies_size[enemy_type][0]), 5), 2, random.randint(self.health[enemy_type][0], self.health[enemy_type][1])),
             "last_attack": -1,
             "attack_cooldown": -1,
             "attack_cooldown_duration": 2,
@@ -129,12 +155,18 @@ class Enemies:
                     # if enemy["running_from_torch"]: #debug
                     #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
-    def update(self, is_night, player, torch_locations_list, particles):
+    def update(self, is_night, player, torch_locations_list, particles, night_count):
         self.is_night = is_night
+        
+        spawn_list = []
+        for spawn_enemy in self.spawn_rate:
+            if night_count >= self.spawn_rate[spawn_enemy][1]:
+                for amount in range(self.spawn_rate[spawn_enemy][0]):
+                    spawn_list.append(spawn_enemy)
 
         if is_night:
             if self.zombie_spawn_perf <= time.perf_counter():
-                self.spawn_enemies(1, "zombie")
+                self.spawn_enemies(1, random.choice(spawn_list))
                 self.zombie_spawn_perf = time.perf_counter() + 0.25
 
         for i, enemy in enumerate(self.alive_enemies):
@@ -142,12 +174,21 @@ class Enemies:
                 self.alive_enemies[i]["hp"],
                 (
                     self.alive_enemies[i]["rect"].x
-                    - self.scrollx
-                    - (enemy["rect"].w / 2)
-                    + 12,
+                    - self.scrollx,
+                    # - (enemy["rect"].w / 2)
+                    # + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
                     self.alive_enemies[i]["rect"].y - self.scrolly - 10,
-                ),
+                ),  
             )
+
+            if (random.randint(1, 10) == 1 and self.alive_enemies[i]["type"] == "zombie") or (random.randint(1, 5) == 1 and self.alive_enemies[i]["type"] == "zombie-big"):
+                particles.append(
+                    HitParticle(
+                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2) + random.randint(-10, 10),
+                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2) + random.randint(-20, 0),
+                        color=(128,137,99), up=True
+                    )
+                )
 
             detected_torch = False
             self.alive_enemies[i]["range_torch_locations"] = []
@@ -169,20 +210,27 @@ class Enemies:
             self.alive_enemies[i]["near_torch"] = detected_torch
 
             # zombie hitting player
-            
             if (
                 get_distance(
                     player.x + 24,
                     player.y + 24,
-                    self.alive_enemies[i]["rect"].x + 16,
-                    self.alive_enemies[i]["rect"].y + 16,
+                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
                 )
-                < 20
+                < (self.enemies_size[self.alive_enemies[i]["type"]][1]/2)
             ):
                 if time.perf_counter() - self.alive_enemies[i]["attack_cooldown"] > self.alive_enemies[i]["attack_cooldown_duration"]:
                     self.alive_enemies[i]["attack_cooldown"] = time.perf_counter()
                     player.health_value -= int(self.alive_enemies[i]["strength"] / 10)
                     player.health_value = max(0, player.health_value)
+                    for _ in range(25):
+                            particles.append(
+                                HitParticle(
+                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                    color="red",
+                                )
+                            )
             
             #player hitting zombie
             if player.hitting:
@@ -190,10 +238,10 @@ class Enemies:
                     get_distance(
                         player.x + 24,
                         player.y + 24,
-                        self.alive_enemies[i]["rect"].x + 16,
-                        self.alive_enemies[i]["rect"].y + 16,
+                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
                     )
-                    < 30
+                    < (self.enemies_size[self.alive_enemies[i]["type"]][1])
                 ):
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
@@ -201,8 +249,8 @@ class Enemies:
                     for _ in range(15):
                         particles.append(
                             HitParticle(
-                                self.alive_enemies[i]["rect"].x + 16,
-                                self.alive_enemies[i]["rect"].y + 16,
+                                self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                                self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
                                 color="green",
                             )
                         )
@@ -211,8 +259,8 @@ class Enemies:
                         for _ in range(50):
                             particles.append(
                                 HitParticle(
-                                    self.alive_enemies[i]["rect"].x + 16,
-                                    self.alive_enemies[i]["rect"].y + 16,
+                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
                                     color="green",
                                 )
                             )

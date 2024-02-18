@@ -78,7 +78,7 @@ class Clock:
 
         
 
-    def update(self, sky_color, is_night):
+    def update(self, sky_color, is_night, night_count):
         self.is_night = is_night
         self.sky_color = sky_color
         self.time_ticks = max(self.sky_color[3], 1) # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
@@ -89,6 +89,9 @@ class Clock:
             self.transition_direction = 1 if self.night_time else -1
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
+            if self.night_time:
+                night_count += 1
+                # print("Changed night count to:", night_count)
         
         if self.in_transition:
             self.transition_frame += self.transition_direction
@@ -104,6 +107,7 @@ class Clock:
         self.hand_pos[0] = self.hand_centre_pos[0] + numpy.cos(numpy.radians(self.hand_degrees)) * self.hand_length
         self.hand_pos[1] = self.hand_centre_pos[1] + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
 
+        return night_count
             
 
 

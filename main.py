@@ -114,6 +114,7 @@ mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
 sky_color = (0, 0, 0, 0)
 mask_surf.fill(sky_color)
 is_night = False
+night_count = 0
 sky_time = 0
 light = pygame.image.load("assets/Images/Light.png").convert_alpha()
 
@@ -148,10 +149,10 @@ torch_animation_frame = 0
 
 
 enemies = Enemies(
-    {"zombie": (20, 100)},
-    {"zombie": (10, 20)},
-    {"zombie": (20, 30)},
-    {"zombie": (70, 120)},
+    {"zombie": (10, 20), "zombie-big": (40, 60)},
+    {"zombie": (20, 30), "zombie-big": (5, 10)},
+    {"zombie": (70, 120), "zombie-big": (150, 200)},
+
 )
 enemies_spawn = False
 
@@ -388,7 +389,7 @@ while playing:
         shake_frame = 1
         # animals.hit = False
 
-    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles)
+    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -438,7 +439,7 @@ while playing:
     elif sky_color[3] < 1:
         is_night = False
         
-    ui_clock.update(sky_color, is_night)
+    night_count = ui_clock.update(sky_color, is_night, night_count)
     ui_clock.draw(screen)
 
     scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
