@@ -67,10 +67,10 @@ class Arrow:
     def __init__(self, angle, charge, x, y):
         self.angle = angle
         self.charge = charge
+        self.dx = numpy.cos(numpy.radians(self.angle))
+        self.dy = numpy.sin(numpy.radians(self.angle))
         self.vx = 10
         self.vy = 0
-        self.dx = numpy.cos(numpy.radians(self.angle)) * 10
-        self.dy = numpy.sin(numpy.radians(self.angle)) * 10
         self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), self.angle)
         self.rect = self.arrow_img.get_rect(center=(self.x, self.y))
 
