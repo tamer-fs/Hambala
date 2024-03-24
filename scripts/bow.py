@@ -60,24 +60,40 @@ class Bow:
     
     def draw(self, screen):
         screen.blit(self.bow_frames[self.direction][self.charge], self.bow_rect)
-        for arrow in self.arrow_list:
+        remove_indx = []
+        for i, arrow in enumerate(self.arrow_list):
             arrow.draw(screen)
+            if time.perf_counter() - arrow.spawn_time > 3:
+                remove_indx.append(i)
 
+        if remove_indx != []:
+            for i in reversed(remove_indx):
+                self.arrow_list.pop(i)
 class Arrow:
     def __init__(self, angle, charge, x, y):
         self.angle = angle
         self.charge = charge
+        self.deceleration = 100
         self.dx = numpy.cos(numpy.radians(self.angle))
         self.dy = numpy.sin(numpy.radians(self.angle))
-        self.vx = 10
-        self.vy = 0
-        self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), self.angle)
-        self.rect = self.arrow_img.get_rect(center=(self.x, self.y))
+        self.vx = self.dx * (self.charge + 1) * 3
+        self.vy = self.dy * (self.charge + 1) * 3
+        self.deceleration_x = self.vx / self.deceleration
+        self.deceleration_y = self.vy / self.deceleration
+        self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), -(self.angle))
+        self.rect = self.arrow_img.get_rect(center=(x, y))
+        self.spawn_time = time.perf_counter()
 
     def draw(self, screen):
         screen.blit(self.arrow_img, self.rect)
 
     def update(self):
-        self.rect.x += self.dx
-        self.rect.y += self.dy
+        if abs(self.vx) < 2 and abs(self.vy) < 2:
+            self.vx = 0
+            self.vy = 0
+        else:
+            self.rect.x += self.vx
+            self.rect.y += self.vy
+            self.vx -= self.deceleration_x
+            self.vy -= self.deceleration_y
         
