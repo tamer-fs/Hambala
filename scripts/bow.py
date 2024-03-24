@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import numpy
 
 from func import *
 
@@ -11,7 +12,7 @@ class Bow:
             self.bow_frames[angle] = []
             for x in range(0, 4):
                 photo = pygame.image.load(f"assets/bow/bow{str(x) if x != 0 else ''}.png")
-                photo = pygame.transform.rotate(photo, angle)
+                photo = pygame.transform.rotate(photo, -angle)
                 self.bow_frames[angle].append(photo)
 
         self.arrow_list = []
@@ -36,9 +37,8 @@ class Bow:
         
         self.direction = direction % 360
 
-            
         if self.charging:
-            print(f"arrow charge: {self.charge}")      
+            # print(f"arrow charge: {self.charge}")      
             if time.perf_counter() - self.charge_timer > self.charge_cooldown:
                 self.charge_timer = time.perf_counter()
                 if self.charge < 3:
@@ -67,13 +67,17 @@ class Arrow:
     def __init__(self, angle, charge, x, y):
         self.angle = angle
         self.charge = charge
-        self.x = x
-        self.y = y
-        #self.vx = ???
-        #self.vy = ???
+        self.vx = 10
+        self.vy = 0
+        self.dx = numpy.cos(numpy.radians(self.angle)) * 10
+        self.dy = numpy.sin(numpy.radians(self.angle)) * 10
+        self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), self.angle)
+        self.rect = self.arrow_img.get_rect(center=(self.x, self.y))
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (255, 0, 0), ((self.x, self.y),(10, 10)))
+        screen.blit(self.arrow_img, self.rect)
 
     def update(self):
-        pass
+        self.rect.x += self.dx
+        self.rect.y += self.dy
+        
