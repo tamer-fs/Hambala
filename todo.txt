@@ -22,7 +22,7 @@ Wat er nog moet worden gemaakt voordat het spel af is:
 [✘] 10. EXE file maken
 [✔] 11. EXE file testen
 [✔] 11. Boog gemaakt
-[✘] 11. Boog implementeren
+[✔] 11. Boog implementeren
 
 Misschien nog leuk toe te voegen maar niet heel belangrijk:
 [✘] 1. Mooie camera effecten

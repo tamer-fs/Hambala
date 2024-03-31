@@ -194,8 +194,7 @@ started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 
-test_bow = Bow(True)
-bow_angle = 0
+player_bow = Bow(True)
 
 
 def shake(shakeTime, scrollx, scrolly):
@@ -213,10 +212,10 @@ while playing:
             playing = False
             
         if event.type == pygame.MOUSEBUTTONDOWN:
-            test_bow.start_charge()
+            player_bow.start_charge()
 
         if event.type == pygame.MOUSEBUTTONUP:
-            test_bow.shoot_arrow()
+            player_bow.shoot_arrow()
 
         if (
             event.type == pygame.MOUSEWHEEL
@@ -296,7 +295,7 @@ while playing:
 
     prev_player_x = player.x
     prev_player_y = player.y
-    player.draw(screen, scrollx, scrolly)
+    player.draw(screen, scrollx, scrolly, player_bow)
 
     # get joystick
 
@@ -387,7 +386,7 @@ while playing:
         plants,
     )
     player.update(
-        plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict
+        plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict, player_bow, pygame.mouse.get_pos(), scrollx, scrolly
     )
 
     if player.hitting or started_shake:
@@ -398,7 +397,7 @@ while playing:
         shake_frame = 1
         # animals.hit = False
 
-    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count)
+    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count, player_bow)
 
     main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -511,9 +510,9 @@ while playing:
         mouse_set_x = min(max(5, mouse_set_x), screenWidth - 5)
         mouse_set_y = min(max(5, mouse_set_y), screenHeight - 5)
         pygame.mouse.set_pos((mouse_set_x, mouse_set_y))
-    bow_angle += 1
-    test_bow.update(100, 100, bow_angle)
-    test_bow.draw(screen)
+
+    # player_bow.update(100, 100, 0)
+    # player_bow.draw(screen, scrollx, scrolly)
 
     fps = clock.get_fps()
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))

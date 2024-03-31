@@ -58,11 +58,11 @@ class Bow:
         if self.arrows != "ul":
             self.arrows -= 1
     
-    def draw(self, screen):
-        screen.blit(self.bow_frames[self.direction][self.charge], self.bow_rect)
+    def draw(self, screen, scrollx, scrolly):
+        screen.blit(self.bow_frames[self.direction][self.charge], (self.bow_rect.x - scrollx, self.bow_rect.y - scrolly))
         remove_indx = []
         for i, arrow in enumerate(self.arrow_list):
-            arrow.draw(screen)
+            arrow.draw(screen, scrollx, scrolly)
             if time.perf_counter() - arrow.spawn_time > 3:
                 remove_indx.append(i)
 
@@ -84,8 +84,8 @@ class Arrow:
         self.rect = self.arrow_img.get_rect(center=(x, y))
         self.spawn_time = time.perf_counter()
 
-    def draw(self, screen):
-        screen.blit(self.arrow_img, self.rect)
+    def draw(self, screen, scrollx, scrolly):
+        screen.blit(self.arrow_img, (self.rect.x - scrollx, self.rect.y - scrolly))
 
     def update(self):
         if abs(self.vx) < 2 and abs(self.vy) < 2:
@@ -96,4 +96,6 @@ class Arrow:
             self.rect.y += self.vy
             self.vx -= self.deceleration_x
             self.vy -= self.deceleration_y
+            
+        
         

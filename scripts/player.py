@@ -3,6 +3,7 @@ from func import *
 from scripts.particle import *
 from scripts.placeItem import *
 import random
+import math
 
 
 class Player:
@@ -331,7 +332,7 @@ class Player:
             elif self.state == "run":
                 self.food_value -= 0.02 * deltaT
 
-    def draw(self, screen, scrollx, scrolly):
+    def draw(self, screen, scrollx, scrolly, player_bow):
         scr_w, scr_h = screen.get_size()
 
         if self.sword_selected:
@@ -391,6 +392,8 @@ class Player:
             )
             # pygame.draw.rect(screen, pygame.Color("#212529"), self.interact_rect, border_radius=15)
             screen.blit(self.interact_render, ((scr_w - self.inter_w) / 2, 15))
+            
+        player_bow.draw(screen, scrollx, scrolly)
 
     def get_inventory(self, inventory):
         self.inventory = inventory
@@ -404,9 +407,27 @@ class Player:
         joystick_input,
         health_bar,
         joystick_btn_dict,
+        player_bow,
+        mouse_pos,
+        scrollx, scrolly
     ):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
+        
+        mouse_x, mouse_y = mouse_pos
+        mouse_x += scrollx
+        mouse_y += scrolly
+        dx_mouse = mouse_x - self.x
+        dy_mouse = mouse_y - self.y
+        dx_mouse = 0.01 if dx_mouse == 0 else dx_mouse
+        dy_mouse = 0.01 if dy_mouse == 0 else dy_mouse
+        tan_angle = dy_mouse / dx_mouse
+        angle = math.degrees(math.atan(tan_angle))
 
+        if abs(dx_mouse) != dx_mouse:
+            angle += 180
+        
+        player_bow.update(self.x + 48 / 2, self.y + 48 / 2, int(angle))
+        
         if self.damaging:
             pygame.mixer.Sound.play(self.damage_sound)
             self.damaging = False
