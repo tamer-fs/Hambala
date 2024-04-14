@@ -269,6 +269,8 @@ class Inventory:
             "coal ": ["assets/ores/coal.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
             "wood ": ["assets/Images/log.png", 24],
+            "bow ": ["assets/bow/bow_item.png", 28],
+            
         }
 
         self.items_dict_small = {
@@ -288,6 +290,7 @@ class Inventory:
             "coal ": ["assets/ores/coal.png", 16],
             "torch ": ["assets/tools/torch.png", 16],
             "wood ": ["assets/Images/log.png", 16],
+            "bow ": ["assets/bow/bow_item.png", 16],
         }
 
         for item in self.items_dict:
@@ -347,7 +350,7 @@ class Inventory:
             5: "wood ",
             6: "torch ",
             7: "torch ",
-            8: "",
+            8: "bow ",
             9: "",
             10: "",
             11: "",
@@ -384,7 +387,7 @@ class Inventory:
             26: 0,
         }
 
-        self.not_stackable_items = ["pickaxe ", "axe ", "lantern ", "sword "]
+        self.not_stackable_items = ["pickaxe ", "axe ", "lantern ", "sword ", "bow "]
 
         for i in range(27):
             self.block_fill[i] = self.given_items[i] if i in self.given_items else ""

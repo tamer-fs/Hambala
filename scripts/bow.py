@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 import numpy
+import math
 
 from func import *
 
@@ -83,14 +84,23 @@ class Arrow:
         self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), -(self.angle))
         self.rect = self.arrow_img.get_rect(center=(x, y))
         self.spawn_time = time.perf_counter()
+        self.can_damage = True
+        self.slowing_down = False
+        self.damage = 0
 
     def draw(self, screen, scrollx, scrolly):
         screen.blit(self.arrow_img, (self.rect.x - scrollx, self.rect.y - scrolly))
 
     def update(self):
+        self.damage = min(self.vx**2 + self.vy**2, 100)
+        if self.can_damage == False and self.vx != 0 and self.vy != 0 and not self.slowing_down:
+            self.deceleration_x *= 5
+            self.deceleration_y *= 5
+            self.slowing_down = True
         if abs(self.vx) < 2 and abs(self.vy) < 2:
             self.vx = 0
             self.vy = 0
+            self.can_damage = False
         else:
             self.rect.x += self.vx
             self.rect.y += self.vy
