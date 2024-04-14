@@ -210,12 +210,14 @@ while playing:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             playing = False
-            
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
-            player_bow.start_charge()
+            if event.button == pygame.BUTTON_LEFT:
+                player_bow.start_charge()
 
         if event.type == pygame.MOUSEBUTTONUP:
-            player_bow.shoot_arrow()
+            if event.button == pygame.BUTTON_LEFT:
+                player_bow.shoot_arrow()
 
         if (
             event.type == pygame.MOUSEWHEEL

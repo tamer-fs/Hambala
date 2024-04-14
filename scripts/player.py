@@ -104,6 +104,7 @@ class Player:
         self.attacking = False
         self.can_attack = True
         self.sword_selected = False
+        self.bow_selected = False
         self.hitting = False
         self.attack_delay = 0.8
         self.update_frame_1 = 0
@@ -393,7 +394,8 @@ class Player:
             # pygame.draw.rect(screen, pygame.Color("#212529"), self.interact_rect, border_radius=15)
             screen.blit(self.interact_render, ((scr_w - self.inter_w) / 2, 15))
             
-        player_bow.draw(screen, scrollx, scrolly)
+        if self.bow_selected:
+            player_bow.draw(screen, scrollx, scrolly)
 
     def get_inventory(self, inventory):
         self.inventory = inventory
@@ -425,8 +427,10 @@ class Player:
 
         if abs(dx_mouse) != dx_mouse:
             angle += 180
-        
-        player_bow.update(self.x + 48 / 2, self.y + 48 / 2, int(angle))
+            
+            
+        if self.bow_selected:
+            player_bow.update(self.x + 48 / 2, self.y + 48 / 2, int(angle))
         
         if self.damaging:
             pygame.mixer.Sound.play(self.damage_sound)

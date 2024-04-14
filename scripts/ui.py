@@ -269,7 +269,9 @@ class Inventory:
             "coal ": ["assets/ores/coal.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
             "wood ": ["assets/Images/log.png", 24],
-            "bow ": ["assets/bow/bow_item.png", 28],
+            "bow ": ["assets/bow/bow_item.png", 30],
+            "wool ": ["assets/items/wool.png", 30],
+            "string ": ["assets/items/string.png", 30],
             
         }
 
@@ -290,7 +292,9 @@ class Inventory:
             "coal ": ["assets/ores/coal.png", 16],
             "torch ": ["assets/tools/torch.png", 16],
             "wood ": ["assets/Images/log.png", 16],
-            "bow ": ["assets/bow/bow_item.png", 16],
+            "bow ": ["assets/bow/bow_item.png", 24],
+            "wool ": ["assets/items/wool.png", 15],
+            "string ": ["assets/items/string.png", 15],
         }
 
         for item in self.items_dict:
@@ -351,9 +355,15 @@ class Inventory:
             6: "torch ",
             7: "torch ",
             8: "bow ",
-            9: "",
-            10: "",
-            11: "",
+            9: "wool ",
+            10: "wool ",
+            11: "wool ",
+            12: "wool ",
+            13: "wool ",
+            14: "wool ",           
+            15: "wool ",
+            16: "wool ",
+            17: "wool ",
         }
         self.block_fill = {}
         self.dropped_items = {}
@@ -802,6 +812,11 @@ class Inventory:
 
             if keys[2]:
                 self.eat_item(self.block_fill[self.selected_block], self.selected_block)
+                
+            if self.block_fill[self.selected_block] == "bow ":
+                self.player.bow_selected = True
+            else:
+                self.player.bow_selected = False
 
             if self.block_fill[self.selected_block] == "sword ":
                 self.player.sword_selected = True
@@ -998,6 +1013,7 @@ class Inventory:
             "sword ",
             "pickaxe ",
             "axe ",
+            "bow ",
             "",
         ]:
             if self.player.direction == "RIGHT" or self.player.direction_xy == "RIGHT":
@@ -1084,6 +1100,9 @@ class CraftingTable:
             "lantern ": ["assets/tools/lantern.png", 30],
             "torch ": ["assets/tools/torch.png", 30],
             "wood ": ["assets/images/log.png", 30],
+            "wool ": ["assets/items/wool.png", 30],
+            "string ": ["assets/items/string.png", 30],
+            "bow ": ["assets/bow/bow_item.png", 30],
         }
 
         for item in self.items_dict:
@@ -1175,6 +1194,13 @@ class CraftingTable:
             "      l  ": "wood ",
             "       l ": "wood ",
             "        l": "wood ",
+            "www      ": "string ",
+            "   www   ": "string ",
+            "      www": "string ",
+            "w  w  w  ": "string ",
+            " w  w  w ": "string ",
+            "  w  w  w": "string ",
+            "rrrl l l ": "bow ",
         }
         self.mask_surf = pygame.Surface(
             (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
@@ -1231,7 +1257,10 @@ class CraftingTable:
             recipe = ""
             for index, block in enumerate(self.blocks):
                 if bool(self.block_fill[index]):
-                    recipe += self.block_fill[index][0]
+                    if self.block_fill[index] == "string ":
+                        recipe += "r"
+                    else:
+                        recipe += self.block_fill[index][0]
                 else:
                     recipe += " "
             pygame.draw.rect(
@@ -1389,6 +1418,7 @@ class CraftingTable:
                         "to",
                         "fl",
                         "co",
+                        "wo",
                     ]:
                         # PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
                         if bool(self.block_fill[index]):
@@ -1494,7 +1524,10 @@ class CraftingTable:
             recipe = ""
             for index, block in enumerate(self.blocks):
                 if bool(self.block_fill[index]):
-                    recipe += self.block_fill[index][0]
+                    if self.block_fill[index] == "string ": # exceptions to first-letter for recipe
+                        recipe += "r"
+                    else:
+                        recipe += self.block_fill[index][0]
                 else:
                     recipe += " "
 
