@@ -155,7 +155,7 @@ class Enemies:
                     # if enemy["running_from_torch"]: #debug
                     #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
-    def update(self, is_night, player, torch_locations_list, particles, night_count):
+    def update(self, is_night, player, torch_locations_list, particles, night_count, player_bow):
         self.is_night = is_night
         
         spawn_list = []
@@ -231,6 +231,32 @@ class Enemies:
                                     color="red",
                                 )
                             )
+            
+            # arrow (by player) hitting zom
+            for arrow in player_bow.arrow_list:
+                if self.alive_enemies[i]["rect"].colliderect(arrow.rect):
+                    self.alive_enemies[i]["health_bar"].damage()
+                    self.alive_enemies[i]["last_attack"] = time.perf_counter()
+                    self.alive_enemies[i]["hp"] -= random.randint(30, 50)
+                    for _ in range(15):
+                        particles.append(
+                            HitParticle(
+                                self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                                self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                color="green",
+                            )
+                        )
+                    if self.alive_enemies[i]["hp"] <= 0:
+                        pygame.mixer.Sound.play(self.damage_sound)
+                        for _ in range(50):
+                            particles.append(
+                                HitParticle(
+                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                    color="green",
+                                )
+                            )
+                        self.alive_enemies.remove(self.alive_enemies[i])
             
             #player hitting zombie
             if player.hitting:
