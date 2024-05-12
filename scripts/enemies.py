@@ -12,10 +12,10 @@ class Enemies:
         self.spawn_rate = {
             "zombie": [100, 0],
             "zombie-big": [20, 0],
-            "slime-green": [10, 1],
-            "slime-red": [5, 3],
-            "slime-white": [5, 3],
-            "slime-blue": [5, 3],
+            "slime-green": [100, 1],
+            "slime-red": [100, 1],
+            "slime-white": [100, 1],
+            "slime-blue": [100, 1],
         }
         self.speed = speed
         self.health = health
@@ -61,13 +61,21 @@ class Enemies:
             }
         }
 
+        '''
+        Slime types:
+        Green: Standard slappe poep luie blobbel
+        Red: Ietsjes sneller en meer damage
+        Blue: Heel snel maar slap
+        White: Heel langzaam en sterk en een boog
+        '''
+
         self.enemies_size = {
             "zombie": (32, 32),
             "zombie-big": (60, 60),
-            "slime-green": (16, 16),
-            "slime-red": (14, 14),
-            "slime-blue": (16, 16),
-            "slime-white": (22, 22),
+            "slime-green": (32, 32),
+            "slime-red": (25, 25),
+            "slime-blue": (32, 32),
+            "slime-white": (40, 40),
         }
         self.scrollx, self.scrolly = 0, 0
 
@@ -75,7 +83,7 @@ class Enemies:
 
         self.zombie_spawn_perf = -1  # perf counter for spawning enemy zombie
 
-        self.imgs = {"zombie": {}, "zombie-big": {}}
+        self.imgs = {"zombie": {}, "zombie-big": {}, "slime-green": {}, "slime-red": {}, "slime-blue": {}, "slime-white": {}}
         self.num_of_frames = {
             "zombie": {
                 "idle": 7,
@@ -90,6 +98,55 @@ class Enemies:
                 "special_attack": 21,
                 "walk": 7,
                 "die": 7,
+            },
+            "slime-green": {
+                "front": 2,
+                "left": 2,
+                "right": 2,
+                "up": 2,
+
+
+                "idle": 2,
+                "attack": 2,
+                "special_attack": 2,
+                "walk": 2,
+                "die": 2,
+            },
+            "slime-red": {
+                "front": 2,
+                "left": 2,
+                "right": 2,
+                "up": 2,
+
+                "idle": 2,
+                "attack": 2,
+                "special_attack": 2,
+                "walk": 2,
+                "die": 2,
+            },
+            "slime-blue": {
+                "front": 2,
+                "left": 2,
+                "right": 2,
+                "up": 2,
+
+                "idle": 2,
+                "attack": 2,
+                "special_attack": 2,
+                "walk": 2,
+                "die": 2,
+            },
+            "slime-white": {
+                "front": 2,
+                "left": 2,
+                "right": 2,
+                "up": 2,
+
+                "idle": 2,
+                "attack": 2,
+                "special_attack": 2,
+                "walk": 2,
+                "die": 2,
             }
         }
         for enemy in list(self.num_of_frames.keys()):
@@ -97,23 +154,39 @@ class Enemies:
                 self.num_of_frames[enemy].keys()
             ):  # list(self.num_of_frames.keys()) = ["idle", "attack", ...]
                 for frame in range(self.num_of_frames[enemy][load_img]):
-                    if "-" in enemy:
-                        enemy_img = enemy.split("-")[0]
+                    if enemy[:5] == "slime":
+                        if load_img in ["front", "left", "right", "up"]:
+                            enemy_img = enemy
+                            slime_color = enemy.split("-")[1]
+                                
+                            print(load_img, enemy_img, enemy, slime_color)
+                            image = pygame.image.load(
+                                f"./assets/slimes/{slime_color}/{load_img}{frame+1}.png"
+                            ).convert_alpha()
+                            
+                            image = pygame.transform.scale(image, self.enemies_size[enemy])
+                            
+                            self.imgs[enemy][f"{load_img}{frame+1}"] = image
                     else:
-                        enemy_img = enemy
+                        if "-" in enemy:
+                            enemy_img = enemy.split("-")[0]
+                        else:
+                            enemy_img = enemy
+                            
+                        image = pygame.image.load(
+                            f"./assets/{enemy_img}/{load_img}{frame+1}.png"
+                        ).convert_alpha()
+                        image_flip = pygame.transform.flip(image, True, False)
+                        image = pygame.transform.scale(image, self.enemies_size[enemy])
+                        image_flip = pygame.transform.scale(image_flip, self.enemies_size[enemy])
                         
-                    image = pygame.image.load(
-                        f"./assets/{enemy_img}/{load_img}{frame+1}.png"
-                    ).convert_alpha()
-                    image_flip = pygame.transform.flip(image, True, False)
-                    image = pygame.transform.scale(image, self.enemies_size[enemy])
-                    image_flip = pygame.transform.scale(image_flip, self.enemies_size[enemy])
-                    
-                    self.imgs[enemy][f"{load_img}{frame+1}right"] = image
-                    self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
+                        self.imgs[enemy][f"{load_img}{frame+1}right"] = image
+                        self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
+                        
+        print(self.imgs)
 
-                    # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
-                    # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
+                        # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
+                        # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
 
     def spawn_enemies(self, enemy_count, enemy_type):
@@ -135,12 +208,12 @@ class Enemies:
         add_enemy = {
             "type": enemy_type,
             "direction": random.choice(["right", "left"]),
-            "rect": self.imgs[enemy_type]["idle1right"].get_rect(
+            "rect": self.imgs[enemy_type][list(self.imgs[enemy_type].keys())[0]].get_rect(
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
             "hp": random.randint(self.health[enemy_type][0], self.health[enemy_type][1]),
             "strength": random.randint(self.strength[enemy_type][0], self.strength[enemy_type][1]),
-            "speed": random.randint(self.speed[enemy_type][0], self.speed[enemy_type][1]),
+            "speed": random.randint(self.speed[enemy_type][0], self.speed[enemy_type][1]) * 5,
             "current_animation_frame": random.randint(1, 3),
             "current_action": "walk",
             "next_frame_perf": -1,
@@ -180,12 +253,20 @@ class Enemies:
 
             if blit_x > 0 - 100 and blit_x < width:
                 if blit_y > 0 - 100 and blit_y < height:
-                    screen.blit(
-                        self.imgs[enemy["type"]][
-                            f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'
-                        ],
-                        (blit_x, blit_y),
-                    )
+                    if enemy["type"][:5] == "slime":
+                        screen.blit(
+                            self.imgs[enemy["type"]][
+                                f'{enemy["direction"]}{enemy["current_animation_frame"]}'
+                            ],
+                            (blit_x, blit_y),
+                        )
+                    elif enemy["type"][:6] == "zombie":
+                        screen.blit(
+                            self.imgs[enemy["type"]][
+                                f'{enemy["current_action"]}{enemy["current_animation_frame"]}{enemy["direction"]}'
+                            ],
+                            (blit_x, blit_y),
+                        )
                     # if enemy["running_from_torch"]: #debug
                     #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
@@ -428,8 +509,8 @@ class Enemies:
             else:
                 if time.perf_counter() >= enemy["start_walking_perf"]:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
-                        self.alive_enemies[i]["x"] += enemy["walk_vx"]
-                        self.alive_enemies[i]["y"] += enemy["walk_vy"]
+                        self.alive_enemies[i]["x"] += enemy["walk_vx"] * (enemy["speed"] / 100)
+                        self.alive_enemies[i]["y"] += enemy["walk_vy"] * (enemy["speed"] / 100)
                         self.alive_enemies[i]["current_action"] = "walk"
                         if enemy["walk_vx"] > 0:
                             self.alive_enemies[i]["direction"] = "right"
