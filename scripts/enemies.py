@@ -12,6 +12,10 @@ class Enemies:
         self.spawn_rate = {
             "zombie": [100, 0],
             "zombie-big": [20, 0],
+            "slime-green": [10, 1],
+            "slime-red": [5, 3],
+            "slime-white": [5, 3],
+            "slime-blue": [5, 3],
         }
         self.speed = speed
         self.health = health
@@ -23,17 +27,47 @@ class Enemies:
                 "strength": self.strength["zombie"],
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
+                "has-bow": False,
             },
             "zombie-big": {
                 "strength": self.strength["zombie"],
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
+                "has-bow": False,
+            },
+            "slime-green": {
+                "strength": self.strength["slime-green"],
+                "speed": self.speed["slime-green"],
+                "hp": self.health["slime-green"],
+                "has-bow": False,
+            },
+            "slime-red": {
+                "strength": self.strength["slime-red"],
+                "speed": self.speed["slime-red"],
+                "hp": self.health["slime-red"],
+                "has-bow": False,               
+            },
+            "slime-blue": {
+                "strength": self.strength["slime-blue"],
+                "speed": self.speed["slime-blue"],
+                "hp": self.health["slime-blue"],
+                "has-bow": False,
+            },
+            "slime-white": {
+                "strength": self.strength["slime-white"],
+                "speed": self.speed["slime-white"],
+                "hp": self.health["slime-white"],
+                "has-bow": True,
             }
         }
 
         self.enemies_size = {
             "zombie": (32, 32),
-            "zombie-big": (60, 60)
+            "zombie-big": (60, 60),
+            "slime-green": (16, 16),
+            "slime-red": (14, 14),
+            "slime-blue": (16, 16),
+            "slime-white": (22, 22),
         }
         self.scrollx, self.scrolly = 0, 0
 

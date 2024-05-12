@@ -150,9 +150,9 @@ torch_animation_frame = 0
 
 
 enemies = Enemies(
-    {"zombie": (10, 20), "zombie-big": (40, 60)},
-    {"zombie": (20, 30), "zombie-big": (5, 10)},
-    {"zombie": (70, 120), "zombie-big": (150, 200)},
+    {"zombie": (10, 20), "zombie-big": (40, 60), "slime-green": (2, 4), "slime-red": (10, 25), "slime-blue": (2, 4), "slime-white": (2, 4)},
+    {"zombie": (20, 30), "zombie-big": (5, 10), "slime-green": (2, 4), "slime-red": (15, 20), "slime-blue": (20, 30), "slime-white": (2, 4)},
+    {"zombie": (70, 120), "zombie-big": (150, 200), "slime-green": (20, 40), "slime-red": (20, 40), "slime-blue": (20, 40), "slime-white": (80, 150)},
 )
 enemies_spawn = False
 
