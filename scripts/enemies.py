@@ -84,7 +84,7 @@ class Enemies:
         self.zombie_spawn_perf = -1  # perf counter for spawning enemy zombie
 
         self.imgs = {"zombie": {}, "zombie-big": {}, "slime-green": {}, "slime-red": {}, "slime-blue": {}, "slime-white": {}}
-        self.num_of_frames = {
+        self.num_of_frames = {   
             "zombie": {
                 "idle": 7,
                 "attack": 6,
