@@ -234,10 +234,11 @@ class Enemies:
             
             # arrow (by player) hitting zom
             for arrow in player_bow.arrow_list:
-                if self.alive_enemies[i]["rect"].colliderect(arrow.rect):
+                if self.alive_enemies[i]["rect"].colliderect(arrow.rect) and arrow.can_damage:
+                    arrow.can_damage = False
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                    self.alive_enemies[i]["hp"] -= random.randint(30, 50)
+                    self.alive_enemies[i]["hp"] -= arrow.damage
                     for _ in range(15):
                         particles.append(
                             HitParticle(

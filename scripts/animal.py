@@ -19,8 +19,8 @@ class Animal:
         self.player = None
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
         self.drop_item = {
-            "sheep": "meat ",
-            "sheepbrown": "meat ",
+            "sheep": ["meat ","wool "],
+            "sheepbrown": ["meat ","wool "],
             "wolfblue": "meat ",
             "wolfblack": "meat ",
             "wolfbluebrown": "meat ",
@@ -377,18 +377,26 @@ class Animal:
                 if "rat" in animal_type:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
+                    if type(self.drop_item[animal_type]) is list:
+                        dropping_item = random.choice(self.drop_item[animal_type])
+                    else:
+                        dropping_item = self.drop_item[animal_type]
                     self.inventory.dropped_items[len(self.inventory.dropped_items)] = [
-                        self.drop_item[animal_type],
+                        dropping_item,
                         animal_rect.x + random.choice([-60, 60, 55, -55]),
                         animal_rect.y + random.choice([-60, 60, 55, -55]),
                         time.perf_counter(),
                     ]
                 else:
                     for _ in range(random.randint(1, 2)):
+                        if type(self.drop_item[animal_type]) is list:
+                            dropping_item = random.choice(self.drop_item[animal_type])
+                        else:
+                            dropping_item = self.drop_item[animal_type]
                         self.inventory.dropped_items[
                             len(self.inventory.dropped_items)
                         ] = [
-                            self.drop_item[animal_type],
+                            dropping_item,
                             animal_rect.x + random.choice([-60, 60, 55, -55]),
                             animal_rect.y + random.choice([-60, 60, 55, -55]),
                             time.perf_counter(),
