@@ -7,12 +7,14 @@ import math
 from func import *
 
 class Bow:
-    def __init__(self, unlimited_arrows=False):
+    def __init__(self, size=64 ,unlimited_arrows=False):
         self.bow_frames = {}
         for angle in range(0, 360):
             self.bow_frames[angle] = []
-            for x in range(0, 4):
+            for x in range(0, 4): 
                 photo = pygame.image.load(f"assets/bow/bow{str(x) if x != 0 else ''}.png")
+                if size != 64:
+                    photo = pygame.transform.scale(photo, (size, size))
                 photo = pygame.transform.rotate(photo, -angle)
                 self.bow_frames[angle].append(photo)
 

@@ -194,7 +194,7 @@ started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 
-player_bow = Bow(True)
+player_bow = Bow(unlimited_arrows=True)
 
 
 def shake(shakeTime, scrollx, scrolly):

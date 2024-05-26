@@ -1,8 +1,10 @@
 import pygame
 import random
 import time
+import math
 
 from func import *
+from scripts.bow import *
 from scripts.ui import HealthBar
 
 
@@ -28,12 +30,14 @@ class Enemies:
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
                 "has-bow": False,
+
             },
             "zombie-big": {
                 "strength": self.strength["zombie"],
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
                 "has-bow": False,
+                
             },
             "slime-green": {
                 "strength": self.strength["slime-green"],
@@ -58,6 +62,7 @@ class Enemies:
                 "speed": self.speed["slime-white"],
                 "hp": self.health["slime-white"],
                 "has-bow": True,
+                "bow-size": 25,
             }
         }
 
@@ -104,7 +109,6 @@ class Enemies:
                 "left": 2,
                 "right": 2,
                 "up": 2,
-
 
                 "idle": 2,
                 "attack": 2,
@@ -212,6 +216,7 @@ class Enemies:
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
             "hp": random.randint(self.health[enemy_type][0], self.health[enemy_type][1]),
+            "has_bow": self.enemies[enemy_type]["has-bow"],
             "strength": random.randint(self.strength[enemy_type][0], self.strength[enemy_type][1]),
             "speed": random.randint(self.speed[enemy_type][0], self.speed[enemy_type][1]) * 5,
             "current_animation_frame": random.randint(1, 3),
@@ -234,6 +239,15 @@ class Enemies:
             "attack_cooldown": -1,
             "attack_cooldown_duration": 2,
         }
+
+        if add_enemy["has_bow"]:
+            add_enemy["bow"] = Bow(size=self.enemies[enemy_type]["bow-size"], unlimited_arrows=True)
+            add_enemy["bow_shoot_timer"] = -1
+            add_enemy["bow_shoot_delay"] = random.randint(0, 6)
+            add_enemy["charge_started"] = False
+            add_enemy["charge_delay_timer"] = -1
+            add_enemy["charge_delay"] = random.randint(2, 5)
+            add_enemy["charge_timer_set"] = False
 
         add_enemy["x"] = float(add_enemy["rect"].x)
         add_enemy["y"] = float(add_enemy["rect"].y)
@@ -267,6 +281,9 @@ class Enemies:
                             ],
                             (blit_x, blit_y),
                         )
+                        
+            if self.alive_enemies[i]["has_bow"]:
+                self.alive_enemies[i]["bow"].draw(screen, scrollx, scrolly)
                     # if enemy["running_from_torch"]: #debug
                     #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
@@ -336,7 +353,7 @@ class Enemies:
             ):
                 if time.perf_counter() - self.alive_enemies[i]["attack_cooldown"] > self.alive_enemies[i]["attack_cooldown_duration"]:
                     self.alive_enemies[i]["attack_cooldown"] = time.perf_counter()
-                    player.health_value -= int(self.alive_enemies[i]["strength"] / 10)
+                    player.health_value -= math.ceil(self.alive_enemies[i]["strength"] / 10)
                     player.health_value = max(0, player.health_value)
                     for _ in range(25):
                             particles.append(
@@ -346,8 +363,59 @@ class Enemies:
                                     color="red",
                                 )
                             )
+                            
+            if self.alive_enemies[i]["has_bow"]:     
+                angle = 0     
+                enemy = self.alive_enemies[i]
+                rect = self.alive_enemies[i]["rect"] 
+                
+                if (
+                    get_distance(
+                        player.x + 24,
+                        player.y + 24,
+                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
+                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                    )
+                    < 400
+                ):
+                    # boog mikken                          
+                    player_x, player_y = player.x, player.y
+                    player_dx = player_x - rect.x
+                    player_dy = player_y - rect.y
+                    player_dx = 0.01 if player_dx == 0 else player_dx
+                    player_dy = 0.01 if player_dy == 0 else player_dy
+                    tan_angle = player_dy / player_dx
+                    angle = math.degrees(math.atan(tan_angle))
+                    if abs(player_dx) != player_dx:
+                        angle += 180
+                        
+                    # boog schieten
+                    
+                    
+                    
+                    if enemy["charge_started"] == False:
+                        if enemy["charge_timer_set"] == False:
+                            enemy["charge_delay_timer"] = time.perf_counter()
+                            enemy["charge_timer_set"] = True
+                        if time.perf_counter() - enemy["charge_delay_timer"] > enemy["charge_delay"]:
+                            print("start_charge")
+                            enemy["bow"].start_charge()
+                            enemy["charge_started"] = True
+                            enemy["bow_shoot_timer"] = time.perf_counter()
+
+                        
+                    if time.perf_counter() - enemy["bow_shoot_timer"] > enemy["bow_shoot_delay"] and enemy["charge_started"] == True:
+                        print("shoot")                   
+                        enemy["bow"].shoot_arrow()
+                        enemy["charge_started"] = False
+                        enemy["bow_shoot_delay"] = random.randint(0, 6)
+                        enemy["charge_timer_set"] = False
+                    
             
-            # arrow (by player) hitting zom
+                enemy["bow"].update(self.alive_enemies[i]["rect"].x + rect.w/2, self.alive_enemies[i]["rect"].y + rect.h/2, round(angle))
+            
+            
+            # arrow (by player) hitting zombie
             for arrow in player_bow.arrow_list:
                 if self.alive_enemies[i]["rect"].colliderect(arrow.rect) and arrow.can_damage:
                     arrow.can_damage = False
