@@ -389,10 +389,7 @@ class Enemies:
                     if abs(player_dx) != player_dx:
                         angle += 180
                         
-                    # boog schieten
-                    
-                    
-                    
+                    # boog schieten                                    
                     if enemy["charge_started"] == False:
                         if enemy["charge_timer_set"] == False:
                             enemy["charge_delay_timer"] = time.perf_counter()

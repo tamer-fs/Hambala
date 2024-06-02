@@ -54,7 +54,7 @@ class Bow:
         self.charging = True
                 
     def shoot_arrow(self):
-        self.arrow_list.append(Arrow(self.direction, self.charge, self.x, self.y))
+        self.arrow_list.append(Arrow(self.direction+random.randint(-2, 2), self.charge, self.x, self.y))
         
         self.charging = False
         self.charge = 0
