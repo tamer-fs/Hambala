@@ -9,6 +9,7 @@ from func import *
 class Bow:
     def __init__(self, size=64 ,unlimited_arrows=False):
         self.bow_frames = {}
+        self.size = size
         for angle in range(0, 360):
             self.bow_frames[angle] = []
             for x in range(0, 4): 
@@ -54,7 +55,7 @@ class Bow:
         self.charging = True
                 
     def shoot_arrow(self):
-        self.arrow_list.append(Arrow(self.direction+random.randint(-2, 2), self.charge, self.x, self.y))
+        self.arrow_list.append(Arrow(self.size, self.direction+random.randint(-2, 2), self.charge, self.x, self.y))
         
         self.charging = False
         self.charge = 0
@@ -73,7 +74,8 @@ class Bow:
             for i in reversed(remove_indx):
                 self.arrow_list.pop(i)
 class Arrow:
-    def __init__(self, angle, charge, x, y):
+    def __init__(self, size, angle, charge, x, y):
+        self.size = round(size / 2)
         self.angle = angle
         self.charge = charge
         self.deceleration = 100
@@ -83,7 +85,7 @@ class Arrow:
         self.vy = self.dy * (self.charge + 1) * 3
         self.deceleration_x = self.vx / self.deceleration
         self.deceleration_y = self.vy / self.deceleration
-        self.arrow_img = pygame.transform.rotate(pygame.image.load("assets/bow/arrow.png"), -(self.angle))
+        self.arrow_img = pygame.transform.rotate(pygame.transform.smoothscale(pygame.image.load("assets/bow/arrow.png"), (self.size, self.size)), -(self.angle))
         self.rect = self.arrow_img.get_rect(center=(x, y))
         self.spawn_time = time.perf_counter()
         self.can_damage = True

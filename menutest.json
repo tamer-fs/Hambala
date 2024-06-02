@@ -1,0 +1,15 @@
+{
+  "button": {
+    "colours": {
+      "normal_border": "White",
+      "normal_bg": "#000",
+      "normal_text": "#fff"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "0",
+      "border_width": "2",
+      "text_shadow_size": "1"
+    }
+  }
+}

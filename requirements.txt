@@ -2,3 +2,4 @@ pygame
 numpy
 matplotlib
 perlin_noise
+pygame_gui

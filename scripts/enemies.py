@@ -37,7 +37,6 @@ class Enemies:
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
                 "has-bow": False,
-                
             },
             "slime-green": {
                 "strength": self.strength["slime-green"],
@@ -395,14 +394,12 @@ class Enemies:
                             enemy["charge_delay_timer"] = time.perf_counter()
                             enemy["charge_timer_set"] = True
                         if time.perf_counter() - enemy["charge_delay_timer"] > enemy["charge_delay"]:
-                            print("start_charge")
                             enemy["bow"].start_charge()
                             enemy["charge_started"] = True
                             enemy["bow_shoot_timer"] = time.perf_counter()
 
                         
                     if time.perf_counter() - enemy["bow_shoot_timer"] > enemy["bow_shoot_delay"] and enemy["charge_started"] == True:
-                        print("shoot")                   
                         enemy["bow"].shoot_arrow()
                         enemy["charge_started"] = False
                         enemy["bow_shoot_delay"] = random.randint(0, 6)
@@ -439,6 +436,21 @@ class Enemies:
                             )
                         self.alive_enemies.remove(self.alive_enemies[i])
             
+            #enemy with bow hitting player
+            if self.alive_enemies[i]["has_bow"]:
+                for arrow in self.alive_enemies[i]["bow"].arrow_list:
+                    if arrow.rect.colliderect(pygame.Rect(player.x, player.y, 48, 48)) and arrow.can_damage:
+                        arrow.can_damage = False
+                        player.health_value -= round(arrow.damage / 12)
+                        for _ in range(15):
+                            particles.append(
+                                HitParticle(
+                                    player.x + (48/2),
+                                    player.y + (48/2),
+                                    color="red",
+                                )
+                            )
+
             #player hitting zombie
             if player.hitting:
                 if (

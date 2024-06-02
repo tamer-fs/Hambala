@@ -7,6 +7,7 @@ import random
 import pygame
 import time
 import json
+import pygame_gui
 
 pygame.init()
 pygame.font.init()

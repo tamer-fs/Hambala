@@ -10,6 +10,8 @@ Wat er nog moet worden gemaakt voordat het spel af is:
 [✔] 0. Inventory item counts
 [✔] 1. Monsters doen schade
 [✘] 2. Meer soorten monsters
+    [✔] Slimes
+
 [✘] 3. Meer soorten voedsel
 [✘] 4. Meer soorten ores en wapens (en tools?)
 [✘] 5. In-Game UI
