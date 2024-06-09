@@ -1,0 +1,19 @@
+{
+  "button": {
+    "colours": {
+      "normal_border": "#B19470",
+      "normal_bg": "#76453B",
+      "normal_text": "#F8FAE5"
+    },
+    "font": {
+      "name": "Testfont",
+      "size": "24"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "0",
+      "border_width": "2",
+      "text_shadow_size": "0"
+    }
+  }
+}

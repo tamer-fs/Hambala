@@ -26,7 +26,6 @@ joystick_btn_dict = None
 
 check_controller_perf = -1
 
-
 def get_joysticks():
     global joystick, joystick_input, controller_type, joystick_btn_dict
     if pygame.joystick.get_count() == 1:
@@ -66,6 +65,8 @@ from scripts.player import *
 from scripts.ui import *
 from scripts.animal import *
 from scripts.bow import *
+
+from scripts.windows.title_window import *
 
 
 # joystick_btn_dict = {
@@ -197,6 +198,30 @@ ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 
 player_bow = Bow(unlimited_arrows=True)
 
+current_game_state = "TITLE"
+in_game = False # je kan ook in-game zijn in settings
+
+'''
+TITLE = Title screen (when opening game):
+
+Buttons in title screen:
+Load last game -> GAME (met ingeladen spel)
+Load (specific) game -> LOAD
+Create new game -> CREATE
+Settings -> SETTINGS
+Exit -> pg.quit() etc.
+
+LOAD = Load specific game:
+Play -> GAME
+
+CREATE = Create screen game
+
+SETTINGS = General game settings
+
+GAME = In-Game
+PAUSE = Pause screen (when opening menu in game)
+'''
+
 
 def shake(shakeTime, scrollx, scrolly):
     global started_shake
@@ -207,215 +232,130 @@ def shake(shakeTime, scrollx, scrolly):
         scrolly += random.randint(-2, 2)
 
 
+title_window = TitleWindow(screen)
+
 while playing:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            playing = False
+    if current_game_state == "TITLE":
+
+                
+        screen.fill((0, 0, 0))
+
+        playing = title_window.update(pygame.event.get(), pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+        title_window.draw()
         
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == pygame.BUTTON_LEFT:
-                player_bow.start_charge()
+    elif current_game_state == "LOAD":
+        pass
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            if event.button == pygame.BUTTON_LEFT:
-                player_bow.shoot_arrow()
+    elif current_game_state == "CREATE":
+        pass
 
-        if (
-            event.type == pygame.MOUSEWHEEL
-            or event.type == pygame.JOYBUTTONDOWN
-            or event.type == pygame.JOYHATMOTION
-        ):
-            if not joystick_input and hasattr(event, "y"):
-                main_inventory.mouse_update(
-                    event.y, joystick_input, joystick, joystick_btn_dict
-                )
-            else:
-                main_inventory.mouse_update(
-                    0, joystick_input, joystick, joystick_btn_dict
-                )
+    elif current_game_state == "SETTINGS":
+        pass
 
-        if joystick:
-            if event.type == pygame.JOYBUTTONDOWN:
-                joystick_input = True
+    elif current_game_state == "PAUSE":
+        pass
 
-        if (
-            event.type == pygame.KEYDOWN
-            or event.type == pygame.JOYBUTTONDOWN
-            or event.type == pygame.JOYHATMOTION
-        ):
-            if hasattr(event, "key"):
-                if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
-                    joystick_input = False
-            if joystick_input:
-                if eval(joystick_btn_dict["d-pad-right"]):
-                    main_inventory.backpack_visible = True
-                elif eval(joystick_btn_dict["d-pad-left"]):
-                    main_inventory.backpack_visible = False
-            else:
+    elif current_game_state == "GAME":
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                playing = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == pygame.BUTTON_LEFT:
+                    player_bow.start_charge()
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == pygame.BUTTON_LEFT:
+                    player_bow.shoot_arrow()
+
+            if (
+                event.type == pygame.MOUSEWHEEL
+                or event.type == pygame.JOYBUTTONDOWN
+                or event.type == pygame.JOYHATMOTION
+            ):
+                if not joystick_input and hasattr(event, "y"):
+                    main_inventory.mouse_update(
+                        event.y, joystick_input, joystick, joystick_btn_dict
+                    )
+                else:
+                    main_inventory.mouse_update(
+                        0, joystick_input, joystick, joystick_btn_dict
+                    )
+
+            if joystick:
+                if event.type == pygame.JOYBUTTONDOWN:
+                    joystick_input = True
+
+            if (
+                event.type == pygame.KEYDOWN
+                or event.type == pygame.JOYBUTTONDOWN
+                or event.type == pygame.JOYHATMOTION
+            ):
                 if hasattr(event, "key"):
-                    if event.key == pygame.K_CAPSLOCK:
-                        main_inventory.backpack_visible = (
-                            not main_inventory.backpack_visible
-                        )
+                    if event.key in [pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s]:
+                        joystick_input = False
+                if joystick_input:
+                    if eval(joystick_btn_dict["d-pad-right"]):
+                        main_inventory.backpack_visible = True
+                    elif eval(joystick_btn_dict["d-pad-left"]):
+                        main_inventory.backpack_visible = False
+                else:
+                    if hasattr(event, "key"):
+                        if event.key == pygame.K_CAPSLOCK:
+                            main_inventory.backpack_visible = (
+                                not main_inventory.backpack_visible
+                            )
 
-        if event.type == pygame.VIDEORESIZE:
-            screenWidth, screenHeight = screen.get_size()
-            player_sprint_bar.reset(
-                (screenWidth - 208, screenHeight - 33), (200, 25), 8
-            )
-            player_hunger_bar.reset(
-                (screenWidth - 208, screenHeight - 66 - 8), (200, 25), 8
-            )
-            player_hp_bar.reset(
-                (screenWidth / 2 - screenWidth / 8, screenHeight - 33),
-                (screenWidth / 4, 25),
-                8,
-            )
-            player.set_window_size(screen)
-            main_inventory.reset_pos((8, screenHeight / 2 - 200))
-            main_crafting_table.reset()
-            animals.reset_screen_size(screenWidth, screenHeight)
-            mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
-            mask_surf.fill(sky_color)
+            if event.type == pygame.VIDEORESIZE:
+                screenWidth, screenHeight = screen.get_size()
+                player_sprint_bar.reset(
+                    (screenWidth - 208, screenHeight - 33), (200, 25), 8
+                )
+                player_hunger_bar.reset(
+                    (screenWidth - 208, screenHeight - 66 - 8), (200, 25), 8
+                )
+                player_hp_bar.reset(
+                    (screenWidth / 2 - screenWidth / 8, screenHeight - 33),
+                    (screenWidth / 4, 25),
+                    8,
+                )
+                player.set_window_size(screen)
+                main_inventory.reset_pos((8, screenHeight / 2 - 200))
+                main_crafting_table.reset()
+                animals.reset_screen_size(screenWidth, screenHeight)
+                mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+                mask_surf.fill(sky_color)
 
-    screen.fill((0, 0, 0))
-    torch_animation_frame, torch_update_frame = render_world(
-        screen,
-        world,
-        plants,
-        world_rotation,
-        images,
-        scrollx + shake_x,
-        scrolly + shake_y,
-        screenWidth,
-        screenHeight,
-        torch_animation_frame,
-        torch_update_frame,
-    )
-    animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
-    enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
-    particles = animals.update(plants, player, particles)
+        screen.fill((0, 0, 0))
+        torch_animation_frame, torch_update_frame = render_world(
+            screen,
+            world,
+            plants,
+            world_rotation,
+            images,
+            scrollx + shake_x,
+            scrolly + shake_y,
+            screenWidth,
+            screenHeight,
+            torch_animation_frame,
+            torch_update_frame,
+        )
+        animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
+        enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
+        particles = animals.update(plants, player, particles)
 
-    prev_player_x = player.x
-    prev_player_y = player.y
-    player.draw(screen, scrollx, scrolly, player_bow)
+        prev_player_x = player.x
+        prev_player_y = player.y
+        player.draw(screen, scrollx, scrolly, player_bow)
 
-    # get joystick
+        # get joystick
 
-    if time.perf_counter() - check_controller_perf > 1.5:
-        joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
-        check_controller_perf = time.perf_counter()
+        if time.perf_counter() - check_controller_perf > 1.5:
+            joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
+            check_controller_perf = time.perf_counter()
 
-    render_plants(
-        screen,
-        world,
-        plants,
-        world_rotation,
-        images,
-        scrollx + shake_x,
-        scrolly + shake_y,
-        screenWidth,
-        screenHeight,
-        player,
-    )
-
-    
-
-    if shake_frame > 0:
-        shake_frame += 1
-        if shake_frame > 10:
-            shake_frame = 0
-        shake_x = random.randint(-1, 1)
-        shake_y = random.randint(-1, 1)
-
-    particles, particle_perf = spawn_particles(particle_perf, player, particles)
-
-    del_list = []
-    for i, particle in enumerate(particles):
-        particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
-        particle.draw(screen)
-        if particle.delete_timer + 0.75 < time.perf_counter():
-            del_list.append(i)
-
-    for j in list(sorted(del_list))[::-1]:
-        particles.pop(j)
-
-    screen.blit(mask_surf, (0, 0))
-
-    player_sprint_bar.draw(
-        screen,
-        pygame.Color("#212529"),
-        pygame.Color("#343a40"),
-        pygame.Color("#F4D35E"),
-        stamina_icon,
-        (-25, 0),
-        5,
-    )
-
-    player_hunger_bar.draw(
-        screen,
-        pygame.Color("#212529"),
-        pygame.Color("#343a40"),
-        pygame.Color("#bc6c25"),
-        hunger_icon,
-        (-25, 0),
-        5,
-    )
-
-    player_hp_bar.draw(
-        screen,
-        pygame.Color("#212529"),
-        pygame.Color("#343a40"),
-        player.hp_bar_color,
-        player.hp_icon,
-        (-28, -2),
-        5,
-    )
-
-    player_sprint_bar.update(player.energy_value)
-    player_hunger_bar.update(player.food_value)
-    player_hp_bar.update(player.health_value)
-    keys = pygame.key.get_pressed()
-
-    main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
-
-    player.walking(
-        keys,
-        deltaT,
-        pygame.mouse.get_pressed(),
-        joystick,
-        joystick_input,
-        joystick_btn_dict,
-        plants,
-    )
-    player.update(
-        plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict, player_bow, pygame.mouse.get_pos(), scrollx, scrolly
-    )
-
-    if player.hitting or started_shake:
-        started_shake = True
-        if not started_shake:
-            shake_time = time.perf_counter()
-        shake(shake_time, scrollx, scrolly)
-        shake_frame = 1
-        # animals.hit = False
-
-    particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count, player_bow)
-
-    main_inventory.draw_holding_items(screen, (scrollx, scrolly))
-
-    if time.perf_counter() - sky_time > 0.01:
-        if not is_night:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.5)
-        else:
-            sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.5)
-
-        sky_time = time.perf_counter()
-
-    mask_surf.fill(sky_color)
-
-    if player.holding_lantern:
-        render_lantern(
+        render_plants(
             screen,
             world,
             plants,
@@ -428,72 +368,179 @@ while playing:
             player,
         )
 
-    torch_locations_list = render_torch(
-        screen,
-        world,
-        plants,
-        world_rotation,
-        images,
-        screenWidth,
-        screenHeight,
-        scrollx,
-        scrolly,
-    )
+        if shake_frame > 0:
+            shake_frame += 1
+            if shake_frame > 10:
+                shake_frame = 0
+            shake_x = random.randint(-1, 1)
+            shake_y = random.randint(-1, 1)
 
-    if sky_color[3] > 125:
-        enemies_spawn = True
-    else:
-        enemies_spawn = False
+        particles, particle_perf = spawn_particles(particle_perf, player, particles)
 
-    if sky_color[3] > 200:
-        is_night = True
-    elif sky_color[3] < 1:
-        is_night = False
-        
-    night_count = ui_clock.update(sky_color, is_night, night_count)
-    ui_clock.draw(screen)
+        del_list = []
+        for i, particle in enumerate(particles):
+            particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
+            particle.draw(screen)
+            if particle.delete_timer + 0.75 < time.perf_counter():
+                del_list.append(i)
 
-    scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
-    scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)
+        for j in list(sorted(del_list))[::-1]:
+            particles.pop(j)
 
-    scrollx = max(scrollx, 0)
-    scrollx = min(scrollx, 16 * map_w - screenWidth)
-    scrolly = max(scrolly, 0)
-    scrolly = min(scrolly, 16 * map_h - screenHeight)
+        screen.blit(mask_surf, (0, 0))
 
-    main_inventory.update(
-        pygame.mouse.get_pressed(),
-        pygame.mouse.get_pos(),
-        screen,
-        pygame.key.get_pressed(),
-        joystick_input,
-        joystick,
-        (scrollx, scrolly),
-        plants,
-        main_inventory,
-        joystick_btn_dict,
-    )
+        player_sprint_bar.draw(
+            screen,
+            pygame.Color("#212529"),
+            pygame.Color("#343a40"),
+            pygame.Color("#F4D35E"),
+            stamina_icon,
+            (-25, 0),
+            5,
+        )
 
-    main_crafting_table.draw(
-        screen,
-        scrollx,
-        scrolly,
-        pygame.key.get_pressed(),
-        joystick_input,
-        joystick,
-        plants,
-        main_inventory,
-        joystick_btn_dict,
-    )
-    main_crafting_table.update(
-        keys,
-        pygame.mouse.get_pos(),
-        pygame.mouse.get_pressed(),
-        joystick_input,
-        joystick,
-        (scrollx, scrolly),
-        joystick_btn_dict,
-    )
+        player_hunger_bar.draw(
+            screen,
+            pygame.Color("#212529"),
+            pygame.Color("#343a40"),
+            pygame.Color("#bc6c25"),
+            hunger_icon,
+            (-25, 0),
+            5,
+        )
+
+        player_hp_bar.draw(
+            screen,
+            pygame.Color("#212529"),
+            pygame.Color("#343a40"),
+            player.hp_bar_color,
+            player.hp_icon,
+            (-28, -2),
+            5,
+        )
+
+        player_sprint_bar.update(player.energy_value)
+        player_hunger_bar.update(player.food_value)
+        player_hp_bar.update(player.health_value)
+        keys = pygame.key.get_pressed()
+
+        main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
+
+        player.walking(
+            keys,
+            deltaT,
+            pygame.mouse.get_pressed(),
+            joystick,
+            joystick_input,
+            joystick_btn_dict,
+            plants,
+        )
+        player.update(
+            plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict, player_bow, pygame.mouse.get_pos(), scrollx, scrolly
+        )
+
+        if player.hitting or started_shake:
+            started_shake = True
+            if not started_shake:
+                shake_time = time.perf_counter()
+            shake(shake_time, scrollx, scrolly)
+            shake_frame = 1
+            # animals.hit = False
+
+        particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count, player_bow)
+
+        main_inventory.draw_holding_items(screen, (scrollx, scrolly))
+
+        if time.perf_counter() - sky_time > 0.01:
+            if not is_night:
+                sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.5)
+            else:
+                sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.5)
+
+            sky_time = time.perf_counter()
+
+        mask_surf.fill(sky_color)
+
+        if player.holding_lantern:
+            render_lantern(
+                screen,
+                world,
+                plants,
+                world_rotation,
+                images,
+                scrollx + shake_x,
+                scrolly + shake_y,
+                screenWidth,
+                screenHeight,
+                player,
+            )
+
+        torch_locations_list = render_torch(
+            screen,
+            world,
+            plants,
+            world_rotation,
+            images,
+            screenWidth,
+            screenHeight,
+            scrollx,
+            scrolly,
+        )
+
+        if sky_color[3] > 125:
+            enemies_spawn = True
+        else:
+            enemies_spawn = False
+
+        if sky_color[3] > 200:
+            is_night = True
+        elif sky_color[3] < 1:
+            is_night = False
+            
+        night_count = ui_clock.update(sky_color, is_night, night_count)
+        ui_clock.draw(screen)
+
+        scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
+        scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)
+
+        scrollx = max(scrollx, 0)
+        scrollx = min(scrollx, 16 * map_w - screenWidth)
+        scrolly = max(scrolly, 0)
+        scrolly = min(scrolly, 16 * map_h - screenHeight)
+
+        main_inventory.update(
+            pygame.mouse.get_pressed(),
+            pygame.mouse.get_pos(),
+            screen,
+            pygame.key.get_pressed(),
+            joystick_input,
+            joystick,
+            (scrollx, scrolly),
+            plants,
+            main_inventory,
+            joystick_btn_dict,
+        )
+
+        main_crafting_table.draw(
+            screen,
+            scrollx,
+            scrolly,
+            pygame.key.get_pressed(),
+            joystick_input,
+            joystick,
+            plants,
+            main_inventory,
+            joystick_btn_dict,
+        )
+        main_crafting_table.update(
+            keys,
+            pygame.mouse.get_pos(),
+            pygame.mouse.get_pressed(),
+            joystick_input,
+            joystick,
+            (scrollx, scrolly),
+            joystick_btn_dict,
+        )
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if (
