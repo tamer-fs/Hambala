@@ -6,8 +6,9 @@
       "normal_text": "#F8FAE5"
     },
     "font": {
-      "name": "Testfont",
-      "size": "24"
+      "name": "Spacemono",
+      "size": "13",
+      "regular_path": "assets/Font/SpaceMono-Regular.ttf"
     },
     "misc": {
       "shape": "rounded_rectangle",
