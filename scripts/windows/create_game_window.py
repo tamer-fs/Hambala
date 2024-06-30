@@ -8,7 +8,7 @@ pygame.font.init()
 
 Testfont = pygame.font.SysFont("Calibri", 32)
         
-class TitleWindow:
+class CreateGameWindow:
     def __init__(self, screen):
         self.screen = screen
         self.screen_width, self.screen_height = screen.get_size()
@@ -22,13 +22,12 @@ class TitleWindow:
         self.quit_btn = Button((65, "%"), (90, "%"), (30, "%"), (self.btn_h_percent, "%"), "QUIT GAME", self.manager, self.screen_width, self.screen_height)
 
         title_rect = pygame.Rect((0, 0), (int(self.screen_width), int(200)))
-        self.title = pygame_gui.elements.UILabel(manager=self.manager, text="HAMBALA", relative_rect=title_rect, anchors={'left': 'left', 'right': 'right'})
+        self.title = pygame_gui.elements.UILabel(manager=self.manager, text="CREATE GAME", relative_rect=title_rect, anchors={'left': 'left', 'right': 'right'})
 
 
     def update(self, events, mouse_x, mouse_y, mouse_down, delta_time): 
         playing = True
-        current_game_state = "TITLE"
-        
+        current_game_state = "CREATE"
         self.screen_width, self.screen_height = self.screen.get_size() 
         
         # if events != []:
@@ -40,8 +39,6 @@ class TitleWindow:
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.quit_btn.button:
                     playing = False
-                if event.ui_element == self.create_game_btn.button:                    
-                    current_game_state = "CREATE"
                 
             if event.type == pygame.VIDEORESIZE:
                 self.manager.set_window_resolution((self.screen_width, self.screen_height))   
