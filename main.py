@@ -68,6 +68,7 @@ from scripts.bow import *
 
 from scripts.windows.title_window import *
 from scripts.windows.create_game_window import *
+from scripts.windows.load_save_window import *
 
 
 # joystick_btn_dict = {
@@ -235,6 +236,7 @@ def shake(shakeTime, scrollx, scrolly):
 
 title_window = TitleWindow(screen)
 create_game_window = CreateGameWindow(screen)
+load_save_window = LoadSaveWindow(screen)
 
 black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
 black_surface.fill((0, 0, 0))
@@ -284,7 +286,43 @@ while playing:
         title_window.draw()
         
     elif current_game_state == "LOAD":
-        pass
+        scrollx = 0
+        scrolly = 0 
+        screen.fill((0, 0, 0))
+        events = pygame.event.get()
+        playing, current_game_state = load_save_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+
+        for event in events:
+            if event.type == pygame.VIDEORESIZE:
+                screenWidth, screenHeight = screen.get_size()         
+                animals.reset_screen_size(screenWidth, screenHeight)
+
+                black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
+                black_surface.fill((0, 0, 0))
+                black_surface.set_alpha(100)
+
+
+        torch_animation_frame, torch_update_frame = render_world(
+            screen,
+            world,
+            plants,
+            world_rotation,
+            images,
+            scrollx + shake_x,
+            scrolly + shake_y,
+            screenWidth,
+            screenHeight,
+            torch_animation_frame,
+            torch_update_frame,
+        )
+        
+        animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
+        
+        particles = animals.update(plants, player, particles)
+
+        screen.blit(black_surface, (0, 0))
+
+        load_save_window.draw()
 
     elif current_game_state == "CREATE":
         scrollx = 0

@@ -186,7 +186,7 @@ class Enemies:
                         self.imgs[enemy][f"{load_img}{frame+1}right"] = image
                         self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
                         
-        print(self.imgs)
+        # print(self.imgs)
 
                         # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
                         # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)

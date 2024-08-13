@@ -24,6 +24,7 @@ class TitleWindow:
         title_rect = pygame.Rect((0, 0), (int(self.screen_width), int(200)))
         self.title = pygame_gui.elements.UILabel(manager=self.manager, text="HAMBALA", relative_rect=title_rect, anchors={'left': 'left', 'right': 'right'})
 
+        self.has_save = True
 
     def update(self, events, mouse_x, mouse_y, mouse_down, delta_time): 
         playing = True
@@ -42,6 +43,13 @@ class TitleWindow:
                     playing = False
                 if event.ui_element == self.create_game_btn.button:                    
                     current_game_state = "CREATE"
+                if event.ui_element == self.load_game_btn.button:
+                    current_game_state = "LOAD"
+                    
+            if not self.has_save:
+                self.load_game_btn.disable()
+                self.play_last_saved_btn.disable()
+            
                 
             if event.type == pygame.VIDEORESIZE:
                 self.manager.set_window_resolution((self.screen_width, self.screen_height))   

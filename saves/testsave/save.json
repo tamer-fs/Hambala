@@ -1,0 +1,23 @@
+{
+  "game_name": "Testsave",
+  "game_difficulty": 0,
+
+  "time": 0,
+
+  "animal_dict": {},
+
+  "alive_enemies": {},
+
+  "player": {
+    "x": 0,
+    "y": 0,
+    "energy_value": 0,
+    "food_value": 0,
+    "health_value": 0
+  },
+  
+  "inventory": {
+    "block_fill": {},
+    "item_count_dict": {}
+  }
+}
