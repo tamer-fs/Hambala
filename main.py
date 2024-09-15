@@ -70,6 +70,9 @@ from scripts.windows.title_window import *
 from scripts.windows.create_game_window import *
 from scripts.windows.load_save_window import *
 
+import json
+import os
+import copy
 
 # joystick_btn_dict = {
 #     "Xbox 360 Controller": {
@@ -203,6 +206,8 @@ player_bow = Bow(unlimited_arrows=True)
 current_game_state = "TITLE"
 in_game = False # je kan ook in-game zijn in settings
 
+loaded_world = "testsave"
+
 '''
 TITLE = Title screen (when opening game):
 
@@ -241,6 +246,40 @@ load_save_window = LoadSaveWindow(screen)
 black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
 black_surface.fill((0, 0, 0))
 black_surface.set_alpha(100)
+
+
+def save_world():
+    json_dict = {}
+    with open(os.path.join("saves", str(loaded_world), "save.json"), "r") as f:
+        json_dict = json.loads(f.read())
+            
+    with open(os.path.join("saves", str(loaded_world), "save.json"), "w") as f:  
+        dict_copy = copy.copy(json_dict)
+        
+        dict_copy["time"] = sky_color[3]
+        dict_copy["animal_dict"] = animals.animal_dict
+        dict_copy["alive_enemies"] = enemies.alive_enemies
+
+        dict_copy["player"]["x"] = player.x
+        dict_copy["player"]["y"] = player.y
+        dict_copy["player"]["energy_value"] = player.energy_value
+        dict_copy["player"]["food_value"] = player.food_value
+        dict_copy["player"]["health_value"] = player.health_value
+        
+        dict_copy["inventory"]["block_fill"] = main_inventory.block_fill
+        dict_copy["inventory"]["item_count_dict"] = main_inventory.item_count_dict
+        
+        f.write(json.dumps(json_dict))  
+        
+    # WORLD
+    with open(os.path.join("saves", str(loaded_world), "world.txt"), 'w') as f:
+        numpy.savetxt(f, world.astype(int), fmt="%i")
+        
+    with open(os.path.join("saves", str(loaded_world), "world_rotation.txt"), 'w') as f:
+        numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
+        
+    with open(os.path.join("saves", str(loaded_world), "plants.txt"), 'w') as f:
+        numpy.savetxt(f, plants.astype(int), fmt="%i")
 
 
 while playing:
@@ -374,7 +413,15 @@ while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
-            
+                
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_4:
+                    save_world()
+
+
+
+                    
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
                     player_bow.start_charge()

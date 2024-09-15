@@ -164,7 +164,7 @@ class Animal:
             animal_frame_timer = animal[12]
             animal_size = animal[13]
             hp_bar = animal[21]
-            last_attack = animal[22]
+            last_attack = animal[22] 
 
             if time.perf_counter() - last_attack < 10:
                 hp_bar.draw(screen, "black", "darkgray", "red", 2, 2)

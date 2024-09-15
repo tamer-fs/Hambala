@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import os, json
 from scripts.uiElements.button_el import Button
 from scripts.uiElements.input_entry_el import InputEntry
 
@@ -7,7 +8,7 @@ pygame.init()
 pygame.font.init()
 
 Testfont = pygame.font.SysFont("Calibri", 32)
-        
+
 class CreateGameWindow:
     def __init__(self, screen):
         self.screen = screen
@@ -23,12 +24,12 @@ class CreateGameWindow:
         title_rect = pygame.Rect((0, 0), (int(self.screen_width), int(200)))
         self.title = pygame_gui.elements.UILabel(manager=self.manager, text="CREATE GAME", relative_rect=title_rect, anchors={'left': 'left', 'right': 'right'})
         self.name_input = InputEntry((34, "%"), (30, "%"), (28, "%"), (self.btn_h_percent, "%"), "Game name...", self.manager, self.screen_width, self.screen_height)
-        
+
     def update(self, events, mouse_x, mouse_y, mouse_down, delta_time): 
         playing = True
         current_game_state = "CREATE"
         self.screen_width, self.screen_height = self.screen.get_size() 
-        
+
         # if events != []:
         #     print(events)
         for event in events:
@@ -39,6 +40,103 @@ class CreateGameWindow:
                     current_game_state = "TITLE"
                 elif event.ui_element == self.create_game_btn.button:
                     current_game_state = "GAME"
+
+                    folder_name = self.name_input.input_entry.get_text().replace(" ", "")
+                    folder_name = folder_name.lower()
+                    folder_name = folder_name[:50]
+                    
+                    remove_chars = []
+                    for i, char in enumerate(folder_name):
+                        if not char in list("abcdefghijklmnopqrstuvwxyz_1234567890"):
+                            remove_chars.append(i)
+                    
+                    folder_name = list(folder_name)
+                    for remove_char in reversed(remove_chars):
+                        folder_name.pop(remove_char)
+                        
+                    str_folder_name = ""
+                    for char in folder_name:
+                        str_folder_name = str_folder_name + char
+
+                    print(str_folder_name)
+                    
+                    start_json = {
+                        "game_name": self.name_input.input_entry.get_text(),
+                        "game_difficulty": self.difficulty,
+                        "time": 0,
+                        "animal_dict": {},
+                        "alive_enemies": {},
+                        "player": {
+                            "x": 1176.0,
+                            "y": 1176.0,
+                            "energy_value": 100,
+                            "food_value": 10000,
+                            "health_value": 10,
+                        },
+                        "inventory": {
+                            "block_fill": {
+                                "0": "",
+                                "1": "",
+                                "2": "",
+                                "3": "",
+                                "4": "",
+                                "5": "",
+                                "6": "",
+                                "7": "",
+                                "8": "",
+                                "9": "",
+                                "10": "",
+                                "11": "",
+                                "12": "",
+                                "13": "",
+                                "14": "",
+                                "15": "",
+                                "16": "",
+                                "17": "",
+                                "18": "",
+                                "19": "",
+                                "20": "",
+                                "21": "",
+                                "22": "",
+                                "23": "",
+                                "24": "",
+                                "25": "",
+                                "26": "",
+                            },
+                            "item_count_dict": {
+                                "0": 0,
+                                "1": 0,
+                                "2": 0,
+                                "3": 0,
+                                "4": 0,
+                                "5": 0,
+                                "6": 0,
+                                "7": 0,
+                                "8": 0,
+                                "9": 0,
+                                "10": 0,
+                                "11": 0,
+                                "12": 0,
+                                "13": 0,
+                                "14": 0,
+                                "15": 0,
+                                "16": 0,
+                                "17": 0,
+                                "18": 0,
+                                "19": 0,
+                                "20": 0,
+                                "21": 0,
+                                "22": 0,
+                                "23": 0,
+                                "24": 0,
+                                "25": 0,
+                                "26": 0,
+                            },
+                        },
+                    }
+
+
+
                 elif event.ui_element == self.difficulty_btn.button:
                     self.difficulty += 1
                     if self.difficulty > 2:
@@ -52,12 +150,10 @@ class CreateGameWindow:
                 self.name_input.update_res(self.screen_width, self.screen_height)
 
             self.manager.process_events(event)
-            
+
         self.manager.update(delta_time)
-        
+
         return playing, current_game_state
 
     def draw(self):
         self.manager.draw_ui(self.screen)
-        
-        
