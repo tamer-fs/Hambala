@@ -1,8 +1,9 @@
 import pygame
 import pygame_gui
-import os, json
+import os, json, numpy
 from scripts.uiElements.button_el import Button
 from scripts.uiElements.input_entry_el import InputEntry
+from func import create_world
 
 pygame.init()
 pygame.font.init()
@@ -60,7 +61,7 @@ class CreateGameWindow:
 
                     print(str_folder_name)
                     
-                    start_json = {
+                    save_json = {
                         "game_name": self.name_input.input_entry.get_text(),
                         "game_difficulty": self.difficulty,
                         "time": 0,
@@ -134,6 +135,28 @@ class CreateGameWindow:
                             },
                         },
                     }
+
+                    #create folder (os.path.join is professioneel)
+                    os.mkdir(os.path.join("saves", str(str_folder_name)))
+                    
+                    #create save.json
+                    with open(os.path.join("saves", str(str_folder_name), "save.json"), "w") as f:
+                        f.write(json.dumps(save_json))
+
+                    #create world and save world data in txt files
+                    map_w, map_h = 150, 150
+                    plant_spawn_chance = 3
+                    plants, world, world_rotation = create_world(map_w, map_h, plant_spawn_chance)
+
+                    with open(os.path.join("saves", str(str_folder_name), "world.txt"), 'w') as f:
+                        numpy.savetxt(f, world.astype(int), fmt="%i")
+        
+                    with open(os.path.join("saves", str(str_folder_name), "world_rotation.txt"), 'w') as f:
+                        numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
+                        
+                    with open(os.path.join("saves", str(str_folder_name), "plants.txt"), 'w') as f:
+                        numpy.savetxt(f, plants.astype(int), fmt="%i")
+
 
 
 

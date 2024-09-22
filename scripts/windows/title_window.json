@@ -48,5 +48,27 @@
       "size": "64",
       "regular_path": "assets/Font/SpaceMono-Regular.ttf"
     }
+  },
+  "selection_list": {
+"colours": {
+      "normal_border": "#F8FAE5",
+      "hovered_border": "#F8FAE5",
+      "normal_bg": "#76453B",
+      "hovered_bg": "#a66456",
+      "disabled_bg": "#35393e",
+      "normal_text": "#F8FAE5"
+    },
+    "font": {
+      "name": "Spacemono",
+      "size": "13",
+      "regular_path": "assets/Font/SpaceMono-Regular.ttf"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "0",
+      "border_width": "2",
+      "text_shadow_size": "0",
+      "list_item_height": "30"
+    }
   }
 }

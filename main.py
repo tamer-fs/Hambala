@@ -329,7 +329,11 @@ while playing:
         scrolly = 0 
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state = load_save_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+        playing, current_game_state, selected_world = load_save_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+
+        if selected_world != "":
+            pass
+            # ... laad wereld dingen
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
