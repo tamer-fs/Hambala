@@ -26,6 +26,7 @@ joystick_btn_dict = None
 
 check_controller_perf = -1
 
+
 def get_joysticks():
     global joystick, joystick_input, controller_type, joystick_btn_dict
     if pygame.joystick.get_count() == 1:
@@ -119,7 +120,7 @@ hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
 health_icon = pygame.image.load("assets/icons/health_icon.png").convert_alpha()
 
 mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
-sky_color = (0, 0, 0, 0)
+sky_color = [0, 0, 0, 0]
 mask_surf.fill(sky_color)
 is_night = False
 night_count = 0
@@ -157,9 +158,30 @@ torch_animation_frame = 0
 
 
 enemies = Enemies(
-    {"zombie": (10, 20), "zombie-big": (40, 60), "slime-green": (5, 10), "slime-red": (10, 25), "slime-blue": (2, 4), "slime-white": (20, 40)},
-    {"zombie": (20, 30), "zombie-big": (5, 10), "slime-green": (5, 10), "slime-red": (15, 20), "slime-blue": (25, 35), "slime-white": (4, 8)},
-    {"zombie": (70, 120), "zombie-big": (150, 200), "slime-green": (20, 40), "slime-red": (20, 40), "slime-blue": (10, 20), "slime-white": (80, 150)},
+    {
+        "zombie": (10, 20),
+        "zombie-big": (40, 60),
+        "slime-green": (5, 10),
+        "slime-red": (10, 25),
+        "slime-blue": (2, 4),
+        "slime-white": (20, 40),
+    },
+    {
+        "zombie": (20, 30),
+        "zombie-big": (5, 10),
+        "slime-green": (5, 10),
+        "slime-red": (15, 20),
+        "slime-blue": (25, 35),
+        "slime-white": (4, 8),
+    },
+    {
+        "zombie": (70, 120),
+        "zombie-big": (150, 200),
+        "slime-green": (20, 40),
+        "slime-red": (20, 40),
+        "slime-blue": (10, 20),
+        "slime-white": (80, 150),
+    },
 )
 enemies_spawn = False
 
@@ -204,11 +226,11 @@ ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 player_bow = Bow(unlimited_arrows=True)
 
 current_game_state = "TITLE"
-in_game = False # je kan ook in-game zijn in settings
+in_game = False  # je kan ook in-game zijn in settings
 
 loaded_world = "testsave"
 
-'''
+"""
 TITLE = Title screen (when opening game):
 
 Buttons in title screen:
@@ -227,13 +249,13 @@ SETTINGS = General game settings
 
 GAME = In-Game
 PAUSE = Pause screen (when opening menu in game)
-'''
+"""
 
 
 def shake(shakeTime, scrollx, scrolly):
     global started_shake
-    if  time.perf_counter() > shakeTime + 0.5:
-        started_shake = False 
+    if time.perf_counter() > shakeTime + 0.5:
+        started_shake = False
     else:
         scrollx += random.randint(-2, 2)
         scrolly += random.randint(-2, 2)
@@ -252,11 +274,12 @@ def save_world():
     json_dict = {}
     with open(os.path.join("saves", str(loaded_world), "save.json"), "r") as f:
         json_dict = json.loads(f.read())
-            
-    with open(os.path.join("saves", str(loaded_world), "save.json"), "w") as f:  
+
+    with open(os.path.join("saves", str(loaded_world), "save.json"), "w") as f:
         dict_copy = copy.copy(json_dict)
-        
+
         dict_copy["time"] = sky_color[3]
+        
         dict_copy["animal_dict"] = animals.animal_dict
         dict_copy["alive_enemies"] = enemies.alive_enemies
 
@@ -265,21 +288,52 @@ def save_world():
         dict_copy["player"]["energy_value"] = player.energy_value
         dict_copy["player"]["food_value"] = player.food_value
         dict_copy["player"]["health_value"] = player.health_value
-        
+
         dict_copy["inventory"]["block_fill"] = main_inventory.block_fill
         dict_copy["inventory"]["item_count_dict"] = main_inventory.item_count_dict
-        
-        f.write(json.dumps(json_dict))  
-        
+
+        f.write(json.dumps(json_dict))  # ???
+
     # WORLD
-    with open(os.path.join("saves", str(loaded_world), "world.txt"), 'w') as f:
+    with open(os.path.join("saves", str(loaded_world), "world.txt"), "w") as f:
         numpy.savetxt(f, world.astype(int), fmt="%i")
-        
-    with open(os.path.join("saves", str(loaded_world), "world_rotation.txt"), 'w') as f:
+
+    with open(os.path.join("saves", str(loaded_world), "world_rotation.txt"), "w") as f:
         numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
-        
-    with open(os.path.join("saves", str(loaded_world), "plants.txt"), 'w') as f:
+
+    with open(os.path.join("saves", str(loaded_world), "plants.txt"), "w") as f:
         numpy.savetxt(f, plants.astype(int), fmt="%i")
+
+
+def load_world(folder_name, sky_color):
+    with open(os.path.join("saves", str(folder_name), "save.json")) as f:
+        json_dict = json.loads(f.read())
+
+    dict_copy = copy.copy(json_dict)
+
+    sky_clr = [sky_color[0], sky_color[1], sky_color[2], dict_copy["time"]]
+    animals.animal_dict = dict_copy["animal_dict"]
+    enemies.alive_enemies = dict_copy["alive_enemies"]
+
+    player.x = dict_copy["player"]["x"]
+    player.y = dict_copy["player"]["y"]
+    player.energy_value = dict_copy["player"]["energy_value"]
+    player.food_value = dict_copy["player"]["food_value"]
+    player.health_value = dict_copy["player"]["health_value"]
+
+    block_fill_copy = {}
+    for key in dict_copy["inventory"]["block_fill"].keys():
+        block_fill_copy[int(key)] = dict_copy["inventory"]["block_fill"][key]
+
+    main_inventory.block_fill = block_fill_copy
+
+    item_count_copy = {}
+    for key in dict_copy["inventory"]["item_count_dict"].keys():
+        item_count_copy[int(key)] = dict_copy["inventory"]["item_count_dict"][key]
+
+    main_inventory.item_count_dict = item_count_copy
+
+    return sky_clr
 
 
 while playing:
@@ -287,20 +341,26 @@ while playing:
         scrollx = 0
         scrolly = 0
 
-                
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state = title_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+        playing, current_game_state = title_window.update(
+            events,
+            pygame.mouse.get_pos()[0],
+            pygame.mouse.get_pos()[1],
+            pygame.mouse.get_pressed()[0],
+            deltaT,
+        )
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
-                screenWidth, screenHeight = screen.get_size()         
+                screenWidth, screenHeight = screen.get_size()
                 animals.reset_screen_size(screenWidth, screenHeight)
 
-                black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
+                black_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
-
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -315,35 +375,43 @@ while playing:
             torch_animation_frame,
             torch_update_frame,
         )
-        
+
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
-        
+
         particles = animals.update(plants, player, particles)
 
         screen.blit(black_surface, (0, 0))
 
         title_window.draw()
-        
+
     elif current_game_state == "LOAD":
         scrollx = 0
-        scrolly = 0 
+        scrolly = 0
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state, selected_world = load_save_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+        playing, current_game_state, selected_world = load_save_window.update(
+            events,
+            pygame.mouse.get_pos()[0],
+            pygame.mouse.get_pos()[1],
+            pygame.mouse.get_pressed()[0],
+            deltaT,
+        )
 
         if selected_world != "":
-            pass
-            # ... laad wereld dingen
+            # wereld laad gangsters
+            loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
+            sky_color = load_world(selected_world, sky_color)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
-                screenWidth, screenHeight = screen.get_size()         
+                screenWidth, screenHeight = screen.get_size()
                 animals.reset_screen_size(screenWidth, screenHeight)
 
-                black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
+                black_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
-
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -358,9 +426,9 @@ while playing:
             torch_animation_frame,
             torch_update_frame,
         )
-        
+
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
-        
+
         particles = animals.update(plants, player, particles)
 
         screen.blit(black_surface, (0, 0))
@@ -369,20 +437,28 @@ while playing:
 
     elif current_game_state == "CREATE":
         scrollx = 0
-        scrolly = 0 
+        scrolly = 0
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state = create_game_window.update(events, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], pygame.mouse.get_pressed()[0], deltaT)
+        playing, current_game_state, loaded_world = create_game_window.update(
+            events,
+            pygame.mouse.get_pos()[0],
+            pygame.mouse.get_pos()[1],
+            pygame.mouse.get_pressed()[0],
+            loaded_world,
+            deltaT,
+        )
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
-                screenWidth, screenHeight = screen.get_size()         
+                screenWidth, screenHeight = screen.get_size()
                 animals.reset_screen_size(screenWidth, screenHeight)
 
-                black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
+                black_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
-
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -397,9 +473,9 @@ while playing:
             torch_animation_frame,
             torch_update_frame,
         )
-        
+
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
-        
+
         particles = animals.update(plants, player, particles)
 
         screen.blit(black_surface, (0, 0))
@@ -417,14 +493,10 @@ while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
-                
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_4:
                     save_world()
-
-
-
-                    
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
@@ -489,7 +561,9 @@ while playing:
                 main_inventory.reset_pos((8, screenHeight / 2 - 200))
                 main_crafting_table.reset()
                 animals.reset_screen_size(screenWidth, screenHeight)
-                mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+                mask_surf = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA, 32
+                )
                 mask_surf.fill(sky_color)
 
         screen.fill((0, 0, 0))
@@ -517,7 +591,9 @@ while playing:
         # get joystick
 
         if time.perf_counter() - check_controller_perf > 1.5:
-            joystick, joystick_input, controller_type, joystick_btn_dict = get_joysticks()
+            joystick, joystick_input, controller_type, joystick_btn_dict = (
+                get_joysticks()
+            )
             check_controller_perf = time.perf_counter()
 
         render_plants(
@@ -601,7 +677,17 @@ while playing:
             plants,
         )
         player.update(
-            plants, keys, screen, joystick, joystick_input, player_hp_bar, joystick_btn_dict, player_bow, pygame.mouse.get_pos(), scrollx, scrolly
+            plants,
+            keys,
+            screen,
+            joystick,
+            joystick_input,
+            player_hp_bar,
+            joystick_btn_dict,
+            player_bow,
+            pygame.mouse.get_pos(),
+            scrollx,
+            scrolly,
         )
 
         if player.hitting or started_shake:
@@ -612,15 +698,32 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
-        particles = enemies.update(enemies_spawn, player, torch_locations_list, particles, night_count, player_bow)
+        particles = enemies.update(
+            enemies_spawn,
+            player,
+            torch_locations_list,
+            particles,
+            night_count,
+            player_bow,
+        )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
         if time.perf_counter() - sky_time > 0.01:
             if not is_night:
-                sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] + 0.5)
+                sky_color = [
+                    sky_color[0],
+                    sky_color[1],
+                    sky_color[2],
+                    sky_color[3] + 0.5,
+                ]
             else:
-                sky_color = (sky_color[0], sky_color[1], sky_color[2], sky_color[3] - 0.5)
+                sky_color = [
+                    sky_color[0],
+                    sky_color[1],
+                    sky_color[2],
+                    sky_color[3] - 0.5,
+                ]
 
             sky_time = time.perf_counter()
 
@@ -661,7 +764,7 @@ while playing:
             is_night = True
         elif sky_color[3] < 1:
             is_night = False
-            
+
         night_count = ui_clock.update(sky_color, is_night, night_count)
         ui_clock.draw(screen)
 
