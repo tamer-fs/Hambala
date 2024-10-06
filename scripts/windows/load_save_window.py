@@ -67,8 +67,11 @@ class LoadSaveWindow:
         for game_dir in self.game_dirs:
             print(game_dir)
             with open(os.path.join("saves", game_dir, "save.json")) as f:
-                print(f.read())
-                save_data = json.load(f)
+                string_save_data = f.read()
+                save_data = eval(string_save_data)
+                print(save_data)
+                # voor een of andere rare reden wilt json niet json'en maar eval werkt wel
+                # save_data = json.load(f) 
                 self.game_names.append(save_data["game_name"])
                 self.game_names_to_dirs[save_data["game_name"]] = str(game_dir)
 

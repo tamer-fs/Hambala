@@ -162,7 +162,6 @@ class Enemies:
                             enemy_img = enemy
                             slime_color = enemy.split("-")[1]
                                 
-                            print(load_img, enemy_img, enemy, slime_color)
                             image = pygame.image.load(
                                 f"./assets/slimes/{slime_color}/{load_img}{frame+1}.png"
                             ).convert_alpha()
