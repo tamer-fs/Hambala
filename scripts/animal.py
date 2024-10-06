@@ -2,6 +2,7 @@ import pygame
 import time
 from func import *
 from scripts.ui import HealthBar
+import copy
 
 
 class Animal:
@@ -19,8 +20,8 @@ class Animal:
         self.player = None
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
         self.drop_item = {
-            "sheep": ["meat ","wool "],
-            "sheepbrown": ["meat ","wool "],
+            "sheep": ["meat ", "wool "],
+            "sheepbrown": ["meat ", "wool "],
             "wolfblue": "meat ",
             "wolfblack": "meat ",
             "wolfbluebrown": "meat ",
@@ -56,15 +57,15 @@ class Animal:
                         ).convert_alpha()
                         image = pygame.transform.flip(image, True, False)
 
-                    self.pic_dict[
-                        f"{load_image}{direction}{str(frame)}tiny"
-                    ] = pygame.transform.smoothscale(image, (14, 14))
+                    self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
+                        pygame.transform.smoothscale(image, (14, 14))
+                    )
 
                     self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = image
 
-                    self.pic_dict[
-                        f"{load_image}{direction}{str(frame)}big"
-                    ] = pygame.transform.scale(image, (18, 18))
+                    self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = (
+                        pygame.transform.scale(image, (18, 18))
+                    )
 
         self.rect = None
         self.animal_dict = {}
@@ -147,12 +148,55 @@ class Animal:
                     -1,  # last attack 22
                 ]
 
+    def return_animal_dict(self):
+        return_dict = {}
+        for key in self.animal_dict:
+            rect = self.animal_dict[key][0]
+
+            return_dict[key] = []
+            for x in range(23):
+
+                if x == 0:
+                    return_dict[key].append([rect.x, rect.y, rect.w, rect.h])
+                elif x == 21:
+                    return_dict[key].append(
+                        "Dergelijke plaatshouder, om deze onnodige informatie te vullen met veel onzin."
+                    )
+                else:
+
+                    if type(self.animal_dict[key][x]) in [int, str, list, bool, float]:
+                        return_dict[key].append(self.animal_dict[key][x])
+                    else:
+                        print("STOUTE RECT", self.animal_dict[key][x])
+
+        return return_dict
+
+    def convert_animal_json_dict(self, return_dict):
+        self.animal_dict = {}
+        for key in return_dict:
+            return_list = copy.deepcopy(return_dict[key])
+
+            self.animal_dict[int(key)] = return_list
+            for i, value in enumerate(return_list):
+                if i == 0:
+                    self.animal_dict[int(key)][i] = pygame.Rect(
+                        value[0], value[1], value[2], value[3]
+                    )
+                elif i == 21:
+                    self.animal_dict[int(key)][i] = HealthBar(
+                        (0, 0), (50, 5), 2, return_list[15]
+                    )
+                else:
+                    self.animal_dict[int(key)][i] = value
+
     def reset_screen_size(self, width, height):
         self.screen_width = width
         self.screen_height = height
 
     def draw(self, screen, scrollx, scrolly):
         self.scrollx, self.scrolly = scrollx, scrolly
+        if self.animal_dict is None:
+            return
         for animal_key in self.animal_dict:
             animal = self.animal_dict[animal_key]
             animal_rect = animal[0]
@@ -164,7 +208,7 @@ class Animal:
             animal_frame_timer = animal[12]
             animal_size = animal[13]
             hp_bar = animal[21]
-            last_attack = animal[22] 
+            last_attack = animal[22]
 
             if time.perf_counter() - last_attack < 10:
                 hp_bar.draw(screen, "black", "darkgray", "red", 2, 2)
@@ -251,6 +295,8 @@ class Animal:
 
     def update(self, plants, player, particles):
         animal_delete_list = []
+        if self.animal_dict is None:
+            return particles
         for animal_key in self.animal_dict:
             animal = self.animal_dict[animal_key]
             animal_rect = animal[0]

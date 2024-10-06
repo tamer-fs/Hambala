@@ -280,8 +280,9 @@ def save_world():
 
         dict_copy["time"] = sky_color[3]
 
-        dict_copy["animal_dict"] = animals.animal_dict
-        dict_copy["alive_enemies"] = enemies.alive_enemies
+        dict_copy["animal_dict"] = animals.return_animal_dict()
+        # print(animals.return_animal_dict())
+        # dict_copy["alive_enemies"] = enemies.alive_enemies
 
         dict_copy["player"]["x"] = player.x
         dict_copy["player"]["y"] = player.y
@@ -292,7 +293,7 @@ def save_world():
         dict_copy["inventory"]["block_fill"] = main_inventory.block_fill
         dict_copy["inventory"]["item_count_dict"] = main_inventory.item_count_dict
 
-        f.write(json.dumps(json_dict))  # ???
+        f.write(json.dumps(dict_copy))  #! boos
 
     # WORLD
     with open(os.path.join("saves", str(loaded_world), "world.txt"), "w") as f:
@@ -312,7 +313,9 @@ def load_world(folder_name, sky_color):
     dict_copy = copy.copy(json_dict)
 
     sky_clr = [sky_color[0], sky_color[1], sky_color[2], dict_copy["time"]]
-    animals.animal_dict = dict_copy["animal_dict"]
+
+    animals.convert_animal_json_dict(dict_copy["animal_dict"])
+
     enemies.alive_enemies = dict_copy["alive_enemies"]
 
     player.x = dict_copy["player"]["x"]
