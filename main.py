@@ -279,7 +279,7 @@ def save_world():
         dict_copy = copy.copy(json_dict)
 
         dict_copy["time"] = sky_color[3]
-        
+
         dict_copy["animal_dict"] = animals.animal_dict
         dict_copy["alive_enemies"] = enemies.alive_enemies
 
