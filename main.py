@@ -281,8 +281,7 @@ def save_world():
         dict_copy["time"] = sky_color[3]
 
         dict_copy["animal_dict"] = animals.return_animal_dict()
-        # print(animals.return_animal_dict())
-        # dict_copy["alive_enemies"] = enemies.alive_enemies
+        dict_copy["alive_enemies"] = enemies.return_enemies_list()
 
         dict_copy["player"]["x"] = player.x
         dict_copy["player"]["y"] = player.y
@@ -316,7 +315,7 @@ def load_world(folder_name, sky_color):
 
     animals.convert_animal_json_dict(dict_copy["animal_dict"])
 
-    enemies.alive_enemies = dict_copy["alive_enemies"]
+    enemies.convert_enemies_json(dict_copy["alive_enemies"])
 
     player.x = dict_copy["player"]["x"]
     player.y = dict_copy["player"]["y"]
@@ -336,7 +335,22 @@ def load_world(folder_name, sky_color):
 
     main_inventory.item_count_dict = item_count_copy
 
-    return sky_clr
+    world = numpy.loadtxt(os.path.join("saves", str(folder_name), "world.txt")).reshape(
+        map_w, map_h
+    )
+    world = world.astype(int)
+
+    world_rotation = numpy.loadtxt(
+        os.path.join("saves", str(folder_name), "world_rotation.txt")
+    ).reshape(map_w, map_h)
+    world_rotation = world_rotation.astype(int)
+
+    plants = numpy.loadtxt(
+        os.path.join("saves", str(folder_name), "plants.txt")
+    ).reshape(map_w, map_h)
+    plants = plants.astype(int)
+
+    return sky_clr, world, world_rotation, plants
 
 
 while playing:
@@ -403,7 +417,9 @@ while playing:
         if selected_world != "":
             # wereld laad gangsters
             loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
-            sky_color = load_world(selected_world, sky_color)
+            sky_color, world, world_rotation, plants = load_world(
+                selected_world, sky_color
+            )
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
@@ -499,6 +515,7 @@ while playing:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_4:
+                    print("saving world...")
                     save_world()
 
             if event.type == pygame.MOUSEBUTTONDOWN:

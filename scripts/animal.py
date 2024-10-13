@@ -146,6 +146,7 @@ class Animal:
                     False,  # animal boos 20
                     HealthBar((0, 0), (50, 5), 2, hp),  # hp bar 21
                     -1,  # last attack 22
+                    hp, # max hp 23
                 ]
 
     def return_animal_dict(self):
@@ -154,7 +155,7 @@ class Animal:
             rect = self.animal_dict[key][0]
 
             return_dict[key] = []
-            for x in range(23):
+            for x in range(24):
 
                 if x == 0:
                     return_dict[key].append([rect.x, rect.y, rect.w, rect.h])
@@ -184,7 +185,7 @@ class Animal:
                     )
                 elif i == 21:
                     self.animal_dict[int(key)][i] = HealthBar(
-                        (0, 0), (50, 5), 2, return_list[15]
+                        (0, 0), (50, 5), 2, return_list[23]
                     )
                 else:
                     self.animal_dict[int(key)][i] = value

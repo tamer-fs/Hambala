@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 import math
+import copy
 
 from func import *
 from scripts.bow import *
@@ -22,7 +23,7 @@ class Enemies:
         self.speed = speed
         self.health = health
         # speed = {"zombie": random.randint(10,16)}
-        self.max_spawn = {"zombie": 1000} # nog niet gebruikt
+        self.max_spawn = {"zombie": 1000}  # nog niet gebruikt
         self.is_night = False
         self.enemies = {
             "zombie": {
@@ -30,7 +31,6 @@ class Enemies:
                 "speed": self.speed["zombie"],
                 "hp": self.health["zombie"],
                 "has-bow": False,
-
             },
             "zombie-big": {
                 "strength": self.strength["zombie"],
@@ -48,7 +48,7 @@ class Enemies:
                 "strength": self.strength["slime-red"],
                 "speed": self.speed["slime-red"],
                 "hp": self.health["slime-red"],
-                "has-bow": False,               
+                "has-bow": False,
             },
             "slime-blue": {
                 "strength": self.strength["slime-blue"],
@@ -62,16 +62,16 @@ class Enemies:
                 "hp": self.health["slime-white"],
                 "has-bow": True,
                 "bow-size": 25,
-            }
+            },
         }
 
-        '''
+        """
         Slime types:
         Green: Standard slappe poep luie blobbel
         Red: Ietsjes sneller en meer damage
         Blue: Heel snel maar slap
         White: Heel langzaam en sterk en een boog
-        '''
+        """
 
         self.enemies_size = {
             "zombie": (32, 32),
@@ -87,8 +87,15 @@ class Enemies:
 
         self.zombie_spawn_perf = -1  # perf counter for spawning enemy zombie
 
-        self.imgs = {"zombie": {}, "zombie-big": {}, "slime-green": {}, "slime-red": {}, "slime-blue": {}, "slime-white": {}}
-        self.num_of_frames = {   
+        self.imgs = {
+            "zombie": {},
+            "zombie-big": {},
+            "slime-green": {},
+            "slime-red": {},
+            "slime-blue": {},
+            "slime-white": {},
+        }
+        self.num_of_frames = {
             "zombie": {
                 "idle": 7,
                 "attack": 6,
@@ -108,7 +115,6 @@ class Enemies:
                 "left": 2,
                 "right": 2,
                 "up": 2,
-
                 "idle": 2,
                 "attack": 2,
                 "special_attack": 2,
@@ -120,7 +126,6 @@ class Enemies:
                 "left": 2,
                 "right": 2,
                 "up": 2,
-
                 "idle": 2,
                 "attack": 2,
                 "special_attack": 2,
@@ -132,7 +137,6 @@ class Enemies:
                 "left": 2,
                 "right": 2,
                 "up": 2,
-
                 "idle": 2,
                 "attack": 2,
                 "special_attack": 2,
@@ -144,13 +148,12 @@ class Enemies:
                 "left": 2,
                 "right": 2,
                 "up": 2,
-
                 "idle": 2,
                 "attack": 2,
                 "special_attack": 2,
                 "walk": 2,
                 "die": 2,
-            }
+            },
         }
         for enemy in list(self.num_of_frames.keys()):
             for load_img in list(
@@ -161,34 +164,38 @@ class Enemies:
                         if load_img in ["front", "left", "right", "up"]:
                             enemy_img = enemy
                             slime_color = enemy.split("-")[1]
-                                
+
                             image = pygame.image.load(
                                 f"./assets/slimes/{slime_color}/{load_img}{frame+1}.png"
                             ).convert_alpha()
-                            
-                            image = pygame.transform.scale(image, self.enemies_size[enemy])
-                            
+
+                            image = pygame.transform.scale(
+                                image, self.enemies_size[enemy]
+                            )
+
                             self.imgs[enemy][f"{load_img}{frame+1}"] = image
                     else:
                         if "-" in enemy:
                             enemy_img = enemy.split("-")[0]
                         else:
                             enemy_img = enemy
-                            
+
                         image = pygame.image.load(
                             f"./assets/{enemy_img}/{load_img}{frame+1}.png"
                         ).convert_alpha()
                         image_flip = pygame.transform.flip(image, True, False)
                         image = pygame.transform.scale(image, self.enemies_size[enemy])
-                        image_flip = pygame.transform.scale(image_flip, self.enemies_size[enemy])
-                        
+                        image_flip = pygame.transform.scale(
+                            image_flip, self.enemies_size[enemy]
+                        )
+
                         self.imgs[enemy][f"{load_img}{frame+1}right"] = image
                         self.imgs[enemy][f"{load_img}{frame+1}left"] = image_flip
-                        
+
         # print(self.imgs)
 
-                        # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
-                        # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
+        # self.imgs[enemy][load_img][frame] = pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha()
+        # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
 
     def spawn_enemies(self, enemy_count, enemy_type):
@@ -210,13 +217,22 @@ class Enemies:
         add_enemy = {
             "type": enemy_type,
             "direction": random.choice(["right", "left"]),
-            "rect": self.imgs[enemy_type][list(self.imgs[enemy_type].keys())[0]].get_rect(
+            "rect": self.imgs[enemy_type][
+                list(self.imgs[enemy_type].keys())[0]
+            ].get_rect(
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
-            "hp": random.randint(self.health[enemy_type][0], self.health[enemy_type][1]),
+            "hp": random.randint(
+                self.health[enemy_type][0], self.health[enemy_type][1]
+            ),
             "has_bow": self.enemies[enemy_type]["has-bow"],
-            "strength": random.randint(self.strength[enemy_type][0], self.strength[enemy_type][1]),
-            "speed": random.randint(self.speed[enemy_type][0], self.speed[enemy_type][1]) * 5,
+            "strength": random.randint(
+                self.strength[enemy_type][0], self.strength[enemy_type][1]
+            ),
+            "speed": random.randint(
+                self.speed[enemy_type][0], self.speed[enemy_type][1]
+            )
+            * 5,
             "current_animation_frame": random.randint(1, 3),
             "current_action": "walk",
             "next_frame_perf": -1,
@@ -232,14 +248,21 @@ class Enemies:
             "near_torch": False,
             "range_torch_locations": [],  # torch locations that are in range of the enemy
             "running_from_torch": False,
-            "health_bar": HealthBar((0, 0), ((self.enemies_size[enemy_type][0]), 5), 2, random.randint(self.health[enemy_type][0], self.health[enemy_type][1])),
+            "health_bar": HealthBar(
+                (0, 0),
+                ((self.enemies_size[enemy_type][0]), 5),
+                2,
+                random.randint(self.health[enemy_type][0], self.health[enemy_type][1]),
+            ),
             "last_attack": -1,
             "attack_cooldown": -1,
             "attack_cooldown_duration": 2,
         }
 
         if add_enemy["has_bow"]:
-            add_enemy["bow"] = Bow(size=self.enemies[enemy_type]["bow-size"], unlimited_arrows=True)
+            add_enemy["bow"] = Bow(
+                size=self.enemies[enemy_type]["bow-size"], unlimited_arrows=True
+            )
             add_enemy["bow_shoot_timer"] = -1
             add_enemy["bow_shoot_delay"] = random.randint(0, 6)
             add_enemy["charge_started"] = False
@@ -251,6 +274,62 @@ class Enemies:
         add_enemy["y"] = float(add_enemy["rect"].y)
 
         self.alive_enemies.append(add_enemy)
+
+    def return_enemies_list(self):
+        return_list = []
+        for enemy in self.alive_enemies:
+            enemy_dict = {}
+            for key in enemy.keys():
+
+                if key == "rect":
+                    rect = enemy["rect"]
+                    enemy_dict["rect"] = [rect.x, rect.y, rect.w, rect.h]
+                elif key == "health_bar":
+                    enemy_dict["health_bar"] = "<health bar achtig item, wtf sirieus?>"
+                elif key == "bow":
+                    if enemy["has_bow"]:
+                        enemy_dict["bow"] = "<boog iets dix-huit dix-neuf vingt>"
+                else:
+                    enemy_dict[key] = enemy[key]
+
+            return_list.append(enemy_dict)
+
+        return return_list
+
+    def convert_enemies_json(self, enemies_json_list):
+        self.alive_enemies = []
+        for enemy_dict in enemies_json_list:
+
+            get_dict = copy.deepcopy(enemy_dict)
+            return_dict = copy.deepcopy(enemy_dict)
+
+            for key in return_dict.keys():
+                if key == "rect":
+                    rect = get_dict["rect"]
+                    return_dict["rect"] = pygame.Rect(rect)
+                elif key == "health_bar":
+                    return_dict["health_bar"] = HealthBar(
+                        (0, 0),
+                        ((self.enemies_size[get_dict["type"]][0]), 5),
+                        2,
+                        random.randint(
+                            self.health[get_dict["type"]][0],
+                            self.health[get_dict["type"]][1],
+                        ),
+                    )
+
+                elif key == "bow":
+                    if get_dict["has_bow"]:
+                        return_dict["bow"] = Bow(
+                            size=self.enemies[get_dict["type"]]["bow-size"],
+                            unlimited_arrows=True,
+                        )
+                    else:
+                        continue
+                else:
+                    return_dict[key] = get_dict[key]
+
+            self.alive_enemies.append(copy.deepcopy(return_dict))
 
     def draw_enemies(self, screen, scrollx, scrolly):
         self.scrollx, self.scrolly = scrollx, scrolly
@@ -279,15 +358,17 @@ class Enemies:
                             ],
                             (blit_x, blit_y),
                         )
-                        
+
             if self.alive_enemies[i]["has_bow"]:
                 self.alive_enemies[i]["bow"].draw(screen, scrollx, scrolly)
-                    # if enemy["running_from_torch"]: #debug
-                    #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
+                # if enemy["running_from_torch"]: #debug
+                #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
-    def update(self, is_night, player, torch_locations_list, particles, night_count, player_bow):
+    def update(
+        self, is_night, player, torch_locations_list, particles, night_count, player_bow
+    ):
         self.is_night = is_night
-        
+
         spawn_list = []
         for spawn_enemy in self.spawn_rate:
             if night_count >= self.spawn_rate[spawn_enemy][1]:
@@ -303,20 +384,29 @@ class Enemies:
             self.alive_enemies[i]["health_bar"].update(
                 self.alive_enemies[i]["hp"],
                 (
-                    self.alive_enemies[i]["rect"].x
-                    - self.scrollx,
+                    self.alive_enemies[i]["rect"].x - self.scrollx,
                     # - (enemy["rect"].w / 2)
                     # + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
                     self.alive_enemies[i]["rect"].y - self.scrolly - 10,
-                ),  
+                ),
             )
 
-            if (random.randint(1, 10) == 1 and self.alive_enemies[i]["type"] == "zombie") or (random.randint(1, 5) == 1 and self.alive_enemies[i]["type"] == "zombie-big"):
+            if (
+                random.randint(1, 10) == 1 and self.alive_enemies[i]["type"] == "zombie"
+            ) or (
+                random.randint(1, 5) == 1
+                and self.alive_enemies[i]["type"] == "zombie-big"
+            ):
                 particles.append(
                     HitParticle(
-                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2) + random.randint(-10, 10),
-                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2) + random.randint(-20, 0),
-                        color=(128,137,99), up=True
+                        self.alive_enemies[i]["rect"].x
+                        + (self.enemies_size[self.alive_enemies[i]["type"]][0] / 2)
+                        + random.randint(-10, 10),
+                        self.alive_enemies[i]["rect"].y
+                        + (self.enemies_size[self.alive_enemies[i]["type"]][1] / 2)
+                        + random.randint(-20, 0),
+                        color=(128, 137, 99),
+                        up=True,
                     )
                 )
 
@@ -340,43 +430,57 @@ class Enemies:
             self.alive_enemies[i]["near_torch"] = detected_torch
 
             # zombie hitting player
-            if (
-                get_distance(
-                    player.x + 24,
-                    player.y + 24,
-                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
-                )
-                < (self.enemies_size[self.alive_enemies[i]["type"]][1]/2)
-            ):
-                if time.perf_counter() - self.alive_enemies[i]["attack_cooldown"] > self.alive_enemies[i]["attack_cooldown_duration"]:
+            if get_distance(
+                player.x + 24,
+                player.y + 24,
+                self.alive_enemies[i]["rect"].x
+                + (self.enemies_size[self.alive_enemies[i]["type"]][0] / 2),
+                self.alive_enemies[i]["rect"].y
+                + (self.enemies_size[self.alive_enemies[i]["type"]][1] / 2),
+            ) < (self.enemies_size[self.alive_enemies[i]["type"]][1] / 2):
+                if (
+                    time.perf_counter() - self.alive_enemies[i]["attack_cooldown"]
+                    > self.alive_enemies[i]["attack_cooldown_duration"]
+                ):
                     self.alive_enemies[i]["attack_cooldown"] = time.perf_counter()
-                    player.health_value -= math.ceil(self.alive_enemies[i]["strength"] / 10)
+                    player.health_value -= math.ceil(
+                        self.alive_enemies[i]["strength"] / 10
+                    )
                     player.health_value = max(0, player.health_value)
                     for _ in range(25):
-                            particles.append(
-                                HitParticle(
-                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
-                                    color="red",
-                                )
+                        particles.append(
+                            HitParticle(
+                                self.alive_enemies[i]["rect"].x
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][0]
+                                    / 2
+                                ),
+                                self.alive_enemies[i]["rect"].y
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][1]
+                                    / 2
+                                ),
+                                color="red",
                             )
-                            
-            if self.alive_enemies[i]["has_bow"]:     
-                angle = 0     
+                        )
+
+            if self.alive_enemies[i]["has_bow"]:
+                angle = 0
                 enemy = self.alive_enemies[i]
-                rect = self.alive_enemies[i]["rect"] 
-                
+                rect = self.alive_enemies[i]["rect"]
+
                 if (
                     get_distance(
                         player.x + 24,
                         player.y + 24,
-                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                        self.alive_enemies[i]["rect"].x
+                        + (self.enemies_size[self.alive_enemies[i]["type"]][0] / 2),
+                        self.alive_enemies[i]["rect"].y
+                        + (self.enemies_size[self.alive_enemies[i]["type"]][1] / 2),
                     )
                     < 400
                 ):
-                    # boog mikken                          
+                    # boog mikken
                     player_x, player_y = player.x, player.y
                     player_dx = player_x - rect.x
                     player_dy = player_y - rect.y
@@ -386,31 +490,42 @@ class Enemies:
                     angle = math.degrees(math.atan(tan_angle))
                     if abs(player_dx) != player_dx:
                         angle += 180
-                        
-                    # boog schieten                                    
+
+                    # boog schieten
                     if enemy["charge_started"] == False:
                         if enemy["charge_timer_set"] == False:
                             enemy["charge_delay_timer"] = time.perf_counter()
                             enemy["charge_timer_set"] = True
-                        if time.perf_counter() - enemy["charge_delay_timer"] > enemy["charge_delay"]:
+                        if (
+                            time.perf_counter() - enemy["charge_delay_timer"]
+                            > enemy["charge_delay"]
+                        ):
                             enemy["bow"].start_charge()
                             enemy["charge_started"] = True
                             enemy["bow_shoot_timer"] = time.perf_counter()
 
-                        
-                    if time.perf_counter() - enemy["bow_shoot_timer"] > enemy["bow_shoot_delay"] and enemy["charge_started"] == True:
+                    if (
+                        time.perf_counter() - enemy["bow_shoot_timer"]
+                        > enemy["bow_shoot_delay"]
+                        and enemy["charge_started"] == True
+                    ):
                         enemy["bow"].shoot_arrow()
                         enemy["charge_started"] = False
                         enemy["bow_shoot_delay"] = random.randint(0, 6)
                         enemy["charge_timer_set"] = False
-                    
-            
-                enemy["bow"].update(self.alive_enemies[i]["rect"].x + rect.w/2, self.alive_enemies[i]["rect"].y + rect.h/2, round(angle))
-            
-            
+
+                enemy["bow"].update(
+                    self.alive_enemies[i]["rect"].x + rect.w / 2,
+                    self.alive_enemies[i]["rect"].y + rect.h / 2,
+                    round(angle),
+                )
+
             # arrow (by player) hitting zombie
             for arrow in player_bow.arrow_list:
-                if self.alive_enemies[i]["rect"].colliderect(arrow.rect) and arrow.can_damage:
+                if (
+                    self.alive_enemies[i]["rect"].colliderect(arrow.rect)
+                    and arrow.can_damage
+                ):
                     arrow.can_damage = False
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
@@ -418,8 +533,16 @@ class Enemies:
                     for _ in range(15):
                         particles.append(
                             HitParticle(
-                                self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                                self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                self.alive_enemies[i]["rect"].x
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][0]
+                                    / 2
+                                ),
+                                self.alive_enemies[i]["rect"].y
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][1]
+                                    / 2
+                                ),
                                 color="green",
                             )
                         )
@@ -428,47 +551,69 @@ class Enemies:
                         for _ in range(50):
                             particles.append(
                                 HitParticle(
-                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                    self.alive_enemies[i]["rect"].x
+                                    + (
+                                        self.enemies_size[
+                                            self.alive_enemies[i]["type"]
+                                        ][0]
+                                        / 2
+                                    ),
+                                    self.alive_enemies[i]["rect"].y
+                                    + (
+                                        self.enemies_size[
+                                            self.alive_enemies[i]["type"]
+                                        ][1]
+                                        / 2
+                                    ),
                                     color="green",
                                 )
                             )
                         self.alive_enemies.remove(self.alive_enemies[i])
-            
-            #enemy with bow hitting player
+
+            # enemy with bow hitting player
             if self.alive_enemies[i]["has_bow"]:
                 for arrow in self.alive_enemies[i]["bow"].arrow_list:
-                    if arrow.rect.colliderect(pygame.Rect(player.x, player.y, 48, 48)) and arrow.can_damage:
+                    if (
+                        arrow.rect.colliderect(pygame.Rect(player.x, player.y, 48, 48))
+                        and arrow.can_damage
+                    ):
                         arrow.can_damage = False
                         player.health_value -= round(arrow.damage / 12)
                         for _ in range(15):
                             particles.append(
                                 HitParticle(
-                                    player.x + (48/2),
-                                    player.y + (48/2),
+                                    player.x + (48 / 2),
+                                    player.y + (48 / 2),
                                     color="red",
                                 )
                             )
 
-            #player hitting zombie
+            # player hitting zombie
             if player.hitting:
-                if (
-                    get_distance(
-                        player.x + 24,
-                        player.y + 24,
-                        self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                        self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
-                    )
-                    < (self.enemies_size[self.alive_enemies[i]["type"]][1])
-                ):
+                if get_distance(
+                    player.x + 24,
+                    player.y + 24,
+                    self.alive_enemies[i]["rect"].x
+                    + (self.enemies_size[self.alive_enemies[i]["type"]][0] / 2),
+                    self.alive_enemies[i]["rect"].y
+                    + (self.enemies_size[self.alive_enemies[i]["type"]][1] / 2),
+                ) < (self.enemies_size[self.alive_enemies[i]["type"]][1]):
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
                     self.alive_enemies[i]["hp"] -= random.randint(30, 50)
                     for _ in range(15):
                         particles.append(
                             HitParticle(
-                                self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                                self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                self.alive_enemies[i]["rect"].x
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][0]
+                                    / 2
+                                ),
+                                self.alive_enemies[i]["rect"].y
+                                + (
+                                    self.enemies_size[self.alive_enemies[i]["type"]][1]
+                                    / 2
+                                ),
                                 color="green",
                             )
                         )
@@ -477,8 +622,20 @@ class Enemies:
                         for _ in range(50):
                             particles.append(
                                 HitParticle(
-                                    self.alive_enemies[i]["rect"].x + (self.enemies_size[self.alive_enemies[i]["type"]][0]/2),
-                                    self.alive_enemies[i]["rect"].y + (self.enemies_size[self.alive_enemies[i]["type"]][1]/2),
+                                    self.alive_enemies[i]["rect"].x
+                                    + (
+                                        self.enemies_size[
+                                            self.alive_enemies[i]["type"]
+                                        ][0]
+                                        / 2
+                                    ),
+                                    self.alive_enemies[i]["rect"].y
+                                    + (
+                                        self.enemies_size[
+                                            self.alive_enemies[i]["type"]
+                                        ][1]
+                                        / 2
+                                    ),
                                     color="green",
                                 )
                             )
@@ -585,8 +742,12 @@ class Enemies:
             else:
                 if time.perf_counter() >= enemy["start_walking_perf"]:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
-                        self.alive_enemies[i]["x"] += enemy["walk_vx"] * (enemy["speed"] / 100)
-                        self.alive_enemies[i]["y"] += enemy["walk_vy"] * (enemy["speed"] / 100)
+                        self.alive_enemies[i]["x"] += enemy["walk_vx"] * (
+                            enemy["speed"] / 100
+                        )
+                        self.alive_enemies[i]["y"] += enemy["walk_vy"] * (
+                            enemy["speed"] / 100
+                        )
                         self.alive_enemies[i]["current_action"] = "walk"
                         if enemy["walk_vx"] > 0:
                             self.alive_enemies[i]["direction"] = "right"

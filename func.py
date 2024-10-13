@@ -351,6 +351,7 @@ def create_world(map_w, map_h, chance_index):
             plants[y + 1, x + 1] = 62
 
     world = world[2 : map_w - 2, 2 : map_h - 2]
+    world_rotation = world_rotation[2 : map_w - 2, 2 : map_h - 2]
     plants = plants[2 : map_w - 2, 2 : map_h - 2]
     return plants, world, world_rotation
 
