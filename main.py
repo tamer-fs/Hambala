@@ -1,5 +1,8 @@
-# BUGS:
-# 1. Inventory switching item in Crafting table
+# TODO
+# Scherm resize fixen
+# Instellingen bij spel maken
+# play last saved
+# saves verwijderen
 
 import numpy
 import random
@@ -70,6 +73,7 @@ from scripts.bow import *
 from scripts.windows.title_window import *
 from scripts.windows.create_game_window import *
 from scripts.windows.load_save_window import *
+from scripts.windows.pause_menu_window import *
 
 import json
 import os
@@ -114,6 +118,8 @@ screenWidth = screen.get_width()
 screenHeight = screen.get_height()
 playing = True
 plant_spawn_chance = 3
+
+pause_menu_opened = False
 
 stamina_icon = pygame.image.load("assets/icons/stamina.png").convert_alpha()
 hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
@@ -264,6 +270,7 @@ def shake(shakeTime, scrollx, scrolly):
 title_window = TitleWindow(screen)
 create_game_window = CreateGameWindow(screen)
 load_save_window = LoadSaveWindow(screen)
+pause_menu_window = PauseMenuWindow(screen)
 
 black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
 black_surface.fill((0, 0, 0))
@@ -303,6 +310,8 @@ def save_world():
 
     with open(os.path.join("saves", str(loaded_world), "plants.txt"), "w") as f:
         numpy.savetxt(f, plants.astype(int), fmt="%i")
+
+    print("WERELD OPGESLAGEN!!!")
 
 
 def load_world(folder_name, sky_color):
@@ -508,8 +517,8 @@ while playing:
         pass
 
     elif current_game_state == "GAME":
-
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 playing = False
 
@@ -517,6 +526,9 @@ while playing:
                 if event.key == pygame.K_4:
                     print("saving world...")
                     save_world()
+
+                if event.key == pygame.K_ESCAPE:
+                    pause_menu_opened = not pause_menu_opened
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
@@ -531,14 +543,15 @@ while playing:
                 or event.type == pygame.JOYBUTTONDOWN
                 or event.type == pygame.JOYHATMOTION
             ):
-                if not joystick_input and hasattr(event, "y"):
-                    main_inventory.mouse_update(
-                        event.y, joystick_input, joystick, joystick_btn_dict
-                    )
-                else:
-                    main_inventory.mouse_update(
-                        0, joystick_input, joystick, joystick_btn_dict
-                    )
+                if not pause_menu_opened:
+                    if not joystick_input and hasattr(event, "y"):
+                        main_inventory.mouse_update(
+                            event.y, joystick_input, joystick, joystick_btn_dict
+                        )
+                    else:
+                        main_inventory.mouse_update(
+                            0, joystick_input, joystick, joystick_btn_dict
+                        )
 
             if joystick:
                 if event.type == pygame.JOYBUTTONDOWN:
@@ -559,10 +572,11 @@ while playing:
                         main_inventory.backpack_visible = False
                 else:
                     if hasattr(event, "key"):
-                        if event.key == pygame.K_CAPSLOCK:
-                            main_inventory.backpack_visible = (
-                                not main_inventory.backpack_visible
-                            )
+                        if not pause_menu_opened:
+                            if event.key == pygame.K_CAPSLOCK:
+                                main_inventory.backpack_visible = (
+                                    not main_inventory.backpack_visible
+                                )
 
             if event.type == pygame.VIDEORESIZE:
                 screenWidth, screenHeight = screen.get_size()
@@ -586,6 +600,9 @@ while playing:
                 )
                 mask_surf.fill(sky_color)
 
+                black_surface.fill((0, 0, 0))
+                black_surface.set_alpha(100)
+
         screen.fill((0, 0, 0))
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -602,7 +619,8 @@ while playing:
         )
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
-        particles = animals.update(plants, player, particles)
+        if not pause_menu_opened:
+            particles = animals.update(plants, player, particles)
 
         prev_player_x = player.x
         prev_player_y = player.y
@@ -638,15 +656,19 @@ while playing:
 
         particles, particle_perf = spawn_particles(particle_perf, player, particles)
 
-        del_list = []
-        for i, particle in enumerate(particles):
-            particle.update(scrollx + shake_x, scrolly + shake_y, deltaT, player, world)
-            particle.draw(screen)
-            if particle.delete_timer + 0.75 < time.perf_counter():
-                del_list.append(i)
+        if not pause_menu_opened:
+            del_list = []
 
-        for j in list(sorted(del_list))[::-1]:
-            particles.pop(j)
+            for i, particle in enumerate(particles):
+                particle.update(
+                    scrollx + shake_x, scrolly + shake_y, deltaT, player, world
+                )
+                particle.draw(screen)
+                if particle.delete_timer + 0.75 < time.perf_counter():
+                    del_list.append(i)
+
+            for j in list(sorted(del_list))[::-1]:
+                particles.pop(j)
 
         screen.blit(mask_surf, (0, 0))
 
@@ -687,28 +709,29 @@ while playing:
 
         main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-        player.walking(
-            keys,
-            deltaT,
-            pygame.mouse.get_pressed(),
-            joystick,
-            joystick_input,
-            joystick_btn_dict,
-            plants,
-        )
-        player.update(
-            plants,
-            keys,
-            screen,
-            joystick,
-            joystick_input,
-            player_hp_bar,
-            joystick_btn_dict,
-            player_bow,
-            pygame.mouse.get_pos(),
-            scrollx,
-            scrolly,
-        )
+        if not pause_menu_opened:
+            player.walking(
+                keys,
+                deltaT,
+                pygame.mouse.get_pressed(),
+                joystick,
+                joystick_input,
+                joystick_btn_dict,
+                plants,
+            )
+            player.update(
+                plants,
+                keys,
+                screen,
+                joystick,
+                joystick_input,
+                player_hp_bar,
+                joystick_btn_dict,
+                player_bow,
+                pygame.mouse.get_pos(),
+                scrollx,
+                scrolly,
+            )
 
         if player.hitting or started_shake:
             started_shake = True
@@ -718,34 +741,36 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
-        particles = enemies.update(
-            enemies_spawn,
-            player,
-            torch_locations_list,
-            particles,
-            night_count,
-            player_bow,
-        )
+        if not pause_menu_opened:
+            particles = enemies.update(
+                enemies_spawn,
+                player,
+                torch_locations_list,
+                particles,
+                night_count,
+                player_bow,
+            )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
-        if time.perf_counter() - sky_time > 0.01:
-            if not is_night:
-                sky_color = [
-                    sky_color[0],
-                    sky_color[1],
-                    sky_color[2],
-                    sky_color[3] + 0.5,
-                ]
-            else:
-                sky_color = [
-                    sky_color[0],
-                    sky_color[1],
-                    sky_color[2],
-                    sky_color[3] - 0.5,
-                ]
+        if not pause_menu_opened:
+            if time.perf_counter() - sky_time > 0.01:
+                if not is_night:
+                    sky_color = [
+                        sky_color[0],
+                        sky_color[1],
+                        sky_color[2],
+                        sky_color[3] + 0.5,
+                    ]
+                else:
+                    sky_color = [
+                        sky_color[0],
+                        sky_color[1],
+                        sky_color[2],
+                        sky_color[3] - 0.5,
+                    ]
 
-            sky_time = time.perf_counter()
+                sky_time = time.perf_counter()
 
         mask_surf.fill(sky_color)
 
@@ -796,18 +821,19 @@ while playing:
         scrolly = max(scrolly, 0)
         scrolly = min(scrolly, 16 * map_h - screenHeight)
 
-        main_inventory.update(
-            pygame.mouse.get_pressed(),
-            pygame.mouse.get_pos(),
-            screen,
-            pygame.key.get_pressed(),
-            joystick_input,
-            joystick,
-            (scrollx, scrolly),
-            plants,
-            main_inventory,
-            joystick_btn_dict,
-        )
+        if not pause_menu_opened:
+            main_inventory.update(
+                pygame.mouse.get_pressed(),
+                pygame.mouse.get_pos(),
+                screen,
+                pygame.key.get_pressed(),
+                joystick_input,
+                joystick,
+                (scrollx, scrolly),
+                plants,
+                main_inventory,
+                joystick_btn_dict,
+            )
 
         main_crafting_table.draw(
             screen,
@@ -820,15 +846,36 @@ while playing:
             main_inventory,
             joystick_btn_dict,
         )
-        main_crafting_table.update(
-            keys,
-            pygame.mouse.get_pos(),
-            pygame.mouse.get_pressed(),
-            joystick_input,
-            joystick,
-            (scrollx, scrolly),
-            joystick_btn_dict,
+
+        if not pause_menu_opened:
+            main_crafting_table.update(
+                keys,
+                pygame.mouse.get_pos(),
+                pygame.mouse.get_pressed(),
+                joystick_input,
+                joystick,
+                (scrollx, scrolly),
+                joystick_btn_dict,
+            )
+
+    if pause_menu_opened:
+        # print("ik ben blij")
+        screen.blit(black_surface, (0, 0))
+
+        pause_menu_opened, save_game, quit_game, to_title = pause_menu_window.update(
+            events, deltaT
         )
+        pause_menu_window.draw()
+
+        if save_game:
+            save_world()
+
+        if quit_game:
+            playing = False
+
+        if to_title:
+            load_save_window.update_game_dirs()
+            current_game_state = "TITLE"
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if (

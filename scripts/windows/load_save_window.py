@@ -62,21 +62,17 @@ class LoadSaveWindow:
         self.game_names = []
         self.game_names_to_dirs = {}
 
-        self.game_btns = []
-
         for game_dir in self.game_dirs:
-            print(game_dir)
             with open(os.path.join("saves", game_dir, "save.json")) as f:
                 string_save_data = f.read()
                 save_data = json.loads(string_save_data)
-                print(save_data)
-                # save_data = eval(string_save_data)
                 # voor een of andere rare reden wilt json niet json'en maar eval werkt wel
                 self.game_names.append(save_data["game_name"])
                 self.game_names_to_dirs[save_data["game_name"]] = str(game_dir)
 
         games_list_width = self.screen_width / 100 * 60
         window_free_space = (self.screen_width - games_list_width) / 2
+        self.games_list_el = None
         self.games_list_el = pygame_gui.elements.UISelectionList(
             manager=self.manager,
             relative_rect=pygame.Rect(
@@ -87,6 +83,21 @@ class LoadSaveWindow:
             ),
             item_list=self.game_names,
         )
+
+    def update_game_dirs(self):
+        self.game_dirs = os.listdir(os.path.join("saves"))
+        self.game_names = []
+        self.game_names_to_dirs = {}
+
+        for game_dir in self.game_dirs:
+            with open(os.path.join("saves", game_dir, "save.json")) as f:
+                string_save_data = f.read()
+                save_data = json.loads(string_save_data)
+                # voor een of andere rare reden wilt json niet json'en maar eval werkt wel
+                self.game_names.append(save_data["game_name"])
+                self.game_names_to_dirs[save_data["game_name"]] = str(game_dir)
+
+        self.games_list_el.set_item_list(self.game_names)
 
     def update(self, events, mouse_x, mouse_y, mouse_down, delta_time):
         playing = True
