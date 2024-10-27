@@ -84,6 +84,20 @@ class LoadSaveWindow:
             item_list=self.game_names,
         )
 
+    def update_res(self, screen):
+        self.screen = screen
+        self.screen_width, self.screen_height = self.screen.get_size()
+
+        self.manager.set_window_resolution((self.screen_width, self.screen_height))
+        self.back_btn.update_res(self.screen_width, self.screen_height)
+        self.search_input.update_res(self.screen_width, self.screen_height)
+        self.load_game_btn.update_res(self.screen_width, self.screen_height)
+
+        games_list_width = self.screen_width / 100 * 60
+        window_free_space = (self.screen_width - games_list_width) / 2
+        self.games_list_el.set_position((window_free_space, self.screen_height / 3))
+        self.games_list_el.set_dimensions((games_list_width, self.screen_height / 3))
+
     def update_game_dirs(self):
         self.game_dirs = os.listdir(os.path.join("saves"))
         self.game_names = []
@@ -138,6 +152,12 @@ class LoadSaveWindow:
                 self.games_list_el.set_dimensions(
                     (games_list_width, self.screen_height / 3)
                 )
+
+                self.back_btn.button.rebuild()
+                self.search_input.input_entry.rebuild()
+                self.load_game_btn.button.rebuild()
+                self.games_list_el.rebuild()
+                self.title.rebuild()
 
             self.manager.process_events(event)
 

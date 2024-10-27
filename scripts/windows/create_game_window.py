@@ -71,6 +71,18 @@ class CreateGameWindow:
             self.screen_height,
         )
 
+    def update_res(self, screen):
+        self.screen = screen
+        self.screen_width, self.screen_height = self.screen.get_size()
+
+        self.manager.set_window_resolution((self.screen_width, self.screen_height))
+        self.create_game_btn.update_res(self.screen_width, self.screen_height)
+        self.back_btn.update_res(self.screen_width, self.screen_height)
+        self.difficulty_btn.update_res(self.screen_width, self.screen_height)
+        self.name_input.update_res(self.screen_width, self.screen_height)
+
+        self.manager.set_window_resolution((self.screen_width, self.screen_height))
+
     def update(self, events, mouse_x, mouse_y, mouse_down, loaded_world, delta_time):
         playing = True
         current_game_state = "CREATE"
@@ -124,8 +136,8 @@ class CreateGameWindow:
                         },
                         "inventory": {
                             "block_fill": {
-                                "0": "",
-                                "1": "",
+                                "0": "axe ",
+                                "1": "pickaxe ",
                                 "2": "",
                                 "3": "",
                                 "4": "",
@@ -153,8 +165,8 @@ class CreateGameWindow:
                                 "26": "",
                             },
                             "item_count_dict": {
-                                "0": 0,
-                                "1": 0,
+                                "0": 1,
+                                "1": 1,
                                 "2": 0,
                                 "3": 0,
                                 "4": 0,
@@ -233,6 +245,12 @@ class CreateGameWindow:
                 self.back_btn.update_res(self.screen_width, self.screen_height)
                 self.difficulty_btn.update_res(self.screen_width, self.screen_height)
                 self.name_input.update_res(self.screen_width, self.screen_height)
+
+                self.create_game_btn.button.rebuild()
+                self.back_btn.button.rebuild()
+                self.name_input.input_entry.rebuild()
+                self.difficulty_btn.button.rebuild()
+                self.title.rebuild()
 
             self.manager.process_events(event)
 

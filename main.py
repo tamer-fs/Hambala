@@ -1,8 +1,14 @@
-# TODO
-# Scherm resize fixen
-# Instellingen bij spel maken
-# play last saved
-# saves verwijderen
+#                    TODO
+# ---------------------------------------------
+# ! Pause screen resize fixen. [✘]
+# ! Instellingen bij spel maken. [✘]
+# ! Play last saved. [✘]
+# ! Saves verwijderen. [✘]
+# ! Search functie load world werkend maken.
+# --------------------------------------------
+# * Screens resize fixen. [✓]
+# * Inventory laad bug fixen. [✓]
+# --------------------------------------------
 
 import numpy
 import random
@@ -132,6 +138,7 @@ is_night = False
 night_count = 0
 sky_time = 0
 light = pygame.image.load("assets/Images/Light.png").convert_alpha()
+game_size_set = False
 
 scrollx = 0
 scrolly = 0
@@ -377,6 +384,10 @@ while playing:
             deltaT,
         )
 
+        if current_game_state != "TITLE":
+            create_game_window.update_res(screen)
+            load_save_window.update_res(screen)
+
         for event in events:
             if event.type == pygame.VIDEORESIZE:
                 screenWidth, screenHeight = screen.get_size()
@@ -422,6 +433,9 @@ while playing:
             pygame.mouse.get_pressed()[0],
             deltaT,
         )
+
+        if current_game_state != "LOAD":
+            title_window.update_res(screen)
 
         if selected_world != "":
             # wereld laad gangsters
@@ -476,6 +490,8 @@ while playing:
             loaded_world,
             deltaT,
         )
+        if current_game_state != "CREATE":
+            title_window.update_res(screen)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
@@ -487,6 +503,9 @@ while playing:
                 )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
+
+        if current_game_state == "GAME":
+            load_world(loaded_world, sky_color)
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -602,6 +621,31 @@ while playing:
 
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
+
+        if not game_size_set:
+            screenWidth, screenHeight = screen.get_size()
+            player_sprint_bar.reset(
+                (screenWidth - 208, screenHeight - 33), (200, 25), 8
+            )
+            player_hunger_bar.reset(
+                (screenWidth - 208, screenHeight - 66 - 8), (200, 25), 8
+            )
+            player_hp_bar.reset(
+                (screenWidth / 2 - screenWidth / 8, screenHeight - 33),
+                (screenWidth / 4, 25),
+                8,
+            )
+            player.set_window_size(screen)
+            main_inventory.reset_pos((8, screenHeight / 2 - 200))
+            main_crafting_table.reset()
+            animals.reset_screen_size(screenWidth, screenHeight)
+            mask_surf = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA, 32)
+            mask_surf.fill(sky_color)
+
+            black_surface.fill((0, 0, 0))
+            black_surface.set_alpha(100)
+
+            game_size_set = True
 
         screen.fill((0, 0, 0))
         torch_animation_frame, torch_update_frame = render_world(

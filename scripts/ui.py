@@ -11,37 +11,38 @@ from scripts.placeItem import *
 #          Clock             #
 ##############################
 
+
 class Clock:
     def __init__(self, pos, size, sky_color, is_night):
         self.pos = pos
         self.size = size
         self.sky_color = sky_color
         self.time_ticks = self.sky_color[3]
-        #0 is most day, 200 is most night (enemies spawn at 125)
+        # 0 is most day, 200 is most night (enemies spawn at 125)
         self.is_night = False
         self.time = 0
         self.night_time = False
-        
+
         self.dark_clock = {
             "bg_color": (255, 255, 255),
             "fg_color": (33, 37, 41),
-        }    
-        
+        }
+
         self.light_clock = {
             "bg_color": (33, 37, 41),
             "fg_color": (255, 255, 255),
         }
 
         self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
-        
-        self.clock_fg = pygame.Rect(pos, (size[0] - 5, size[0] - 5)) # fg = foreground
+
+        self.clock_fg = pygame.Rect(pos, (size[0] - 5, size[0] - 5))  # fg = foreground
         self.clock_bg = pygame.Rect(pos, size)
         self.hand_centre_pos = [self.size[0] / 2, self.size[0] / 2]
-        self.hand_pos = copy.deepcopy(self.hand_centre_pos) # temp
+        self.hand_pos = copy.deepcopy(self.hand_centre_pos)  # temp
         self.hand_length = (self.clock_fg.w / 2) - 12
 
         self.prev_night_time = False
-        self.in_transition = False # if in transition 
+        self.in_transition = False  # if in transition
         self.transition_frame = 0
         self.transition_direction = 1
         self.max_transition_frame = 100
@@ -49,39 +50,84 @@ class Clock:
     def draw(self, screen):
         if not self.in_transition:
             if self.night_time:
-                pygame.draw.circle(self.surface, self.dark_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
-                pygame.draw.circle(self.surface, self.dark_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)
-                pygame.draw.line(self.surface, "white", self.hand_centre_pos, self.hand_pos, 2)
+                pygame.draw.circle(
+                    self.surface,
+                    self.dark_clock["bg_color"],
+                    (self.size[0] / 2, self.size[0] / 2),
+                    self.size[0] / 2,
+                )
+                pygame.draw.circle(
+                    self.surface,
+                    self.dark_clock["fg_color"],
+                    (self.size[0] / 2, self.size[0] / 2),
+                    (self.size[0] - 10) / 2,
+                )
+                pygame.draw.line(
+                    self.surface, "white", self.hand_centre_pos, self.hand_pos, 2
+                )
             else:
-                pygame.draw.circle(self.surface, self.light_clock["bg_color"], (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
-                pygame.draw.circle(self.surface, self.light_clock["fg_color"], (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2)        
-                pygame.draw.line(self.surface, "black", self.hand_centre_pos, self.hand_pos, 2)
+                pygame.draw.circle(
+                    self.surface,
+                    self.light_clock["bg_color"],
+                    (self.size[0] / 2, self.size[0] / 2),
+                    self.size[0] / 2,
+                )
+                pygame.draw.circle(
+                    self.surface,
+                    self.light_clock["fg_color"],
+                    (self.size[0] / 2, self.size[0] / 2),
+                    (self.size[0] - 10) / 2,
+                )
+                pygame.draw.line(
+                    self.surface, "black", self.hand_centre_pos, self.hand_pos, 2
+                )
         else:
-            bg_r = 33 + (self.transition_frame / self.max_transition_frame) * (255-33)
-            bg_g = 37 + (self.transition_frame / self.max_transition_frame) * (255-37)
-            bg_b = 41 + (self.transition_frame / self.max_transition_frame) * (255-41)
-            
-            pygame.draw.circle(self.surface, (bg_r, bg_g, bg_b), (self.size[0] / 2, self.size[0] / 2), self.size[0] / 2)
+            bg_r = 33 + (self.transition_frame / self.max_transition_frame) * (255 - 33)
+            bg_g = 37 + (self.transition_frame / self.max_transition_frame) * (255 - 37)
+            bg_b = 41 + (self.transition_frame / self.max_transition_frame) * (255 - 41)
 
-            fg_r = 255 - (self.transition_frame / self.max_transition_frame) * (255-33)
-            fg_g = 255 - (self.transition_frame / self.max_transition_frame) * (255-37)
-            fg_b = 255 - (self.transition_frame / self.max_transition_frame) * (255-41)
+            pygame.draw.circle(
+                self.surface,
+                (bg_r, bg_g, bg_b),
+                (self.size[0] / 2, self.size[0] / 2),
+                self.size[0] / 2,
+            )
 
-            pygame.draw.circle(self.surface, (fg_r, fg_g, fg_b), (self.size[0] / 2, self.size[0] / 2), (self.size[0] - 10) / 2) 
+            fg_r = 255 - (self.transition_frame / self.max_transition_frame) * (
+                255 - 33
+            )
+            fg_g = 255 - (self.transition_frame / self.max_transition_frame) * (
+                255 - 37
+            )
+            fg_b = 255 - (self.transition_frame / self.max_transition_frame) * (
+                255 - 41
+            )
 
-            hand_color = (self.transition_frame / self.max_transition_frame) * 255            
-            pygame.draw.line(self.surface, (hand_color, hand_color, hand_color), self.hand_centre_pos, self.hand_pos, 2)
-        
+            pygame.draw.circle(
+                self.surface,
+                (fg_r, fg_g, fg_b),
+                (self.size[0] / 2, self.size[0] / 2),
+                (self.size[0] - 10) / 2,
+            )
+
+            hand_color = (self.transition_frame / self.max_transition_frame) * 255
+            pygame.draw.line(
+                self.surface,
+                (hand_color, hand_color, hand_color),
+                self.hand_centre_pos,
+                self.hand_pos,
+                2,
+            )
+
         self.surface.set_alpha(150)
         screen.blit(self.surface, self.pos)
-        
-
-        
 
     def update(self, sky_color, is_night, night_count):
         self.is_night = is_night
         self.sky_color = sky_color
-        self.time_ticks = max(self.sky_color[3], 1) # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
+        self.time_ticks = max(
+            self.sky_color[3], 1
+        )  # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
         self.night_time = True if self.time_ticks >= 100 else False
 
         if self.night_time != self.prev_night_time:
@@ -92,23 +138,30 @@ class Clock:
             if self.night_time:
                 night_count += 1
                 # print("Changed night count to:", night_count)
-        
+
         if self.in_transition:
             self.transition_frame += self.transition_direction
-            if self.transition_frame == 0 or self.transition_frame == self.max_transition_frame:
+            if (
+                self.transition_frame == 0
+                or self.transition_frame == self.max_transition_frame
+            ):
                 self.in_transition = False
 
-
         if self.is_night:
-            self.hand_degrees = (360 * (abs(200 - self.time_ticks) + 200) / 200) - 90        
+            self.hand_degrees = (360 * (abs(200 - self.time_ticks) + 200) / 200) - 90
         else:
             self.hand_degrees = (360 * self.time_ticks / 200) - 90
 
-        self.hand_pos[0] = self.hand_centre_pos[0] + numpy.cos(numpy.radians(self.hand_degrees)) * self.hand_length
-        self.hand_pos[1] = self.hand_centre_pos[1] + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
+        self.hand_pos[0] = (
+            self.hand_centre_pos[0]
+            + numpy.cos(numpy.radians(self.hand_degrees)) * self.hand_length
+        )
+        self.hand_pos[1] = (
+            self.hand_centre_pos[1]
+            + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
+        )
 
         return night_count
-            
 
 
 class HealthBar:
@@ -272,7 +325,6 @@ class Inventory:
             "bow ": ["assets/bow/bow_item.png", 30],
             "wool ": ["assets/items/wool.png", 30],
             "string ": ["assets/items/string.png", 30],
-            
         }
 
         self.items_dict_small = {
@@ -346,24 +398,24 @@ class Inventory:
         self.holding_axe = False
         self.dropped_items = []
         self.given_items = {
-            0: "axe ",
-            1: "pickaxe ",
-            2: "lantern ",
-            3: "coal ",
-            4: "sword ",
-            5: "wood ",
-            6: "torch ",
-            7: "torch ",
-            8: "bow ",
-            9: "wool ",
-            10: "wool ",
-            11: "wool ",
-            12: "wool ",
-            13: "wool ",
-            14: "wool ",           
-            15: "wool ",
-            16: "wool ",
-            17: "wool ",
+            0: "",
+            1: "",
+            2: "",
+            3: "",
+            4: "",
+            5: "",
+            6: "",
+            7: "",
+            8: "",
+            9: "",
+            10: "",
+            11: "",
+            12: "",
+            13: "",
+            14: "",
+            15: "",
+            16: "",
+            17: "",
         }
         self.block_fill = {}
         self.dropped_items = {}
@@ -812,7 +864,7 @@ class Inventory:
 
             if keys[2]:
                 self.eat_item(self.block_fill[self.selected_block], self.selected_block)
-                
+
             if self.block_fill[self.selected_block] == "bow ":
                 self.player.bow_selected = True
             else:
@@ -1524,7 +1576,9 @@ class CraftingTable:
             recipe = ""
             for index, block in enumerate(self.blocks):
                 if bool(self.block_fill[index]):
-                    if self.block_fill[index] == "string ": # exceptions to first-letter for recipe
+                    if (
+                        self.block_fill[index] == "string "
+                    ):  # exceptions to first-letter for recipe
                         recipe += "r"
                     else:
                         recipe += self.block_fill[index][0]
