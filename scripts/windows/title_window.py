@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 from scripts.uiElements.button_el import Button
+import os
 
 
 pygame.init()
@@ -18,6 +19,7 @@ class TitleWindow:
             theme_path="scripts/windows/title_window.json",
         )
         # self.test_btn = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 275), (100, 50)), text="EXIT BUTTON", manager=self.manager)
+
         self.btn_h_percent = 7
         self.play_last_saved_btn = Button(
             (50, "%"),
@@ -70,6 +72,14 @@ class TitleWindow:
             self.screen_height,
         )
 
+        game_dirs = os.listdir(os.path.join("saves"))
+        button_enabled = len(game_dirs) > 0
+
+        if not button_enabled:
+            self.play_last_saved_btn.button.disable()
+        else:
+            self.play_last_saved_btn.button.enable()
+
         title_rect = pygame.Rect((0, 0), (int(self.screen_width), int(200)))
         self.title = pygame_gui.elements.UILabel(
             manager=self.manager,
@@ -98,9 +108,18 @@ class TitleWindow:
         self.quit_btn.update_res(self.screen_width, self.screen_height)
         self.settings_btn.update_res(self.screen_width, self.screen_height)
 
+        game_dirs = os.listdir(os.path.join("saves"))
+        button_enabled = len(game_dirs) > 0
+
+        if not button_enabled:
+            self.play_last_saved_btn.button.disable()
+        else:
+            self.play_last_saved_btn.button.enable()
+
     def update(self, events, mouse_x, mouse_y, mouse_down, delta_time):
         playing = True
         current_game_state = "TITLE"
+        selected_world = ""
 
         self.screen_width, self.screen_height = self.screen.get_size()
 
@@ -117,6 +136,10 @@ class TitleWindow:
                     current_game_state = "CREATE"
                 if event.ui_element == self.load_game_btn.button:
                     current_game_state = "LOAD"
+                if event.ui_element == self.play_last_saved_btn.button:
+                    with open("last_played.txt", "r") as f:
+                        current_game_state = "GAME"
+                        selected_world = f.read()
 
             if not self.has_save:
                 self.load_game_btn.disable()
@@ -145,7 +168,7 @@ class TitleWindow:
 
         self.manager.update(delta_time)
 
-        return playing, current_game_state
+        return playing, current_game_state, selected_world
 
     def draw(self):
         self.manager.draw_ui(self.screen)

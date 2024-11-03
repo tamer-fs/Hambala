@@ -1,11 +1,11 @@
 #                    TODO
 # ---------------------------------------------
-# ! Pause screen resize fixen. [✘]
 # ! Instellingen bij spel maken. [✘]
-# ! Play last saved. [✘]
 # ! Saves verwijderen. [✘]
-# ! Search functie load world werkend maken.
+# ! Search functie load world werkend maken. [✘]
 # --------------------------------------------
+# * Pause screen resize fixen. [✓]
+# * Play last saved. [✓]
 # * Screens resize fixen. [✓]
 # * Inventory laad bug fixen. [✓]
 # --------------------------------------------
@@ -322,6 +322,7 @@ def save_world():
 
 
 def load_world(folder_name, sky_color):
+    print("FOLDER NAME", folder_name)
     with open(os.path.join("saves", str(folder_name), "save.json")) as f:
         json_dict = json.loads(f.read())
 
@@ -351,6 +352,9 @@ def load_world(folder_name, sky_color):
 
     main_inventory.item_count_dict = item_count_copy
 
+    print(
+        "FOLDER NAME", folder_name, os.path.join("saves", str(folder_name), "world.txt")
+    )
     world = numpy.loadtxt(os.path.join("saves", str(folder_name), "world.txt")).reshape(
         map_w, map_h
     )
@@ -376,7 +380,7 @@ while playing:
 
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state = title_window.update(
+        playing, current_game_state, selected_world = title_window.update(
             events,
             pygame.mouse.get_pos()[0],
             pygame.mouse.get_pos()[1],
@@ -505,7 +509,18 @@ while playing:
                 black_surface.set_alpha(100)
 
         if current_game_state == "GAME":
+            import pdb
+
+            pdb.set_trace()
+            print(world)
+            print("---------------------")
+            print(plants)
             load_world(loaded_world, sky_color)
+            print("*********************************")
+            print(world)
+            print("---------------------")
+            print(plants)
+            pdb.set_trace()
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -547,6 +562,7 @@ while playing:
                     save_world()
 
                 if event.key == pygame.K_ESCAPE:
+                    pause_menu_window.update_res(screen)
                     pause_menu_opened = not pause_menu_opened
 
             if event.type == pygame.MOUSEBUTTONDOWN:

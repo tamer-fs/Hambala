@@ -132,7 +132,9 @@ class LoadSaveWindow:
                     selected_world = self.game_names_to_dirs[
                         self.games_list_el.get_single_selection()
                     ]
-                    print(selected_world)
+
+                    with open("last_played.txt", "w") as f:
+                        f.write(selected_world)
 
                     # vanaf hier load save dingen
 

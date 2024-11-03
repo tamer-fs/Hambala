@@ -118,7 +118,6 @@ class CreateGameWindow:
                     for char in folder_name:
                         str_folder_name = str_folder_name + char
 
-                    print(str_folder_name)
                     loaded_world = str_folder_name
 
                     save_json = {
@@ -229,6 +228,13 @@ class CreateGameWindow:
                         os.path.join("saves", str(str_folder_name), "plants.txt"), "w"
                     ) as f:
                         numpy.savetxt(f, plants.astype(int), fmt="%i")
+
+                    with open("last_played.txt", "w") as f:
+                        f.write(str_folder_name)
+
+                    # import pdb
+
+                    # pdb.set_trace()
 
                 elif event.ui_element == self.difficulty_btn.button:
                     self.difficulty += 1
