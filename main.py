@@ -3,6 +3,7 @@
 # ! Instellingen bij spel maken. [✘]
 # ! Saves verwijderen. [✘]
 # ! Search functie load world werkend maken. [✘]
+# ! Create game settings (seed, difficulty). [✘]
 # --------------------------------------------
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
@@ -239,10 +240,6 @@ ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
 player_bow = Bow(unlimited_arrows=True)
 
 current_game_state = "TITLE"
-in_game = False  # je kan ook in-game zijn in settings
-
-loaded_world = "testsave"
-
 """
 TITLE = Title screen (when opening game):
 
@@ -263,6 +260,10 @@ SETTINGS = General game settings
 GAME = In-Game
 PAUSE = Pause screen (when opening menu in game)
 """
+
+in_game = False  # je kan ook in-game zijn in settings
+
+loaded_world = "testsave"
 
 
 def shake(shakeTime, scrollx, scrolly):
@@ -380,7 +381,7 @@ while playing:
 
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state, selected_world = title_window.update(
+        playing, current_game_state, loaded_world = title_window.update(
             events,
             pygame.mouse.get_pos()[0],
             pygame.mouse.get_pos()[1],
@@ -442,7 +443,7 @@ while playing:
             title_window.update_res(screen)
 
         if selected_world != "":
-            # wereld laad gangsters
+            # wereld laad basis gangsters
             loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
             sky_color, world, world_rotation, plants = load_world(
                 selected_world, sky_color
@@ -515,7 +516,7 @@ while playing:
             print(world)
             print("---------------------")
             print(plants)
-            load_world(loaded_world, sky_color)
+            sky_color, world, world_rotation, plants = load_world(loaded_world, sky_color)
             print("*********************************")
             print(world)
             print("---------------------")
