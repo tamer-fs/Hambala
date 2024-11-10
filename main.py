@@ -1,14 +1,15 @@
 #                    TODO
 # ---------------------------------------------
 # ! Instellingen bij spel maken. [✘]
-# ! Saves verwijderen. [✘]
-# ! Search functie load world werkend maken. [✘]
 # ! Create game settings (seed, difficulty). [✘]
+# ! Create game met zelfde naam ERROR!!. [✘]
 # --------------------------------------------
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
 # * Screens resize fixen. [✓]
 # * Inventory laad bug fixen. [✓]
+# * Saves verwijderen. [✓]
+# * Search functie load world werkend maken. [✓]
 # --------------------------------------------
 
 import numpy
@@ -510,18 +511,9 @@ while playing:
                 black_surface.set_alpha(100)
 
         if current_game_state == "GAME":
-            import pdb
-
-            pdb.set_trace()
-            print(world)
-            print("---------------------")
-            print(plants)
-            sky_color, world, world_rotation, plants = load_world(loaded_world, sky_color)
-            print("*********************************")
-            print(world)
-            print("---------------------")
-            print(plants)
-            pdb.set_trace()
+            sky_color, world, world_rotation, plants = load_world(
+                loaded_world, sky_color
+            )
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
