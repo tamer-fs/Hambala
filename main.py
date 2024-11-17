@@ -1,8 +1,7 @@
 #                    TODO
 # ---------------------------------------------
-# ! Instellingen bij spel maken. [✘]
+# ! Instellingen (algemeen) maken. [✘]
 # ! Create game settings (seed, difficulty). [✘]
-# ! Create game met zelfde naam ERROR!!. [✘]
 # --------------------------------------------
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
@@ -10,6 +9,7 @@
 # * Inventory laad bug fixen. [✓]
 # * Saves verwijderen. [✓]
 # * Search functie load world werkend maken. [✓]
+# * Create game met zelfde naam ERROR!!. [✓]
 # --------------------------------------------
 
 import numpy
@@ -82,6 +82,7 @@ from scripts.windows.title_window import *
 from scripts.windows.create_game_window import *
 from scripts.windows.load_save_window import *
 from scripts.windows.pause_menu_window import *
+from scripts.windows.main_settings_window import *
 
 import json
 import os
@@ -280,6 +281,7 @@ title_window = TitleWindow(screen)
 create_game_window = CreateGameWindow(screen)
 load_save_window = LoadSaveWindow(screen)
 pause_menu_window = PauseMenuWindow(screen)
+settings_window = MainSettingsWindow(screen)
 
 black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
 black_surface.fill((0, 0, 0))
@@ -538,7 +540,57 @@ while playing:
         create_game_window.draw()
 
     elif current_game_state == "SETTINGS":
-        pass
+        scrollx = 0
+        scrolly = 0
+        screen.fill((0, 0, 0))
+        events = pygame.event.get()
+        playing, current_game_state, loaded_world = settings_window.update(
+            events,
+            pygame.mouse.get_pos()[0],
+            pygame.mouse.get_pos()[1],
+            pygame.mouse.get_pressed()[0],
+            deltaT,
+        )
+        if current_game_state != "SETTINGS":
+            title_window.update_res(screen)
+
+        for event in events:
+            if event.type == pygame.VIDEORESIZE:
+                screenWidth, screenHeight = screen.get_size()
+                animals.reset_screen_size(screenWidth, screenHeight)
+
+                black_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                black_surface.fill((0, 0, 0))
+                black_surface.set_alpha(100)
+
+        if current_game_state == "GAME":
+            sky_color, world, world_rotation, plants = load_world(
+                loaded_world, sky_color
+            )
+
+        torch_animation_frame, torch_update_frame = render_world(
+            screen,
+            world,
+            plants,
+            world_rotation,
+            images,
+            scrollx + shake_x,
+            scrolly + shake_y,
+            screenWidth,
+            screenHeight,
+            torch_animation_frame,
+            torch_update_frame,
+        )
+
+        animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
+
+        particles = animals.update(plants, player, particles)
+
+        screen.blit(black_surface, (0, 0))
+
+        settings_window.draw()
 
     elif current_game_state == "PAUSE":
         pass

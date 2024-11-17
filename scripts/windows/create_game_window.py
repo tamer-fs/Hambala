@@ -97,8 +97,6 @@ class CreateGameWindow:
                 if event.ui_element == self.back_btn.button:
                     current_game_state = "TITLE"
                 elif event.ui_element == self.create_game_btn.button:
-                    current_game_state = "GAME"
-
                     folder_name = self.name_input.input_entry.get_text().replace(
                         " ", ""
                     )
@@ -119,122 +117,132 @@ class CreateGameWindow:
                         str_folder_name = str_folder_name + char
 
                     loaded_world = str_folder_name
+                    self.can_create = bool(loaded_world)
 
-                    save_json = {
-                        "game_name": self.name_input.input_entry.get_text(),
-                        "game_difficulty": self.difficulty,
-                        "time": 0,
-                        "animal_dict": {},
-                        "alive_enemies": [],
-                        "player": {
-                            "x": 1176.0,
-                            "y": 1176.0,
-                            "energy_value": 100,
-                            "food_value": 10000,
-                            "health_value": 10,
-                        },
-                        "inventory": {
-                            "block_fill": {
-                                "0": "axe ",
-                                "1": "pickaxe ",
-                                "2": "",
-                                "3": "",
-                                "4": "",
-                                "5": "",
-                                "6": "",
-                                "7": "",
-                                "8": "",
-                                "9": "",
-                                "10": "",
-                                "11": "",
-                                "12": "",
-                                "13": "",
-                                "14": "",
-                                "15": "",
-                                "16": "",
-                                "17": "",
-                                "18": "",
-                                "19": "",
-                                "20": "",
-                                "21": "",
-                                "22": "",
-                                "23": "",
-                                "24": "",
-                                "25": "",
-                                "26": "",
+                    for folder in os.listdir(os.path.join("saves")):
+                        if folder == loaded_world:
+                            self.can_create = False
+
+                    if self.can_create:
+                        current_game_state = "GAME"
+                        save_json = {
+                            "game_name": self.name_input.input_entry.get_text(),
+                            "game_difficulty": self.difficulty,
+                            "time": 0,
+                            "animal_dict": {},
+                            "alive_enemies": [],
+                            "player": {
+                                "x": 1176.0,
+                                "y": 1176.0,
+                                "energy_value": 100,
+                                "food_value": 10000,
+                                "health_value": 10,
                             },
-                            "item_count_dict": {
-                                "0": 1,
-                                "1": 1,
-                                "2": 0,
-                                "3": 0,
-                                "4": 0,
-                                "5": 0,
-                                "6": 0,
-                                "7": 0,
-                                "8": 0,
-                                "9": 0,
-                                "10": 0,
-                                "11": 0,
-                                "12": 0,
-                                "13": 0,
-                                "14": 0,
-                                "15": 0,
-                                "16": 0,
-                                "17": 0,
-                                "18": 0,
-                                "19": 0,
-                                "20": 0,
-                                "21": 0,
-                                "22": 0,
-                                "23": 0,
-                                "24": 0,
-                                "25": 0,
-                                "26": 0,
+                            "inventory": {
+                                "block_fill": {
+                                    "0": "axe ",
+                                    "1": "pickaxe ",
+                                    "2": "",
+                                    "3": "",
+                                    "4": "",
+                                    "5": "",
+                                    "6": "",
+                                    "7": "",
+                                    "8": "",
+                                    "9": "",
+                                    "10": "",
+                                    "11": "",
+                                    "12": "",
+                                    "13": "",
+                                    "14": "",
+                                    "15": "",
+                                    "16": "",
+                                    "17": "",
+                                    "18": "",
+                                    "19": "",
+                                    "20": "",
+                                    "21": "",
+                                    "22": "",
+                                    "23": "",
+                                    "24": "",
+                                    "25": "",
+                                    "26": "",
+                                },
+                                "item_count_dict": {
+                                    "0": 1,
+                                    "1": 1,
+                                    "2": 0,
+                                    "3": 0,
+                                    "4": 0,
+                                    "5": 0,
+                                    "6": 0,
+                                    "7": 0,
+                                    "8": 0,
+                                    "9": 0,
+                                    "10": 0,
+                                    "11": 0,
+                                    "12": 0,
+                                    "13": 0,
+                                    "14": 0,
+                                    "15": 0,
+                                    "16": 0,
+                                    "17": 0,
+                                    "18": 0,
+                                    "19": 0,
+                                    "20": 0,
+                                    "21": 0,
+                                    "22": 0,
+                                    "23": 0,
+                                    "24": 0,
+                                    "25": 0,
+                                    "26": 0,
+                                },
                             },
-                        },
-                    }
+                        }
 
-                    # create folder (os.path.join is professioneel)
-                    os.mkdir(os.path.join("saves", str(str_folder_name)))
+                        # create folder (os.path.join is professioneel)
+                        os.mkdir(os.path.join("saves", str(str_folder_name)))
 
-                    # create save.json
-                    with open(
-                        os.path.join("saves", str(str_folder_name), "save.json"), "w"
-                    ) as f:
-                        f.write(json.dumps(save_json))
+                        # create save.json
+                        with open(
+                            os.path.join("saves", str(str_folder_name), "save.json"),
+                            "w",
+                        ) as f:
+                            f.write(json.dumps(save_json))
 
-                    # create world and save world data in txt files
-                    map_w, map_h = 150, 150
-                    plant_spawn_chance = 3
-                    plants, world, world_rotation = create_world(
-                        map_w, map_h, plant_spawn_chance
-                    )
+                        # create world and save world data in txt files
+                        map_w, map_h = 150, 150
+                        plant_spawn_chance = 3
+                        plants, world, world_rotation = create_world(
+                            map_w, map_h, plant_spawn_chance
+                        )
 
-                    with open(
-                        os.path.join("saves", str(str_folder_name), "world.txt"), "w"
-                    ) as f:
-                        numpy.savetxt(f, world.astype(int), fmt="%i")
+                        with open(
+                            os.path.join("saves", str(str_folder_name), "world.txt"),
+                            "w",
+                        ) as f:
+                            numpy.savetxt(f, world.astype(int), fmt="%i")
 
-                    with open(
-                        os.path.join(
-                            "saves", str(str_folder_name), "world_rotation.txt"
-                        ),
-                        "w",
-                    ) as f:
-                        numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
+                        with open(
+                            os.path.join(
+                                "saves", str(str_folder_name), "world_rotation.txt"
+                            ),
+                            "w",
+                        ) as f:
+                            numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
 
-                    with open(
-                        os.path.join("saves", str(str_folder_name), "plants.txt"), "w"
-                    ) as f:
-                        numpy.savetxt(f, plants.astype(int), fmt="%i")
+                        with open(
+                            os.path.join("saves", str(str_folder_name), "plants.txt"),
+                            "w",
+                        ) as f:
+                            numpy.savetxt(f, plants.astype(int), fmt="%i")
 
-                    with open("last_played.txt", "w") as f:
-                        f.write(str_folder_name)
+                        with open("last_played.txt", "w") as f:
+                            f.write(str_folder_name)
 
-                    # import pdb
+                        # import pdb
 
-                    # pdb.set_trace()
+                        # pdb.set_trace()
 
                 elif event.ui_element == self.difficulty_btn.button:
                     self.difficulty += 1

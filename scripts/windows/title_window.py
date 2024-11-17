@@ -140,6 +140,8 @@ class TitleWindow:
                     with open("last_played.txt", "r") as f:
                         current_game_state = "GAME"
                         selected_world = f.read()
+                if event.ui_element == self.settings_btn.button:
+                    current_game_state = "SETTINGS"
 
             if not self.has_save:
                 self.load_game_btn.disable()

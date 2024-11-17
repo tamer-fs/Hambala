@@ -49,8 +49,15 @@
       "regular_path": "assets/Font/SpaceMono-Regular.ttf"
     }
   },
+  "#smallTitle": {
+    "font": {
+      "name": "Spacemono",
+      "size": "24",
+      "regular_path": "assets/Font/SpaceMono-Regular.ttf"
+    }
+  },
   "selection_list": {
-"colours": {
+    "colours": {
       "normal_border": "#F8FAE5",
       "hovered_border": "#F8FAE5",
       "normal_bg": "#76453B",
