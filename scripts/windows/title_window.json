@@ -56,6 +56,13 @@
       "regular_path": "assets/Font/SpaceMono-Regular.ttf"
     }
   },
+  "#settingText": {
+    "font": {
+      "name": "Spacemono",
+      "size": "18",
+      "regular_path": "assets/Font/SpaceMono-Regular.ttf"
+    }
+  },
   "selection_list": {
     "colours": {
       "normal_border": "#F8FAE5",
