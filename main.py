@@ -19,6 +19,7 @@ import pygame
 import time
 import json
 import pygame_gui
+import math
 
 pygame.init()
 pygame.font.init()
@@ -756,8 +757,15 @@ while playing:
             shake_frame += 1
             if shake_frame > 10:
                 shake_frame = 0
-            shake_x = random.randint(-1, 1)
-            shake_y = random.randint(-1, 1)
+            shake_multiplier = settings_window.screen_shake_slider.get_current_value()
+            print(shake_multiplier, math.pow(shake_multiplier, 2))
+            # math.pow zodat de waardes worden: 0, 1, 4
+            shake_x = random.randint(
+                -1 * math.pow(shake_multiplier, 2), 1 * math.pow(shake_multiplier, 2)
+            )
+            shake_y = random.randint(
+                -1 * math.pow(shake_multiplier, 2), 1 * math.pow(shake_multiplier, 2)
+            )
 
         particles, particle_perf = spawn_particles(particle_perf, player, particles)
 

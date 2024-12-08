@@ -142,7 +142,7 @@ class CreateGameWindow:
                                 "block_fill": {
                                     "0": "axe ",
                                     "1": "pickaxe ",
-                                    "2": "",
+                                    "2": "sword ",
                                     "3": "",
                                     "4": "",
                                     "5": "",
@@ -171,7 +171,7 @@ class CreateGameWindow:
                                 "item_count_dict": {
                                     "0": 1,
                                     "1": 1,
-                                    "2": 0,
+                                    "2": 1,
                                     "3": 0,
                                     "4": 0,
                                     "5": 0,
