@@ -146,7 +146,7 @@ class Animal:
                     False,  # animal boos 20
                     HealthBar((0, 0), (50, 5), 2, hp),  # hp bar 21
                     -1,  # last attack 22
-                    hp, # max hp 23
+                    hp,  # max hp 23
                 ]
 
     def return_animal_dict(self):
@@ -294,7 +294,7 @@ class Animal:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, player, particles):
+    def update(self, plants, player, particles, dt):
         animal_delete_list = []
         if self.animal_dict is None:
             return particles
@@ -330,7 +330,7 @@ class Animal:
             )
 
             if time.perf_counter() - animal_perf > animal_break_time:
-                if animal_walking:
+                if animal_walking: 
                     animal[4] = False
                 else:
                     animal[4] = True
@@ -338,10 +338,12 @@ class Animal:
                     animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
                 animal[8] = time.perf_counter()
 
+            print(dt)
+
             if animal_walking:
                 if animal_path < animal_set_steps:
-                    animal_rect.x += animal[7][animal[5]][0]
-                    animal_rect.y += animal[7][animal[5]][1]
+                    animal_rect.x += animal[7][animal[5]][0] * dt
+                    animal_rect.y += animal[7][animal[5]][1] * dt
                     animal[5] += 1
                 else:
                     animal[4] = False
@@ -386,8 +388,8 @@ class Animal:
                             animal[6], 1.2, False
                         )
                     animal[15] -= random.randint(30, 40)
-                    animal_rect.y += random.randint(-5, 5)
-                    animal_rect.x += random.randint(-5, 5)
+                    animal_rect.y += random.randint(-5, 5) * dt
+                    animal_rect.x += random.randint(-5, 5) * dt
                     player.hitting = False
 
             if (

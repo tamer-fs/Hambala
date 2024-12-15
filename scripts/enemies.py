@@ -365,7 +365,14 @@ class Enemies:
                 #     pygame.draw.circle(screen, (255, 255, 255), (blit_x, blit_y), 5)
 
     def update(
-        self, is_night, player, torch_locations_list, particles, night_count, player_bow
+        self,
+        is_night,
+        player,
+        torch_locations_list,
+        particles,
+        night_count,
+        player_bow,
+        dt,
     ):
         self.is_night = is_night
 
@@ -518,6 +525,7 @@ class Enemies:
                     self.alive_enemies[i]["rect"].x + rect.w / 2,
                     self.alive_enemies[i]["rect"].y + rect.h / 2,
                     round(angle),
+                    dt,
                 )
 
             # arrow (by player) hitting zombie
@@ -742,11 +750,11 @@ class Enemies:
             else:
                 if time.perf_counter() >= enemy["start_walking_perf"]:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
-                        self.alive_enemies[i]["x"] += enemy["walk_vx"] * (
-                            enemy["speed"] / 100
+                        self.alive_enemies[i]["x"] += (
+                            enemy["walk_vx"] * (enemy["speed"] / 100) * dt
                         )
-                        self.alive_enemies[i]["y"] += enemy["walk_vy"] * (
-                            enemy["speed"] / 100
+                        self.alive_enemies[i]["y"] += (
+                            enemy["walk_vy"] * (enemy["speed"] / 100) * dt
                         )
                         self.alive_enemies[i]["current_action"] = "walk"
                         if enemy["walk_vx"] > 0:

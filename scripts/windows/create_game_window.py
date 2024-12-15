@@ -1,9 +1,10 @@
 import pygame
 import pygame_gui
-import os, json, numpy
+import os, json, numpy, random
 from scripts.uiElements.button_el import Button
 from scripts.uiElements.input_entry_el import InputEntry
 from func import create_world
+from scripts.animal import Animal
 
 pygame.init()
 pygame.font.init()
@@ -123,13 +124,17 @@ class CreateGameWindow:
                         if folder == loaded_world:
                             self.can_create = False
 
+                    animal = Animal(
+                        random.randint(25, 45), self.screen_width, self.screen_height
+                    )
+
                     if self.can_create:
                         current_game_state = "GAME"
                         save_json = {
                             "game_name": self.name_input.input_entry.get_text(),
                             "game_difficulty": self.difficulty,
                             "time": 0,
-                            "animal_dict": {},
+                            "animal_dict": animal.return_animal_dict(),
                             "alive_enemies": [],
                             "player": {
                                 "x": 1176.0,

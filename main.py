@@ -1,7 +1,8 @@
 #                    TODO
 # ---------------------------------------------
-# ! Instellingen (algemeen) maken. [✘]
+# ! Bugfixen resize settings scherm :))) [✘]  <--- 'NEEE' - Tamer Sparreboom 8-12-2024
 # ! Create game settings (seed, difficulty). [✘]
+# ! FPS Counter setting. [✘]
 # --------------------------------------------
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
@@ -10,6 +11,7 @@
 # * Saves verwijderen. [✓]
 # * Search functie load world werkend maken. [✓]
 # * Create game met zelfde naam ERROR!!. [✓]
+# * Instellingen (algemeen) maken. [✓]
 # --------------------------------------------
 
 import numpy
@@ -217,6 +219,7 @@ main_inventory.get_player(player)
 animals.player = player
 
 deltaT = 0
+dt = 1 # deltaT value / 16
 
 prev_player_x = 0
 prev_player_y = 0
@@ -424,7 +427,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles)
+        particles = animals.update(plants, player, particles, dt)
 
         screen.blit(black_surface, (0, 0))
 
@@ -480,7 +483,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles)
+        particles = animals.update(plants, player, particles, dt)
 
         screen.blit(black_surface, (0, 0))
 
@@ -514,6 +517,7 @@ while playing:
                 black_surface.set_alpha(100)
 
         if current_game_state == "GAME":
+
             sky_color, world, world_rotation, plants = load_world(
                 loaded_world, sky_color
             )
@@ -534,7 +538,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles)
+        particles = animals.update(plants, player, particles, dt)
 
         screen.blit(black_surface, (0, 0))
 
@@ -587,7 +591,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles)
+        particles = animals.update(plants, player, particles, dt)
 
         screen.blit(black_surface, (0, 0))
 
@@ -597,6 +601,7 @@ while playing:
         pass
 
     elif current_game_state == "GAME":
+        # peter pan
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -726,7 +731,7 @@ while playing:
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
         if not pause_menu_opened:
-            particles = animals.update(plants, player, particles)
+            particles = animals.update(plants, player, particles, dt)
 
         prev_player_x = player.x
         prev_player_y = player.y
@@ -758,7 +763,7 @@ while playing:
             if shake_frame > 10:
                 shake_frame = 0
             shake_multiplier = settings_window.screen_shake_slider.get_current_value()
-            print(shake_multiplier, math.pow(shake_multiplier, 2))
+            # print(shake_multiplier, math.pow(shake_multiplier, 2))
             # math.pow zodat de waardes worden: 0, 1, 4
             shake_x = random.randint(
                 -1 * math.pow(shake_multiplier, 2), 1 * math.pow(shake_multiplier, 2)
@@ -831,6 +836,7 @@ while playing:
                 joystick_input,
                 joystick_btn_dict,
                 plants,
+                dt
             )
             player.update(
                 plants,
@@ -844,6 +850,7 @@ while playing:
                 pygame.mouse.get_pos(),
                 scrollx,
                 scrolly,
+                dt
             )
 
         if player.hitting or started_shake:
@@ -862,6 +869,7 @@ while playing:
                 particles,
                 night_count,
                 player_bow,
+                dt
             )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
@@ -1015,9 +1023,11 @@ while playing:
     fps = clock.get_fps()
     screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
-    deltaT = clock.tick(60)
-    if joystick_input:
-        if eval(joystick_btn_dict["d-pad-right"]):
-            print("RIGHT")
+    max_fps = settings_window.max_fps_slider.get_current_value()
+    deltaT = clock.tick(max_fps)
+    dt = deltaT / 16
+    # if joystick_input:
+    #     if eval(joystick_btn_dict["d-pad-right"]):
+    #         print("RIGHT")
 
 pygame.quit()
