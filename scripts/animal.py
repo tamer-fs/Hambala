@@ -338,7 +338,7 @@ class Animal:
                     animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
                 animal[8] = time.perf_counter()
 
-            print(dt)
+            # print(dt)
 
             if animal_walking:
                 if animal_path < animal_set_steps:

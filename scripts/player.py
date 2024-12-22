@@ -422,6 +422,7 @@ class Player:
         scrollx,
         scrolly,
         dt,
+        particles,
     ):
         self.player_tile = (int(self.x / 16), int(self.y / 16))
 
@@ -598,11 +599,31 @@ class Player:
                 screen, pygame.Color("#0ead69"), self.stone_rect, border_radius=20
             )
             if e_pressed:
+                # boom hp gaat omlaag :( <-- wtf | : ) <-- goed
                 if time.perf_counter() - self.cooldown > 0.8:
                     self.stone_rect.width -= (self.screen_size[0] / 4) / 4
                     self.cooldown = time.perf_counter()
+                    # make particles
+                    for _ in range(15):
+                        particle_x = 0
+                        particle_y = 0
+                        if self.direction == "RIGHT":
+                            particle_x, particle_y = (
+                                self.x - 1 + 35,
+                                self.y - 1 + 5,
+                            )
+                        else:
+                            particle_x, particle_y = (
+                                self.x - 1 + 20 - 30,
+                                self.y - 1 + 5,
+                            )
 
-                if time.perf_counter() - self.axe_cooldown > 0.5:
+                        particles.append(
+                            HitParticle(particle_x, particle_y, pygame.Color("#422a0a"))
+                        )
+
+                # axe animatie
+                if time.perf_counter() - self.axe_cooldown > 0.4:
                     self.axe_frame = (self.axe_frame + 1) % 2
                     self.axe_cooldown = time.perf_counter()
 
@@ -658,3 +679,5 @@ class Player:
 
         if self.health_value < 0:
             self.health_value = 0
+
+        return particles

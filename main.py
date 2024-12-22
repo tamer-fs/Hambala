@@ -1,8 +1,8 @@
 #                    TODO
 # ---------------------------------------------
-# ! Bugfixen resize settings scherm :))) [✘]  <--- 'NEEE' - Tamer Sparreboom 8-12-2024
+# ! Bugfixen resize settings scherm :))) [✘]  <--- 'NEEE' - Mvr. T. Sparreboom 8-12-2024
 # ! Create game settings (seed, difficulty). [✘]
-# ! FPS Counter setting. [✘]
+# ! Particles meer nu gelijk!!!!!!!!! [✘]
 # --------------------------------------------
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
@@ -12,6 +12,8 @@
 # * Search functie load world werkend maken. [✓]
 # * Create game met zelfde naam ERROR!!. [✓]
 # * Instellingen (algemeen) maken. [✓]
+# * FPS Counter setting. [✓]
+# * Play last saved 'bug oplossen' <--- toevoeging door Dhr. M. Bakker 22-12-2024. [✓]
 # --------------------------------------------
 
 import numpy
@@ -28,7 +30,7 @@ pygame.font.init()
 clock = pygame.time.Clock()
 maxFps = 60
 
-fps_font = pygame.font.Font("assets/Font/Main.ttf", 15)
+fps_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 20)
 
 screenWidth = 1000
 screenHeight = 600
@@ -219,7 +221,7 @@ main_inventory.get_player(player)
 animals.player = player
 
 deltaT = 0
-dt = 1 # deltaT value / 16
+dt = 1  # deltaT value / 16
 
 prev_player_x = 0
 prev_player_y = 0
@@ -388,13 +390,23 @@ while playing:
 
         screen.fill((0, 0, 0))
         events = pygame.event.get()
-        playing, current_game_state, loaded_world = title_window.update(
+        playing, current_game_state, selected_world = title_window.update(
             events,
             pygame.mouse.get_pos()[0],
             pygame.mouse.get_pos()[1],
             pygame.mouse.get_pressed()[0],
             deltaT,
         )
+
+        if selected_world != "":
+            # wereld laad basis gangsters
+            loaded_world = (
+                selected_world  # zodat de wereld ook opgeslagen kan worden (no shit)
+            )
+
+            sky_color, world, world_rotation, plants = load_world(
+                selected_world, sky_color
+            )
 
         if current_game_state != "TITLE":
             create_game_window.update_res(screen)
@@ -836,9 +848,9 @@ while playing:
                 joystick_input,
                 joystick_btn_dict,
                 plants,
-                dt
+                dt,
             )
-            player.update(
+            particles = player.update(
                 plants,
                 keys,
                 screen,
@@ -850,7 +862,8 @@ while playing:
                 pygame.mouse.get_pos(),
                 scrollx,
                 scrolly,
-                dt
+                dt,
+                particles,
             )
 
         if player.hitting or started_shake:
@@ -869,7 +882,7 @@ while playing:
                 particles,
                 night_count,
                 player_bow,
-                dt
+                dt,
             )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
@@ -1021,7 +1034,8 @@ while playing:
     # player_bow.draw(screen, scrollx, scrolly)
 
     fps = clock.get_fps()
-    screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
+    if settings_window.show_fps:
+        screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
     pygame.display.update()
     max_fps = settings_window.max_fps_slider.get_current_value()
     deltaT = clock.tick(max_fps)

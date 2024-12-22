@@ -105,6 +105,16 @@ class MainSettingsWindow:
             visible=False,
         )
 
+        self.show_fps = False
+        self.show_fps_text = {False: "Off", True: "On"}
+        self.show_fps_button_rect = pygame.Rect((0, 0), (200, 50))
+        self.show_fps_button = pygame_gui.elements.UIButton(
+            manager=self.manager,
+            relative_rect=self.max_fps_slider_rect,  # >:(
+            text=self.show_fps_text[self.show_fps],
+            visible=False,
+        )
+
         self.particles_quality_slider_rect = pygame.Rect((0, 0), (200, 50))
         self.particles_quality_slider = pygame_gui.elements.UIHorizontalSlider(
             manager=self.manager,
@@ -184,13 +194,13 @@ class MainSettingsWindow:
                 ret_json["particles_quality"]
             )
             self.screen_shake_slider.set_current_value(ret_json["screen_shake"])
-            self.master_volume_slider.set_current_value(
-                ret_json["master_volume"]
-            )
+            self.master_volume_slider.set_current_value(ret_json["master_volume"])
             self.music_volume_slider.set_current_value(ret_json["music_volume"])
-            self.effects_volume_slider.set_current_value(
-                ret_json["effects_volume"]
-            )
+            self.effects_volume_slider.set_current_value(ret_json["effects_volume"])
+            self.show_fps = ret_json["show_fps_counter"]
+            self.show_fps_button.set_text(
+                self.show_fps_text[self.show_fps]
+            )  # update btn text
 
     def save_settings(self):
         with open(os.path.join("settings.json"), "w") as f:
@@ -199,6 +209,7 @@ class MainSettingsWindow:
                 "max_fps": self.max_fps_slider.get_current_value(),
                 "particles_quality": self.particles_quality_slider.get_current_value(),
                 "screen_shake": self.screen_shake_slider.get_current_value(),
+                "show_fps_counter": self.show_fps,
                 # Audio
                 "master_volume": self.master_volume_slider.get_current_value(),
                 "music_volume": self.music_volume_slider.get_current_value(),
@@ -219,8 +230,11 @@ class MainSettingsWindow:
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 self.save_settings()
+
                 if event.ui_element == self.back_btn.button:
                     current_game_state = "TITLE"
+                elif event.ui_element == self.show_fps_button:
+                    self.show_fps = not self.show_fps
                 elif event.ui_element == self.game_settings_btn.button:
                     self.selected_settings = "GAME"
                     self.settings_title.set_text("Game Settings")
@@ -228,6 +242,7 @@ class MainSettingsWindow:
                     self.max_fps_slider.hide()
                     self.particles_quality_slider.hide()
                     self.screen_shake_slider.hide()
+                    self.show_fps_button.hide()
 
                     self.music_volume_slider.hide()
                     self.master_volume_slider.hide()
@@ -240,6 +255,7 @@ class MainSettingsWindow:
                     self.max_fps_slider.show()
                     self.particles_quality_slider.show()
                     self.screen_shake_slider.show()
+                    self.show_fps_button.show()
 
                     self.music_volume_slider.hide()
                     self.master_volume_slider.hide()
@@ -252,6 +268,7 @@ class MainSettingsWindow:
                     self.max_fps_slider.hide()
                     self.particles_quality_slider.hide()
                     self.screen_shake_slider.hide()
+                    self.show_fps_button.hide()
 
                     self.music_volume_slider.show()
                     self.master_volume_slider.show()
@@ -360,6 +377,31 @@ class MainSettingsWindow:
             )
             self.max_fps_slider_rect.w = int((self.screen_width / 100) * 20)
 
+            ###
+            self.show_fps_button.set_position(
+                (
+                    self.settings_container_rect.x
+                    + self.settings_container_rect.w
+                    - self.show_fps_button_rect.w
+                    - 25,
+                    self.settings_container_rect.y
+                    + int((self.screen_height / 100) * 22),
+                )
+            )
+
+            # print(self.show_fps_text)
+            # print(self.show_fps_text[self.show_fps])
+            self.show_fps_button.set_text(self.show_fps_text[self.show_fps])
+
+            self.show_fps_button.set_dimensions(
+                (
+                    int((self.screen_width / 100) * 20),
+                    int((self.screen_height / 100) * 6),
+                )
+            )
+            self.show_fps_button_rect.w = int((self.screen_width / 100) * 20)
+            ###
+
             self.particles_quality_slider.set_position(
                 (
                     self.settings_container_rect.x
@@ -367,7 +409,7 @@ class MainSettingsWindow:
                     - self.particles_quality_slider_rect.w
                     - 25,
                     self.settings_container_rect.y
-                    + int((self.screen_height / 100) * 22),
+                    + int((self.screen_height / 100) * 38),
                 )
             )
 
@@ -399,6 +441,20 @@ class MainSettingsWindow:
             self.screen_shake_slider_rect.w = int((self.screen_width / 100) * 20)
 
             # text!!!
+            self.show_fps_text_text = self.setting_font.render(
+                "Show FPS counter:",
+                True,
+                (255, 255, 255),
+            )
+            self.screen.blit(
+                self.show_fps_text_text,
+                (
+                    self.settings_container_rect.x + 30,
+                    self.settings_container_rect.y
+                    + int((self.screen_height / 100) * 22),
+                ),
+            )
+
             self.max_fps_text = self.setting_font.render(
                 f"Max FPS: {self.max_fps_slider.get_current_value()}",
                 True,
@@ -429,7 +485,7 @@ class MainSettingsWindow:
                 (
                     self.settings_container_rect.x + 30,
                     self.settings_container_rect.y
-                    + int((self.screen_height / 100) * 22),
+                    + int((self.screen_height / 100) * 38),
                 ),
             )
 

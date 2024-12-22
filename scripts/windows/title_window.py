@@ -139,7 +139,7 @@ class TitleWindow:
                 if event.ui_element == self.play_last_saved_btn.button:
                     with open("last_played.txt", "r") as f:
                         current_game_state = "GAME"
-                        selected_world = f.read()
+                        selected_world = f.read() 
                 if event.ui_element == self.settings_btn.button:
                     current_game_state = "SETTINGS"
 
