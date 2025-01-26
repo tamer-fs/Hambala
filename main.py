@@ -1,9 +1,8 @@
 #                    TODO
-# ---------------------------------------------
-# ! Bugfixen resize settings scherm :))) [✘]  <--- 'NEEE' - Mvr. T. Sparreboom 8-12-2024
-# ! Create game settings (seed, difficulty). [✘]
-# ! Particles meer nu gelijk!!!!!!!!! [✘]
-# --------------------------------------------
+# --------------------------------------------- [✘]
+# ! Dieren & Monsters tegen muur aan lopen [✘]
+# -------------------------------------------- [✓]
+# * Create game settings (seed, difficulty). [✓]
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
 # * Screens resize fixen. [✓]
@@ -14,6 +13,11 @@
 # * Instellingen (algemeen) maken. [✓]
 # * FPS Counter setting. [✓]
 # * Play last saved 'bug oplossen' <--- toevoeging door Dhr. M. Bakker 22-12-2024. [✓]
+# * Particles meer nu gelijk!!!!!!!!! [✓]
+# * Bugfixen resize scherm met vierkant knopje [✓]
+# * Bugfixen resize settings scherm :))) [✓]  <--- 'NEEE' - Mvr. T. Sparreboom 8-12-2024
+# * "Gekke zwarte vlak zaad input" [✓]
+# * Mooie tekening muur [✓]
 # --------------------------------------------
 
 import numpy
@@ -411,9 +415,13 @@ while playing:
         if current_game_state != "TITLE":
             create_game_window.update_res(screen)
             load_save_window.update_res(screen)
+            title_window.update_res(screen)
+            pause_menu_window.update_res(screen)
+            settings_window.update_res(screen)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
+
                 screenWidth, screenHeight = screen.get_size()
                 animals.reset_screen_size(screenWidth, screenHeight)
 
@@ -459,7 +467,11 @@ while playing:
         )
 
         if current_game_state != "LOAD":
+            create_game_window.update_res(screen)
+            load_save_window.update_res(screen)
             title_window.update_res(screen)
+            pause_menu_window.update_res(screen)
+            settings_window.update_res(screen)
 
         if selected_world != "":
             # wereld laad basis gangsters
@@ -515,7 +527,11 @@ while playing:
             deltaT,
         )
         if current_game_state != "CREATE":
+            create_game_window.update_res(screen)
+            load_save_window.update_res(screen)
             title_window.update_res(screen)
+            pause_menu_window.update_res(screen)
+            settings_window.update_res(screen)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
@@ -569,7 +585,11 @@ while playing:
             deltaT,
         )
         if current_game_state != "SETTINGS":
+            create_game_window.update_res(screen)
+            load_save_window.update_res(screen)
             title_window.update_res(screen)
+            pause_menu_window.update_res(screen)
+            settings_window.update_res(screen)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
@@ -677,6 +697,13 @@ while playing:
                                 )
 
             if event.type == pygame.VIDEORESIZE:
+                # update res voor alle menu's
+                create_game_window.update_res(screen)
+                load_save_window.update_res(screen)
+                title_window.update_res(screen)
+                pause_menu_window.update_res(screen)
+                settings_window.update_res(screen)
+
                 screenWidth, screenHeight = screen.get_size()
                 player_sprint_bar.reset(
                     (screenWidth - 208, screenHeight - 33), (200, 25), 8
@@ -697,7 +724,9 @@ while playing:
                     (screenWidth, screenHeight), pygame.SRCALPHA, 32
                 )
                 mask_surf.fill(sky_color)
-
+                black_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
 
@@ -790,10 +819,20 @@ while playing:
             del_list = []
 
             for i, particle in enumerate(particles):
-                particle.update(
-                    scrollx + shake_x, scrolly + shake_y, deltaT, player, world
-                )
-                particle.draw(screen)
+                if (
+                    particle.new_particle
+                    and random.randint(1, 950)
+                    < 900
+                    - settings_window.particles_quality_slider.get_current_value() * 300
+                ):
+                    particle.delete_timer -= 10
+                else:
+
+                    particle.update(
+                        scrollx + shake_x, scrolly + shake_y, deltaT, player, world
+                    )
+                    particle.draw(screen)
+
                 if particle.delete_timer + 0.75 < time.perf_counter():
                     del_list.append(i)
 

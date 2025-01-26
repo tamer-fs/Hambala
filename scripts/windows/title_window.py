@@ -108,6 +108,13 @@ class TitleWindow:
         self.quit_btn.update_res(self.screen_width, self.screen_height)
         self.settings_btn.update_res(self.screen_width, self.screen_height)
 
+        self.load_game_btn.button.rebuild()
+        self.create_game_btn.button.rebuild()
+        self.quit_btn.button.rebuild()
+        self.settings_btn.button.rebuild()
+        self.title.rebuild()
+        self.play_last_saved_btn.button.rebuild()
+
         game_dirs = os.listdir(os.path.join("saves"))
         button_enabled = len(game_dirs) > 0
 

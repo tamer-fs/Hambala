@@ -78,6 +78,12 @@ class PauseMenuWindow:
         self.save_to_title_btn.update_res(self.screen_width, self.screen_height)
         self.save_game_btn.update_res(self.screen_width, self.screen_height)
 
+        self.continue_game_btn.button.rebuild()
+        self.save_game_btn.button.rebuild()
+        self.save_and_exit_btn.button.rebuild()
+        self.save_to_title_btn.button.rebuild()
+        self.title.rebuild()
+
     def update(self, events, delta_time):
         self.screen_width, self.screen_height = self.screen.get_size()
 

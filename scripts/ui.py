@@ -914,6 +914,8 @@ class Inventory:
                         )
                     elif self.block_fill[index] == "log ":
                         self.description = "With logs you can craft items |  [TAB] to open crafting table"
+                    elif self.block_fill[index] == "wood ":
+                        self.description = "Place these blocks to protect yourself from unwanted intruders  |  [LMB] to place"
                     elif self.block_fill[index] == "cookie ":
                         self.description = (
                             "Cookies are a great source of food  |  [RMB] to consume"

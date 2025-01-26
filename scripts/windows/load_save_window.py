@@ -123,6 +123,14 @@ class LoadSaveWindow:
             ((self.screen_width - 180) / 2, (self.screen_height - 180) / 2)
         )
 
+        self.back_btn.button.rebuild()
+        self.search_input.input_entry.rebuild()
+        self.load_game_btn.button.rebuild()
+        self.games_list_el.rebuild()
+        self.title.rebuild()
+        self.delete_game_btn.button.rebuild()
+        self.confirm_delete_window.rebuild()
+
     def update_game_dirs(self, filter_text=""):
         self.game_dirs = os.listdir(os.path.join("saves"))
         self.game_names = []

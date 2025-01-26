@@ -87,13 +87,13 @@ def load_img():
     return images
 
 
-def create_world(map_w, map_h, chance_index):
+def create_world(map_w, map_h, chance_index, seed=random.randint(1, 1000000)):
     # add four to width and height to cut it out later, easier world generation with no edges
     map_w, map_h = map_w + 4, map_h + 4
 
     from perlin_noise import PerlinNoise
 
-    noise = PerlinNoise(seed=random.randint(1, 1000000), octaves=10)
+    noise = PerlinNoise(seed=seed, octaves=10)
 
     world_gen = numpy.zeros((map_w, map_h))
     for x in range(map_w):

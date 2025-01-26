@@ -178,13 +178,13 @@ class MainSettingsWindow:
         self.audio_settings_btn.update_res(self.screen_width, self.screen_height)
         self.game_settings_btn.update_res(self.screen_width, self.screen_height)
 
-        game_dirs = os.listdir(os.path.join("saves"))
-        button_enabled = len(game_dirs) > 0
+        self.title.rebuild()
+        self.settings_title.rebuild()
 
-        if not button_enabled:
-            self.play_last_saved_btn.button.disable()
-        else:
-            self.play_last_saved_btn.button.enable()
+        self.back_btn.button.rebuild()
+        self.game_settings_btn.button.rebuild()
+        self.video_settings_btn.button.rebuild()
+        self.audio_settings_btn.button.rebuild()
 
     def load_settings(self):
         with open(os.path.join("settings.json"), "r") as f:

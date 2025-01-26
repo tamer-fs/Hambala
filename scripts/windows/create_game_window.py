@@ -72,6 +72,17 @@ class CreateGameWindow:
             self.screen_height,
         )
 
+        self.seed_input = InputEntry(
+            (50, "%"),
+            (40, "%"),
+            (60, "%"),
+            (self.btn_h_percent, "%"),
+            "Custom seed... (Optional)",
+            self.manager,
+            self.screen_width,
+            self.screen_height,
+        )
+
     def update_res(self, screen):
         self.screen = screen
         self.screen_width, self.screen_height = self.screen.get_size()
@@ -81,6 +92,14 @@ class CreateGameWindow:
         self.back_btn.update_res(self.screen_width, self.screen_height)
         self.difficulty_btn.update_res(self.screen_width, self.screen_height)
         self.name_input.update_res(self.screen_width, self.screen_height)
+        self.seed_input.update_res(self.screen_width, self.screen_height)
+
+        self.seed_input.input_entry.rebuild()
+        self.create_game_btn.button.rebuild()
+        self.back_btn.button.rebuild()
+        self.name_input.input_entry.rebuild()
+        self.difficulty_btn.button.rebuild()
+        self.title.rebuild()
 
         self.manager.set_window_resolution((self.screen_width, self.screen_height))
 
@@ -218,8 +237,22 @@ class CreateGameWindow:
                         # create world and save world data in txt files
                         map_w, map_h = 150, 150
                         plant_spawn_chance = 3
+                        seed = self.seed_input.input_entry.get_text()
+                        filtered_seed = ""
+
+                        for character in seed:
+                            if character.isdigit():
+                                filtered_seed = filtered_seed + str(character)
+                            else:
+                                filtered_seed = filtered_seed + str(ord(character))
+                        print(filtered_seed)
+                        filtered_seed = int(filtered_seed)
+
                         plants, world, world_rotation = create_world(
-                            map_w, map_h, plant_spawn_chance
+                            map_w,
+                            map_h,
+                            plant_spawn_chance,
+                            filtered_seed,
                         )
 
                         with open(
@@ -264,7 +297,9 @@ class CreateGameWindow:
                 self.back_btn.update_res(self.screen_width, self.screen_height)
                 self.difficulty_btn.update_res(self.screen_width, self.screen_height)
                 self.name_input.update_res(self.screen_width, self.screen_height)
+                self.seed_input.update_res(self.screen_width, self.screen_height)
 
+                self.seed_input.input_entry.rebuild()
                 self.create_game_btn.button.rebuild()
                 self.back_btn.button.rebuild()
                 self.name_input.input_entry.rebuild()

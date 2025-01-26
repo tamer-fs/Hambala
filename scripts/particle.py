@@ -21,11 +21,14 @@ class WalkParticle:
         self.player_tile = (0, 0)
         self.color = "orange"
 
+        self.new_particle = True
+
     def draw(self, screen):
         if int(self.width) < 5:
             pygame.draw.ellipse(screen, self.color, self.rect)
 
     def update(self, scrollx, scrolly, deltaT, player, world):
+        self.new_particle = False
         self.x += self.vx * deltaT / 10
         self.y += self.vy * deltaT / 10
         self.width -= 0.015 * deltaT
@@ -59,23 +62,26 @@ class HitParticle:
 
         self.vx = random.uniform(-0.7, 0.7)
         if self.up:
-            self.vy = random.uniform(-0.2, -0.1)     
-            self.vx = random.uniform(-0.1, 0.1) 
+            self.vy = random.uniform(-0.2, -0.1)
+            self.vx = random.uniform(-0.1, 0.1)
         else:
             self.vy = random.uniform(-0.7, 0.7)
 
         self.delete_timer = time.perf_counter()
+
         self.player_tile = (0, 0)
         self.color = color
+        self.new_particle = True
 
     def draw(self, screen):
         if int(self.width) < 5:
             pygame.draw.ellipse(screen, self.color, self.rect)
 
     def update(self, scrollx, scrolly, deltaT, player, world):
+        self.new_particle = False
         self.x += self.vx * deltaT / 10
         self.y += self.vy * deltaT / 10
-            
+
         self.width -= 0.015 * deltaT
         self.height -= 0.015 * deltaT
         self.rect = pygame.Rect(
