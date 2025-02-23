@@ -777,6 +777,8 @@ class Inventory:
         plants,
         main_inventory,
         joystick_btn_dict,
+        animals,
+        enemies,
     ):
         holding_item = False
         clicked_item = ""
@@ -822,6 +824,8 @@ class Inventory:
                         mouse_tile[0],
                         mouse_tile[1],
                         main_inventory,
+                        animals=animals,
+                        enemies=enemies,
                     )
 
                     if not type(placed_item) is bool:
@@ -1284,6 +1288,8 @@ class CraftingTable:
         plants,
         main_inventory,
         joystick_btn_dict,
+        animals,
+        enemies,
     ):
         if self.opened:
             screen.blit(self.mask_surf, (0, 0))
@@ -1347,6 +1353,8 @@ class CraftingTable:
                 plants,
                 main_inventory,
                 joystick_btn_dict,
+                animals,
+                enemies,
             )
 
             if self.holding_item:

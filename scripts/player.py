@@ -319,7 +319,16 @@ class Player:
                         self.state = "walk"
                     self.direction_xy = "UP"
 
-            self.collision_tile = (int((self.x + 24) / 16), int((self.y + 24) / 16))
+            self.collision_tile = (
+                min(
+                    max(int((self.x + 24) / 16), 0),
+                    149,
+                ),
+                min(
+                    max(int((self.y + 24) / 16), 0),
+                    149,
+                ),
+            )
             if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
                 self.x = prev_x
                 self.y = prev_y

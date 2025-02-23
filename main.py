@@ -1,6 +1,7 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Dieren & Monsters tegen muur aan lopen [✘]
+# ! Systeem voor nachten overleefd [✘]
+# ! Systeem voor bepaalde upgrades per nachten [✘]
 # -------------------------------------------- [✓]
 # * Create game settings (seed, difficulty). [✓]
 # * Pause screen resize fixen. [✓]
@@ -18,6 +19,8 @@
 # * Bugfixen resize settings scherm :))) [✓]  <--- 'NEEE' - Mvr. T. Sparreboom 8-12-2024
 # * "Gekke zwarte vlak zaad input" [✓]
 # * Mooie tekening muur [✓]
+# * Dieren & Monsters tegen muur aan lopen [✓]
+# * Dingen plaatsen op dieren en vijanden voorkomen [✓]
 # --------------------------------------------
 
 import numpy
@@ -922,6 +925,7 @@ while playing:
                 night_count,
                 player_bow,
                 dt,
+                plants,
             )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
@@ -1006,6 +1010,8 @@ while playing:
                 plants,
                 main_inventory,
                 joystick_btn_dict,
+                animals,
+                enemies,
             )
 
         main_crafting_table.draw(
@@ -1018,6 +1024,8 @@ while playing:
             plants,
             main_inventory,
             joystick_btn_dict,
+            animals,
+            enemies,
         )
 
         if not pause_menu_opened:

@@ -330,7 +330,7 @@ class Animal:
             )
 
             if time.perf_counter() - animal_perf > animal_break_time:
-                if animal_walking: 
+                if animal_walking:
                     animal[4] = False
                 else:
                     animal[4] = True
@@ -342,8 +342,24 @@ class Animal:
 
             if animal_walking:
                 if animal_path < animal_set_steps:
+                    prev_x, prev_y = animal_rect.x, animal_rect.y
                     animal_rect.x += animal[7][animal[5]][0] * dt
                     animal_rect.y += animal[7][animal[5]][1] * dt
+
+                    self.collision_tile = (
+                        min(
+                            max(int((animal_rect.x + (animal_rect.w / 2)) / 16), 0),
+                            149,
+                        ),
+                        min(
+                            max(int((animal_rect.y + (animal_rect.h / 2)) / 16), 0),
+                            149,
+                        ),
+                    )
+                    if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
+                        animal_rect.x = prev_x
+                        animal_rect.y = prev_y
+
                     animal[5] += 1
                 else:
                     animal[4] = False

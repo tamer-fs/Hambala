@@ -373,6 +373,7 @@ class Enemies:
         night_count,
         player_bow,
         dt,
+        plants,
     ):
         self.is_night = is_night
 
@@ -750,6 +751,12 @@ class Enemies:
             else:
                 if time.perf_counter() >= enemy["start_walking_perf"]:
                     if time.perf_counter() <= enemy["stop_walking_perf"]:
+
+                        prev_x, prev_y = (
+                            self.alive_enemies[i]["rect"].x,
+                            self.alive_enemies[i]["rect"].y,
+                        )
+
                         self.alive_enemies[i]["x"] += (
                             enemy["walk_vx"] * (enemy["speed"] / 100) * dt
                         )
@@ -757,10 +764,34 @@ class Enemies:
                             enemy["walk_vy"] * (enemy["speed"] / 100) * dt
                         )
                         self.alive_enemies[i]["current_action"] = "walk"
+
                         if enemy["walk_vx"] > 0:
                             self.alive_enemies[i]["direction"] = "right"
                         else:
                             self.alive_enemies[i]["direction"] = "left"
+
+                        rect_w = self.alive_enemies[i]["rect"].w / 2
+                        rect_h = self.alive_enemies[i]["rect"].h / 2
+
+                        self.collision_tile = (
+                            min(
+                                max(int((self.alive_enemies[i]["x"] + rect_w) / 16), 0),
+                                149,
+                            ),
+                            min(
+                                max(int((self.alive_enemies[i]["y"] + rect_h) / 16), 0),
+                                149,
+                            ),
+                        )
+
+                        print(self.collision_tile)
+                        if (
+                            plants[self.collision_tile[1], self.collision_tile[0]]
+                            == 139
+                        ):
+                            self.alive_enemies[i]["x"] = prev_x
+                            self.alive_enemies[i]["y"] = prev_y
+
                     else:
                         self.alive_enemies[i]["walking"] = False
 
