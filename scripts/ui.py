@@ -13,7 +13,7 @@ from scripts.placeItem import *
 
 
 class Clock:
-    def __init__(self, pos, size, sky_color, is_night):
+    def __init__(self, pos, size, sky_color, is_night, screen):
         self.pos = pos
         self.size = size
         self.sky_color = sky_color
@@ -47,9 +47,44 @@ class Clock:
         self.transition_direction = 1
         self.max_transition_frame = 100
 
+        self.night_count = 0
+
+        self.night_counter_surface = pygame.Surface((size[0], 45), pygame.SRCALPHA)
+        self.night_counter_rect = pygame.Rect((0, 0), (size[0], 45))
+
+        self.night_count_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 24)
+
+        self.fade_in_surface = pygame.Surface(
+            (screen.get_width(), screen.get_height()), pygame.SRCALPHA
+        )
+
+        self.fade_in_night_count_font = pygame.font.Font(
+            "assets/Font/SpaceMono-Bold.ttf", 150
+        )
+
     def draw(self, screen):
+
         if not self.in_transition:
             if self.night_time:
+
+                self.night_count_text_surface = self.night_count_font.render(
+                    str(self.night_count), True, self.dark_clock["bg_color"]
+                )
+
+                pygame.draw.rect(
+                    self.night_counter_surface,
+                    self.dark_clock["fg_color"],
+                    self.night_counter_rect,
+                    border_radius=12,
+                )
+                pygame.draw.rect(
+                    self.night_counter_surface,
+                    self.dark_clock["bg_color"],
+                    self.night_counter_rect,
+                    width=5,
+                    border_radius=12,
+                )
+
                 pygame.draw.circle(
                     self.surface,
                     self.dark_clock["bg_color"],
@@ -66,6 +101,25 @@ class Clock:
                     self.surface, "white", self.hand_centre_pos, self.hand_pos, 2
                 )
             else:
+
+                self.night_count_text_surface = self.night_count_font.render(
+                    str(self.night_count), True, self.light_clock["bg_color"]
+                )
+
+                pygame.draw.rect(
+                    self.night_counter_surface,
+                    self.light_clock["fg_color"],
+                    self.night_counter_rect,
+                    border_radius=12,
+                )
+                pygame.draw.rect(
+                    self.night_counter_surface,
+                    self.light_clock["bg_color"],
+                    self.night_counter_rect,
+                    width=5,
+                    border_radius=12,
+                )
+
                 pygame.draw.circle(
                     self.surface,
                     self.light_clock["bg_color"],
@@ -93,6 +147,10 @@ class Clock:
                 self.size[0] / 2,
             )
 
+            self.night_count_text_surface = self.night_count_font.render(
+                str(self.night_count), True, (bg_r, bg_g, bg_b)
+            )
+
             fg_r = 255 - (self.transition_frame / self.max_transition_frame) * (
                 255 - 33
             )
@@ -110,6 +168,20 @@ class Clock:
                 (self.size[0] - 10) / 2,
             )
 
+            pygame.draw.rect(
+                self.night_counter_surface,
+                (fg_r, fg_g, fg_b),
+                self.night_counter_rect,
+                border_radius=12,
+            )
+            pygame.draw.rect(
+                self.night_counter_surface,
+                (bg_r, bg_g, bg_b),
+                self.night_counter_rect,
+                width=5,
+                border_radius=12,
+            )
+
             hand_color = (self.transition_frame / self.max_transition_frame) * 255
             pygame.draw.line(
                 self.surface,
@@ -122,7 +194,45 @@ class Clock:
         self.surface.set_alpha(150)
         screen.blit(self.surface, self.pos)
 
+        self.night_counter_surface.blit(
+            self.night_count_text_surface,
+            (
+                self.night_counter_surface.get_width() / 2
+                - self.night_count_text_surface.get_width() / 2,
+                4,
+            ),
+        )
+
+        self.night_counter_surface.set_alpha(150)
+        screen.blit(
+            self.night_counter_surface,
+            (self.pos[0] + self.size[0] + 20 - 5, self.pos[1] + 20),
+        )
+
+        if self.fade_in_surface.get_size() != screen.get_size():
+            self.fade_in_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+
+        self.fade_in_night_count_text = self.fade_in_night_count_font.render(
+            f"NIGHT {self.night_count}", True, "white"
+        )
+
+        self.fade_in_surface.fill((0, 0, 0))
+
+        self.fade_in_surface.blit(
+            self.fade_in_night_count_text,
+            (
+                self.fade_in_surface.get_width() / 2
+                - self.fade_in_night_count_text.get_width() / 2,
+                self.fade_in_surface.get_height() / 2
+                - self.fade_in_night_count_text.get_height() / 2,
+            ),
+        )
+
+        self.fade_in_surface.set_alpha(200)
+        screen.blit(self.fade_in_surface, (0, 0))
+
     def update(self, sky_color, is_night, night_count):
+        self.night_count = night_count
         self.is_night = is_night
         self.sky_color = sky_color
         self.time_ticks = max(
@@ -136,7 +246,7 @@ class Clock:
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
             if self.night_time:
-                night_count += 1
+                self.night_count += 1
                 # print("Changed night count to:", night_count)
 
         if self.in_transition:
@@ -161,7 +271,7 @@ class Clock:
             + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
         )
 
-        return night_count
+        return self.night_count
 
 
 class HealthBar:

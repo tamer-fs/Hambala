@@ -1,7 +1,7 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Systeem voor nachten overleefd [✘]
 # ! Systeem voor bepaalde upgrades per nachten [✘]
+# ! Nachten overleefd fade-in/fade-uit [✘]
 # -------------------------------------------- [✓]
 # * Create game settings (seed, difficulty). [✓]
 # * Pause screen resize fixen. [✓]
@@ -21,6 +21,7 @@
 # * Mooie tekening muur [✓]
 # * Dieren & Monsters tegen muur aan lopen [✓]
 # * Dingen plaatsen op dieren en vijanden voorkomen [✓]
+# * Systeem voor nachten overleefd [✓]
 # --------------------------------------------
 
 import numpy
@@ -250,7 +251,7 @@ cursor_rect = cursor.get_rect()
 shake_time = 3
 started_shake = False
 
-ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False)
+ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False, screen=screen)
 
 player_bow = Bow(unlimited_arrows=True)
 

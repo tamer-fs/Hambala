@@ -784,7 +784,6 @@ class Enemies:
                             ),
                         )
 
-                        print(self.collision_tile)
                         if (
                             plants[self.collision_tile[1], self.collision_tile[0]]
                             == 139
