@@ -1,8 +1,8 @@
 #                    TODO
 # --------------------------------------------- [✘]
 # ! Systeem voor bepaalde upgrades per nachten [✘]
-# ! Nachten overleefd fade-in/fade-uit [✘]
 # -------------------------------------------- [✓]
+# * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
 # * Pause screen resize fixen. [✓]
 # * Play last saved. [✓]
@@ -252,6 +252,7 @@ shake_time = 3
 started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False, screen=screen)
+night_upgrade = NightUpgrade(screen)
 
 player_bow = Bow(unlimited_arrows=True)
 
@@ -988,7 +989,7 @@ while playing:
         elif sky_color[3] < 1:
             is_night = False
 
-        night_count = ui_clock.update(sky_color, is_night, night_count)
+        night_count = ui_clock.update(sky_color, is_night, night_count, night_upgrade)
         ui_clock.draw(screen)
 
         scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)

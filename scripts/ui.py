@@ -6,6 +6,78 @@ from func import *
 from scripts.particle import *
 from scripts.placeItem import *
 
+##############################
+#          Het lot.          #
+##############################
+
+#lambda a: a + 10
+#print(dict["fiunctie"](5))
+#hij print 15
+
+class NightUpgrade:
+    def __init__(self, screen):
+        self.screen = screen
+        self.options = {
+            "health_increase": [
+                "Health Increase",
+                "Increase your maximum HP.",
+                "increment",
+                "Increases your health by _%",
+                # lambda increment, player: player.health += increment 
+            ],
+            "strength_increase": [
+                "Strength Increase",
+                "Increase overall attack damage.",
+                "increment",
+                "Increases your strength by _%",
+            ],
+            "speed_increase": [
+                "Speed Increase",
+                "Increase overall speed.",
+                "increment",
+                "Increases your speed by _%",
+            ],
+            "metabolic_rate": [
+                "Metabolic Rate Decrease",
+                "Your metabolic rate decreases, so it decreases the amount of calories burned. So food will be burned less quickly.",
+                "increment",
+                "Decreases your metabolic rate by _%",
+                
+            ],
+            "investment": [
+                "Invest in the next night",
+                "Next night you will have one more choice to choose out of."
+                "self.player.card_choices += 1"
+            ]
+        }
+
+        self.choices = []
+
+    def start_choice(self, night_count):
+        self.options_pool = list(self.options.keys())
+        self.choices = []
+
+        for _ in range(3):
+            new_choice = random.choice(self.options_pool)
+            self.choices.append(new_choice)
+            self.options_pool.remove(new_choice)
+
+        self.cards_content = []
+
+        for choice in self.choices:
+            if self.options[choice][2] == "increment":
+                increment = random.randint(1, 11 * min(night_count + 1, 100))
+                self.cards_content.append(
+                    {
+                        "title": self.options[choice][0],
+                        "description": self.options[choice][1],
+                        "increment_text": f"{self.options[choice][3].replace('_', str(increment))}",
+                        "increment": increment,
+                    }
+                )
+
+        print(self.cards_content)
+
 
 ##############################
 #          Clock             #
@@ -46,6 +118,11 @@ class Clock:
         self.transition_frame = 0
         self.transition_direction = 1
         self.max_transition_frame = 100
+
+        self.night_count_alpha = 0
+        self.show_night_count = False
+        self.night_count_perf_counter = -1
+        self.night_count_fade_perf = -1
 
         self.night_count = 0
 
@@ -209,29 +286,43 @@ class Clock:
             (self.pos[0] + self.size[0] + 20 - 5, self.pos[1] + 20),
         )
 
-        if self.fade_in_surface.get_size() != screen.get_size():
-            self.fade_in_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        if time.perf_counter() - self.night_count_perf_counter >= 3:
+            self.show_night_count = False
 
-        self.fade_in_night_count_text = self.fade_in_night_count_font.render(
-            f"NIGHT {self.night_count}", True, "white"
-        )
+        if time.perf_counter() - self.night_count_fade_perf >= 0.05:
+            if self.show_night_count:
+                self.night_count_alpha = min(self.night_count_alpha + 1, 200)
+            else:
+                self.night_count_alpha = max(self.night_count_alpha - 1, 0)
+            self.night_count_perf = time.perf_counter()
 
-        self.fade_in_surface.fill((0, 0, 0))
+        if self.night_count_alpha > 0:
 
-        self.fade_in_surface.blit(
-            self.fade_in_night_count_text,
-            (
-                self.fade_in_surface.get_width() / 2
-                - self.fade_in_night_count_text.get_width() / 2,
-                self.fade_in_surface.get_height() / 2
-                - self.fade_in_night_count_text.get_height() / 2,
-            ),
-        )
+            if self.fade_in_surface.get_size() != screen.get_size():
+                self.fade_in_surface = pygame.Surface(
+                    screen.get_size(), pygame.SRCALPHA
+                )
 
-        self.fade_in_surface.set_alpha(200)
+            self.fade_in_night_count_text = self.fade_in_night_count_font.render(
+                f"NIGHT {self.night_count}", True, "white"
+            )
+
+            self.fade_in_surface.fill((0, 0, 0))
+
+            self.fade_in_surface.blit(
+                self.fade_in_night_count_text,
+                (
+                    self.fade_in_surface.get_width() / 2
+                    - self.fade_in_night_count_text.get_width() / 2,
+                    self.fade_in_surface.get_height() / 2
+                    - self.fade_in_night_count_text.get_height() / 2,
+                ),
+            )
+
+        self.fade_in_surface.set_alpha(self.night_count_alpha)
         screen.blit(self.fade_in_surface, (0, 0))
 
-    def update(self, sky_color, is_night, night_count):
+    def update(self, sky_color, is_night, night_count, night_upgrade):
         self.night_count = night_count
         self.is_night = is_night
         self.sky_color = sky_color
@@ -246,7 +337,10 @@ class Clock:
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
             if self.night_time:
+                night_upgrade.start_choice(self.night_count)
                 self.night_count += 1
+                self.night_count_perf_counter = time.perf_counter()
+                self.show_night_count = True
                 # print("Changed night count to:", night_count)
 
         if self.in_transition:
