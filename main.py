@@ -253,6 +253,7 @@ started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False, screen=screen)
 night_upgrade = NightUpgrade(screen)
+making_upgrade_choice = False
 
 player_bow = Bow(unlimited_arrows=True)
 
@@ -989,8 +990,10 @@ while playing:
         elif sky_color[3] < 1:
             is_night = False
 
-        night_count = ui_clock.update(sky_color, is_night, night_count, night_upgrade)
-        ui_clock.draw(screen)
+        night_count, making_upgrade_choice = ui_clock.update(sky_color, is_night, night_count, night_upgrade, making_upgrade_choice)
+        if making_upgrade_choice != pause_menu_opened:
+            pause_menu_opened = making_upgrade_choice # pause game when making upgrade choice
+        ui_clock.draw(screen, night_upgrade, making_upgrade_choice)
 
         scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
         scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)
@@ -1041,7 +1044,7 @@ while playing:
                 joystick_btn_dict,
             )
 
-    if pause_menu_opened:
+    if pause_menu_opened and not making_upgrade_choice:
         # print("ik ben blij")
         screen.blit(black_surface, (0, 0))
 

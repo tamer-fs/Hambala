@@ -7,12 +7,90 @@ from scripts.particle import *
 from scripts.placeItem import *
 
 ##############################
+#           Card.            #
+##############################
+
+
+class CardsList:
+    def __init__(self, screen, cards_content):
+        self.screen = screen
+        self.cards_content = cards_content
+
+        self.card_padding = 10
+
+        self.cards_surface_width = int((screen.get_width() / 100) * 80)
+        self.cards_surface_height = int((screen.get_height() / 100) * 80)
+        self.cards_surface = pygame.Surface(
+            (self.cards_surface_width, self.cards_surface_height), pygame.SRCALPHA
+        )
+
+        self.amount_of_cards = len(self.cards_content)
+        self.cards_width = int(self.cards_surface_width / self.amount_of_cards)
+        self.cards_height = int(self.cards_surface_height)
+        self.cards_surfaces = []
+
+        for i in range(self.amount_of_cards):
+            self.cards_surfaces.append(
+                pygame.Surface((self.cards_width, self.cards_height), pygame.SRCALPHA)
+            )
+
+        self.card_title_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 24)
+        self.card_description_font = pygame.font.Font(
+            "assets/Font/SpaceMono-Regular.ttf", 24
+        )
+
+    def draw_surface(self):
+        self.cards_surface_x = int((self.screen.get_width() / 100) * 10)
+        self.cards_surface_y = int((self.screen.get_height() / 100) * 10)
+        self.cards_surface.set_alpha(255)
+        self.screen.blit(
+            self.cards_surface, (self.cards_surface_x, self.cards_surface_y)
+        )
+
+    def draw_cards(self):
+        for index, card_surface in enumerate(self.cards_surfaces):
+            card_surface = self.draw_card_content(card_surface, index)
+            self.cards_surface.blit(card_surface, (index * self.cards_width, 0))
+
+    def draw_card_content(self, card_surface, index):
+        card_surface.set_alpha(255)
+
+        content_rect = pygame.Rect(
+            (self.card_padding, self.card_padding),
+            (
+                self.cards_width - self.card_padding * 2,
+                self.cards_height - self.card_padding * 2,
+            ),
+        )
+
+        title_text = self.card_title_font.render(
+            self.cards_content[index]["title"], True, (255, 255, 255)
+        )
+
+        pygame.draw.rect(card_surface, (33, 37, 41), content_rect, border_radius=10)
+
+        #       (self.cards_surface_width - title_text.get_width()) / 2, 50
+
+        card_surface.blit(
+            title_text,
+            (int((self.cards_width - title_text.get_width()) / 2), 30),
+        )
+
+        return card_surface
+
+    def draw(self):
+        self.draw_surface()
+        self.draw_cards()
+
+
+##############################
 #          Het lot.          #
 ##############################
 
-#lambda a: a + 10
-#print(dict["fiunctie"](5))
-#hij print 15
+# lambda a: a + 10
+# print(dict["fiunctie"](5))
+# hij print 15
+
 
 class NightUpgrade:
     def __init__(self, screen):
@@ -23,7 +101,7 @@ class NightUpgrade:
                 "Increase your maximum HP.",
                 "increment",
                 "Increases your health by _%",
-                # lambda increment, player: player.health += increment 
+                "self.player.max_health += 20",
             ],
             "strength_increase": [
                 "Strength Increase",
@@ -42,13 +120,12 @@ class NightUpgrade:
                 "Your metabolic rate decreases, so it decreases the amount of calories burned. So food will be burned less quickly.",
                 "increment",
                 "Decreases your metabolic rate by _%",
-                
             ],
-            "investment": [
-                "Invest in the next night",
-                "Next night you will have one more choice to choose out of."
-                "self.player.card_choices += 1"
-            ]
+            # "investment": [
+            #     "Invest in the next night",
+            #     "Next night you will have one more choice to choose out of.",
+            #     "self.player.card_choices += 1",
+            # ],
         }
 
         self.choices = []
@@ -65,6 +142,7 @@ class NightUpgrade:
         self.cards_content = []
 
         for choice in self.choices:
+            print(self.options[choice])
             if self.options[choice][2] == "increment":
                 increment = random.randint(1, 11 * min(night_count + 1, 100))
                 self.cards_content.append(
@@ -77,6 +155,10 @@ class NightUpgrade:
                 )
 
         print(self.cards_content)
+        self.cards_list = CardsList(self.screen, self.cards_content)
+
+    def draw(self):
+        self.cards_list.draw()
 
 
 ##############################
@@ -139,7 +221,7 @@ class Clock:
             "assets/Font/SpaceMono-Bold.ttf", 150
         )
 
-    def draw(self, screen):
+    def draw(self, screen, night_upgrade, making_upgrade_choice):
 
         if not self.in_transition:
             if self.night_time:
@@ -322,7 +404,12 @@ class Clock:
         self.fade_in_surface.set_alpha(self.night_count_alpha)
         screen.blit(self.fade_in_surface, (0, 0))
 
-    def update(self, sky_color, is_night, night_count, night_upgrade):
+        if making_upgrade_choice:
+            night_upgrade.draw()
+
+    def update(
+        self, sky_color, is_night, night_count, night_upgrade, making_upgrade_choice
+    ):
         self.night_count = night_count
         self.is_night = is_night
         self.sky_color = sky_color
@@ -338,6 +425,7 @@ class Clock:
             self.prev_night_time = self.night_time
             if self.night_time:
                 night_upgrade.start_choice(self.night_count)
+                making_upgrade_choice = True
                 self.night_count += 1
                 self.night_count_perf_counter = time.perf_counter()
                 self.show_night_count = True
@@ -365,7 +453,7 @@ class Clock:
             + numpy.sin(numpy.radians(self.hand_degrees)) * self.hand_length
         )
 
-        return self.night_count
+        return self.night_count, making_upgrade_choice
 
 
 class HealthBar:
