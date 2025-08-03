@@ -2,6 +2,7 @@ import pygame
 import time
 import copy
 import numpy
+import os
 from func import *
 from scripts.particle import *
 from scripts.placeItem import *
@@ -18,8 +19,8 @@ class CardsList:
 
         self.card_padding = 10
 
-        self.cards_surface_width = int((screen.get_width() / 100) * 80)
-        self.cards_surface_height = int((screen.get_height() / 100) * 80)
+        self.cards_surface_width = 800
+        self.cards_surface_height = 480
         self.cards_surface = pygame.Surface(
             (self.cards_surface_width, self.cards_surface_height), pygame.SRCALPHA
         )
@@ -29,15 +30,27 @@ class CardsList:
         self.cards_height = int(self.cards_surface_height)
         self.cards_surfaces = []
 
+        self.card_images = {}
+
         for i in range(self.amount_of_cards):
             self.cards_surfaces.append(
                 pygame.Surface((self.cards_width, self.cards_height), pygame.SRCALPHA)
             )
+            self.card_images["speed_increase"] = pygame.surface.Surface(
+                (246, 460), pygame.SRCALPHA
+            )
+            image = pygame.image.load(
+                os.path.join("assets", "cardbackgrounds", "speed_increase.png")
+            )
+            image = pygame.transform.scale(image, (246, 460))
+            self.card_images["speed_increase"].blit(image, (0, 0))
+            self.card_images["speed_increase"].set_alpha(40)
 
-        self.card_title_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 24)
+        self.card_title_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 22)
         self.card_description_font = pygame.font.Font(
-            "assets/Font/SpaceMono-Regular.ttf", 24
+            "assets/Font/SpaceMono-Regular.ttf", 16
         )
+        self.card_button_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 14)
 
     def draw_surface(self):
         self.cards_surface_x = int((self.screen.get_width() / 100) * 10)
@@ -54,6 +67,7 @@ class CardsList:
 
     def draw_card_content(self, card_surface, index):
         card_surface.set_alpha(255)
+        print(card_surface.get_size())
 
         content_rect = pygame.Rect(
             (self.card_padding, self.card_padding),
@@ -63,17 +77,72 @@ class CardsList:
             ),
         )
 
+        # Card
+        pygame.draw.rect(card_surface, (33, 37, 41), content_rect, border_radius=10)
+
+        # Card Background
+        card_surface.blit(self.card_images["speed_increase"], (10, 10))
+
+        # Title Text
         title_text = self.card_title_font.render(
             self.cards_content[index]["title"], True, (255, 255, 255)
         )
 
-        pygame.draw.rect(card_surface, (33, 37, 41), content_rect, border_radius=10)
-
-        #       (self.cards_surface_width - title_text.get_width()) / 2, 50
-
         card_surface.blit(
             title_text,
             (int((self.cards_width - title_text.get_width()) / 2), 30),
+        )
+
+        # Description Text
+
+        text = self.cards_content[index]["description"]
+        words = text.split(" ")
+        x_pos = 0
+        y_pos = 0
+        for word in words:
+            word_text = self.card_description_font.render(
+                f"{word} ", True, (255, 255, 255)
+            )
+
+            if 20 + x_pos + word_text.get_width() >= content_rect.width:
+                y_pos += 20
+                x_pos = 0
+
+            card_surface.blit(
+                word_text,
+                (20 + x_pos, 80 + y_pos),
+            )
+
+            x_pos += word_text.get_width()
+
+        # Button
+
+        button_width, button_height = (226, 50)
+        button_rect = pygame.Rect(
+            20, 480 - button_height - 20, button_width, button_height
+        )
+
+        button_surface = pygame.surface.Surface(button_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            button_surface,
+            (33, 37, 41),
+            pygame.Rect(0, 0, button_width, button_height),
+            border_radius=6,
+        )
+        button_surface.set_alpha(200)
+        card_surface.blit(button_surface, (button_rect.x, button_rect.y))
+
+        pygame.draw.rect(
+            card_surface, (251, 242, 54), button_rect, border_radius=6, width=3
+        )
+
+        button_text = self.card_button_font.render("GET UPGRADE", True, (251, 242, 54))
+        card_surface.blit(
+            button_text,
+            (
+                int((266 - button_text.get_width()) / 2),
+                420 + int((button_height - 20 - button_text.get_height()) / 2),
+            ),
         )
 
         return card_surface
@@ -115,8 +184,8 @@ class NightUpgrade:
                 "increment",
                 "Increases your speed by _%",
             ],
-            "metabolic_rate": [
-                "Metabolic Rate Decrease",
+            "hunger_decrease": [
+                "Hunger Decrease",
                 "Your metabolic rate decreases, so it decreases the amount of calories burned. So food will be burned less quickly.",
                 "increment",
                 "Decreases your metabolic rate by _%",

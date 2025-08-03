@@ -1,6 +1,6 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Systeem voor bepaalde upgrades per nachten [✘]
+# ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
