@@ -33,18 +33,20 @@ class CardsList:
         self.card_images = {}
 
         for i in range(self.amount_of_cards):
+            card_type = self.cards_content[i]["code"]
             self.cards_surfaces.append(
                 pygame.Surface((self.cards_width, self.cards_height), pygame.SRCALPHA)
             )
-            self.card_images["speed_increase"] = pygame.surface.Surface(
+            self.card_images[f"{card_type}"] = pygame.surface.Surface(
                 (246, 460), pygame.SRCALPHA
             )
+
             image = pygame.image.load(
-                os.path.join("assets", "cardbackgrounds", "speed_increase.png")
+                os.path.join("assets", "cardbackgrounds", f"{card_type}.png")
             )
             image = pygame.transform.scale(image, (246, 460))
-            self.card_images["speed_increase"].blit(image, (0, 0))
-            self.card_images["speed_increase"].set_alpha(40)
+            self.card_images[f"{card_type}"].blit(image, (0, 0))
+            self.card_images[f"{card_type}"].set_alpha(40)
 
         self.card_title_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 22)
         self.card_description_font = pygame.font.Font(
@@ -66,8 +68,8 @@ class CardsList:
             self.cards_surface.blit(card_surface, (index * self.cards_width, 0))
 
     def draw_card_content(self, card_surface, index):
+
         card_surface.set_alpha(255)
-        print(card_surface.get_size())
 
         content_rect = pygame.Rect(
             (self.card_padding, self.card_padding),
@@ -81,7 +83,7 @@ class CardsList:
         pygame.draw.rect(card_surface, (33, 37, 41), content_rect, border_radius=10)
 
         # Card Background
-        card_surface.blit(self.card_images["speed_increase"], (10, 10))
+        card_surface.blit(self.card_images[self.cards_content[index]["code"]], (10, 10))
 
         # Title Text
         title_text = self.card_title_font.render(
@@ -122,21 +124,39 @@ class CardsList:
             20, 480 - button_height - 20, button_width, button_height
         )
 
+        if button_rect.collidepoint(
+            pygame.mouse.get_pos()[0] - self.cards_surface_x - index * self.cards_width,
+            pygame.mouse.get_pos()[1] - self.cards_surface_y,
+        ):
+            hover = True
+        else:
+            hover = False
+
+        accent_color = {
+            "health_increase": (240, 42, 42),
+            "speed_increase": (251, 242, 54),
+            "strength_increase": (238, 195, 154),
+            "hunger_decrease": (240, 146, 101),
+        }[self.cards_content[index]["code"]]
+
         button_surface = pygame.surface.Surface(button_rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             button_surface,
-            (33, 37, 41),
+            accent_color if hover else (33, 37, 41),
             pygame.Rect(0, 0, button_width, button_height),
             border_radius=6,
         )
-        button_surface.set_alpha(200)
+        button_surface.set_alpha(255) if hover else button_surface.set_alpha(200)
+
         card_surface.blit(button_surface, (button_rect.x, button_rect.y))
 
         pygame.draw.rect(
-            card_surface, (251, 242, 54), button_rect, border_radius=6, width=3
+            card_surface, accent_color, button_rect, border_radius=6, width=3
         )
 
-        button_text = self.card_button_font.render("GET UPGRADE", True, (251, 242, 54))
+        button_text = self.card_button_font.render(
+            "GET UPGRADE", True, (33, 37, 41) if hover else accent_color
+        )
         card_surface.blit(
             button_text,
             (
@@ -160,10 +180,15 @@ class CardsList:
 # print(dict["fiunctie"](5))
 # hij print 15
 
+# ac3232
+# d9a066
+# 8f563b
+
 
 class NightUpgrade:
     def __init__(self, screen):
         self.screen = screen
+        self.show_night_count = True
         self.options = {
             "health_increase": [
                 "Health Increase",
@@ -216,6 +241,7 @@ class NightUpgrade:
                 increment = random.randint(1, 11 * min(night_count + 1, 100))
                 self.cards_content.append(
                     {
+                        "code": choice,
                         "title": self.options[choice][0],
                         "description": self.options[choice][1],
                         "increment_text": f"{self.options[choice][3].replace('_', str(increment))}",
@@ -227,7 +253,8 @@ class NightUpgrade:
         self.cards_list = CardsList(self.screen, self.cards_content)
 
     def draw(self):
-        self.cards_list.draw()
+        if not self.show_night_count:
+            self.cards_list.draw()
 
 
 ##############################
@@ -493,12 +520,13 @@ class Clock:
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
             if self.night_time:
-                night_upgrade.start_choice(self.night_count)
-                making_upgrade_choice = True
                 self.night_count += 1
                 self.night_count_perf_counter = time.perf_counter()
                 self.show_night_count = True
-                # print("Changed night count to:", night_count)
+                night_upgrade.start_choice(self.night_count)
+                making_upgrade_choice = True
+
+        night_upgrade.show_night_count = self.show_night_count
 
         if self.in_transition:
             self.transition_frame += self.transition_direction

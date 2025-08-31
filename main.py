@@ -1,6 +1,10 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze
+# ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze <-- die
+# ! Schermvergroting met kaarten. [✘]
+# ! We gaan hiernaa voor deze volgende wederzetsze stap gaan wij hiernaa gaan we de kaarten met schermvergroting oplossen en fixen en oplossen. [✘]
+# ! Toepassing van de kaarten hypnotiseren. [✘]
+# ! Na consumeren van de kaart mooie leuke toffe gave animatie.
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -22,6 +26,9 @@
 # * Dieren & Monsters tegen muur aan lopen [✓]
 # * Dingen plaatsen op dieren en vijanden voorkomen [✓]
 # * Systeem voor nachten overleefd [✓]
+# * nacht doet het goed met animatie en wachtijd voor de kaarten dat klopt inderdaad [✓]
+# * nacht doet het goed met de kleuren en stijl van de kaarten dat klopt inderdaad [✓]
+# * nacht doet het goed met de kleuren en stijl van de knoppen van de aambachtelijke pikante kaarten die kloppen waarvan dat klopt inderdaad [✓]
 # --------------------------------------------
 
 import numpy
@@ -990,9 +997,13 @@ while playing:
         elif sky_color[3] < 1:
             is_night = False
 
-        night_count, making_upgrade_choice = ui_clock.update(sky_color, is_night, night_count, night_upgrade, making_upgrade_choice)
+        night_count, making_upgrade_choice = ui_clock.update(
+            sky_color, is_night, night_count, night_upgrade, making_upgrade_choice
+        )
         if making_upgrade_choice != pause_menu_opened:
-            pause_menu_opened = making_upgrade_choice # pause game when making upgrade choice
+            pause_menu_opened = (
+                making_upgrade_choice  # pause game when making upgrade choice
+            )
         ui_clock.draw(screen, night_upgrade, making_upgrade_choice)
 
         scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
