@@ -384,6 +384,7 @@ class Animal:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
 
+                # player hitting animal
                 if player.hitting:
                     hp_bar.damage()
                     animal[22] = time.perf_counter()
@@ -403,7 +404,7 @@ class Animal:
                         animal[7], animal[10] = self.create_walk_plan(
                             animal[6], 1.2, False
                         )
-                    animal[15] -= random.randint(30, 40)
+                    animal[15] -= random.randint(30, 40) * player.strength
                     animal_rect.y += random.randint(-5, 5) * dt
                     animal_rect.x += random.randint(-5, 5) * dt
                     player.hitting = False

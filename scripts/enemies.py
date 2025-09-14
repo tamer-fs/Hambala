@@ -538,7 +538,7 @@ class Enemies:
                     arrow.can_damage = False
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                    self.alive_enemies[i]["hp"] -= arrow.damage
+                    self.alive_enemies[i]["hp"] -= arrow.damage * player.strength
                     for _ in range(15):
                         particles.append(
                             HitParticle(
@@ -609,7 +609,7 @@ class Enemies:
                 ) < (self.enemies_size[self.alive_enemies[i]["type"]][1]):
                     self.alive_enemies[i]["health_bar"].damage()
                     self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                    self.alive_enemies[i]["hp"] -= random.randint(30, 50)
+                    self.alive_enemies[i]["hp"] -= random.randint(30, 50) * player.strength
                     for _ in range(15):
                         particles.append(
                             HitParticle(

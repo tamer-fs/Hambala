@@ -13,9 +13,11 @@ from scripts.placeItem import *
 
 
 class CardsList:
-    def __init__(self, screen, cards_content):
+    def __init__(self, screen, cards_content, player):
         self.screen = screen
         self.cards_content = cards_content
+
+        self.player = player
 
         self.card_padding = 10
 
@@ -54,13 +56,15 @@ class CardsList:
         )
         self.card_button_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 14)
 
-    def draw_surface(self):
-        self.cards_surface_x = int((self.screen.get_width() / 100) * 10)
-        self.cards_surface_y = int((self.screen.get_height() / 100) * 10)
-        self.cards_surface.set_alpha(255)
-        self.screen.blit(
-            self.cards_surface, (self.cards_surface_x, self.cards_surface_y)
+    def draw_surface(self, screen):
+        self.cards_surface_x = int(
+            (screen.get_width() / 2) - (self.cards_surface.get_width() / 2)
         )
+        self.cards_surface_y = int(
+            (screen.get_height() / 2) - (self.cards_surface.get_height() / 2)
+        )
+        self.cards_surface.set_alpha(255)
+        screen.blit(self.cards_surface, (self.cards_surface_x, self.cards_surface_y))
 
     def draw_cards(self):
         for index, card_surface in enumerate(self.cards_surfaces):
@@ -129,6 +133,11 @@ class CardsList:
             pygame.mouse.get_pos()[1] - self.cards_surface_y,
         ):
             hover = True
+            if pygame.mouse.get_pressed()[0]:
+                print(self.cards_content[index]["exec_code"])
+
+                exec(self.cards_content[index]["exec_code"])
+
         else:
             hover = False
 
@@ -167,8 +176,8 @@ class CardsList:
 
         return card_surface
 
-    def draw(self):
-        self.draw_surface()
+    def draw(self, screen):
+        self.draw_surface(screen)
         self.draw_cards()
 
 
@@ -186,7 +195,8 @@ class CardsList:
 
 
 class NightUpgrade:
-    def __init__(self, screen):
+    def __init__(self, screen, player):
+        self.player = player
         self.screen = screen
         self.show_night_count = True
         self.options = {
@@ -195,25 +205,28 @@ class NightUpgrade:
                 "Increase your maximum HP.",
                 "increment",
                 "Increases your health by _%",
-                "self.player.max_health += 20",
+                "self.player.max_health += int((self.player.max_health / 100) * ?); self.player.health_value += int((self.player.max_health / 100) * ?)",
             ],
             "strength_increase": [
                 "Strength Increase",
                 "Increase overall attack damage.",
                 "increment",
                 "Increases your strength by _%",
+                "self.player.strength += self.player.strength / 100 * ?",
             ],
             "speed_increase": [
                 "Speed Increase",
                 "Increase overall speed.",
                 "increment",
                 "Increases your speed by _%",
+                "self.player.speed_multiplier += self.player.speed_multiplier / 100 * ?",
             ],
             "hunger_decrease": [
                 "Hunger Decrease",
                 "Your metabolic rate decreases, so it decreases the amount of calories burned. So food will be burned less quickly.",
                 "increment",
                 "Decreases your metabolic rate by _%",
+                "self.player.food_multiplier -= self.player.food_multiplier / 100 * ?",
             ],
             # "investment": [
             #     "Invest in the next night",
@@ -246,15 +259,16 @@ class NightUpgrade:
                         "description": self.options[choice][1],
                         "increment_text": f"{self.options[choice][3].replace('_', str(increment))}",
                         "increment": increment,
+                        "exec_code": f"{self.options[choice][4].replace('?', str(increment))}",
                     }
                 )
 
         print(self.cards_content)
-        self.cards_list = CardsList(self.screen, self.cards_content)
+        self.cards_list = CardsList(self.screen, self.cards_content, self.player)
 
-    def draw(self):
+    def draw(self, screen):
         if not self.show_night_count:
-            self.cards_list.draw()
+            self.cards_list.draw(screen)
 
 
 ##############################
@@ -501,7 +515,7 @@ class Clock:
         screen.blit(self.fade_in_surface, (0, 0))
 
         if making_upgrade_choice:
-            night_upgrade.draw()
+            night_upgrade.draw(screen)
 
     def update(
         self, sky_color, is_night, night_count, night_upgrade, making_upgrade_choice

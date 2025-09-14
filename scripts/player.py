@@ -13,6 +13,8 @@ class Player:
 
         self.images = images
         self.speed = 0.10
+        self.speed_multiplier = 1
+        self.food_multiplier = 1
         self.idle_frames = ["idle1", "idle2", "idle3", "idle4", "idle5", "idle6"]
         self.idle_frame = 0
         self.walk_frames = ["walk1", "walk2", "walk3", "walk4", "walk5", "walk6"]
@@ -26,6 +28,8 @@ class Player:
         self.energy_value = 100
         self.food_value = 10000
         self.health_value = 10
+        self.max_health = 10
+        self.strength = 1
         self.tomato_feeding = 1000
         self.cookie_feeding = 2500
         self.flower_power = 40
@@ -152,16 +156,16 @@ class Player:
         if joystick_input:
             axis_x, axis_y = (joystick.get_axis(0), joystick.get_axis(1))
             if abs(axis_x) > 0.1:
-                self.x += axis_x * 10 * self.speed * dt
+                self.x += axis_x * 10 * self.speed * dt * self.speed_multiplier
             if abs(axis_y) > 0.1:
-                self.y += axis_y * 10 * self.speed * dt
+                self.y += axis_y * 10 * self.speed * dt * self.speed_multiplier
 
             self.collision_tile = (int((self.x + 24) / 16), int((self.y + 24) / 16))
             if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
                 if abs(axis_x) > 0.1:
-                    self.x -= axis_x * 10 * self.speed * dt
+                    self.x -= axis_x * 10 * self.speed * dt * self.speed_multiplier
                 if abs(axis_y) > 0.1:
-                    self.y -= axis_y * 10 * self.speed * dt
+                    self.y -= axis_y * 10 * self.speed * dt * self.speed_multiplier
 
             # button X on controller pressed
             if eval(joystick_btn_dict["south-btn"]) and self.energy_value > 0:
@@ -269,52 +273,68 @@ class Player:
 
             prev_x, prev_y = self.x, self.y
             if keys[pygame.K_d] and keys[pygame.K_w]:
-                self.x += 100 * self.speed / numpy.sqrt(200) * dt
-                self.y -= 100 * self.speed / numpy.sqrt(200) * dt
+                self.x += (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
+                self.y -= (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
                 self.direction = "RIGHT"
                 self.direction_xy = "RIGHT"
 
             elif keys[pygame.K_d] and keys[pygame.K_s]:
-                self.x += 100 * self.speed / numpy.sqrt(200) * dt
-                self.y += 100 * self.speed / numpy.sqrt(200) * dt
+                self.x += (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
+                self.y += (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
                 self.direction = "RIGHT"
                 self.direction_xy = "RIGHT"
 
             elif keys[pygame.K_w] and keys[pygame.K_a]:
-                self.x -= 100 * self.speed / numpy.sqrt(200) * dt
-                self.y -= 100 * self.speed / numpy.sqrt(200) * dt
+                self.x -= (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
+                self.y -= (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
                 self.direction = "LEFT"
                 self.direction_xy = "LEFT"
 
             elif keys[pygame.K_s] and keys[pygame.K_a]:
-                self.x -= 100 * self.speed / numpy.sqrt(200) * dt
-                self.y += 100 * self.speed / numpy.sqrt(200) * dt
+                self.x -= (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
+                self.y += (
+                    100 * self.speed / numpy.sqrt(200) * dt * self.speed_multiplier
+                )
                 self.direction = "LEFT"
                 self.direction_xy = "LEFT"
 
             else:
                 if keys[pygame.K_d]:
-                    self.x += 10 * self.speed * dt
+                    self.x += 10 * self.speed * dt * self.speed_multiplier
                     if self.state != "run":
                         self.state = "walk"
                     self.direction = "RIGHT"
                     self.direction_xy = "RIGHT"
 
                 if keys[pygame.K_a]:
-                    self.x -= 10 * self.speed * dt
+                    self.x -= 10 * self.speed * dt * self.speed_multiplier
                     if self.state != "run":
                         self.state = "walk"
                     self.direction = "LEFT"
                     self.direction_xy = "LEFT"
 
                 if keys[pygame.K_s]:
-                    self.y += 10 * self.speed * dt
+                    self.y += 10 * self.speed * dt * self.speed_multiplier
                     if self.state != "run":
                         self.state = "walk"
                     self.direction_xy = "DOWN"
 
                 if keys[pygame.K_w]:
-                    self.y -= 10 * self.speed * dt
+                    self.y -= 10 * self.speed * dt * self.speed_multiplier
                     if self.state != "run":
                         self.state = "walk"
                     self.direction_xy = "UP"
@@ -344,11 +364,11 @@ class Player:
 
         if self.food_value > 0:
             if self.state == "idle":
-                self.food_value -= 0.01 * deltaT
+                self.food_value -= 0.01 * deltaT * self.food_multiplier
             elif self.state == "walk":
-                self.food_value -= 0.010 * deltaT
+                self.food_value -= 0.010 * deltaT * self.food_multiplier
             elif self.state == "run":
-                self.food_value -= 0.02 * deltaT
+                self.food_value -= 0.02 * deltaT * self.food_multiplier
 
     def draw(self, screen, scrollx, scrolly, player_bow):
         scr_w, scr_h = screen.get_size()

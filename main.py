@@ -1,10 +1,11 @@
 #                    TODO
 # --------------------------------------------- [✘]
 # ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze <-- die
-# ! Schermvergroting met kaarten. [✘]
-# ! We gaan hiernaa voor deze volgende wederzetsze stap gaan wij hiernaa gaan we de kaarten met schermvergroting oplossen en fixen en oplossen. [✘]
-# ! Toepassing van de kaarten hypnotiseren. [✘]
-# ! Na consumeren van de kaart mooie leuke toffe gave animatie.
+# ! Na consumeren van de kaart mooie leuke toffe gave animatie. [✘]
+# ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
+# ! Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✘]
+# ! Meer (soorten) kaarten [✘]
+# ! Kaarten afbeeldingen tekenen (libresprite!!!!!!!@]) [✘]
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -29,6 +30,9 @@
 # * nacht doet het goed met animatie en wachtijd voor de kaarten dat klopt inderdaad [✓]
 # * nacht doet het goed met de kleuren en stijl van de kaarten dat klopt inderdaad [✓]
 # * nacht doet het goed met de kleuren en stijl van de knoppen van de aambachtelijke pikante kaarten die kloppen waarvan dat klopt inderdaad [✓]
+# * Schermvergroting met kaarten. [✓]
+# * We gaan hiernaa voor deze volgende wederzetsze stap gaan wij hiernaa gaan we de kaarten met schermvergroting oplossen en fixen en oplossen. [✓]
+# * Toepassing van de kaarten aambachtelijk pikant maken Max De bakker 2025: "Ik heb hier vrij weinig aan toe te voegen, nou top afvinken joh, ja gaan we het echt zo doen, als ik dingen ga zeggen dan ja uhh, oke.". [✓]
 # --------------------------------------------
 
 import numpy
@@ -259,7 +263,7 @@ shake_time = 3
 started_shake = False
 
 ui_clock = Clock((10, 10), (80, 80), (0, 0, 0, 0), False, screen=screen)
-night_upgrade = NightUpgrade(screen)
+night_upgrade = NightUpgrade(screen, player)
 making_upgrade_choice = False
 
 player_bow = Bow(unlimited_arrows=True)
@@ -883,6 +887,8 @@ while playing:
             (-28, -2),
             5,
         )
+        
+        player_hp_bar.max_value = player.max_health
 
         player_sprint_bar.update(player.energy_value)
         player_hunger_bar.update(player.food_value)
