@@ -17,6 +17,10 @@ class CardsList:
         self.screen = screen
         self.cards_content = cards_content
 
+        self.selected_card = None  # None als nog niet gekozen, anders 0 1 2
+
+        self.card_fade_alpha = 255
+
         self.player = player
 
         self.card_padding = 10
@@ -63,18 +67,26 @@ class CardsList:
         self.cards_surface_y = int(
             (screen.get_height() / 2) - (self.cards_surface.get_height() / 2)
         )
-        self.cards_surface.set_alpha(255)
+        self.cards_surface.set_alpha(self.card_fade_alpha)
         screen.blit(self.cards_surface, (self.cards_surface_x, self.cards_surface_y))
 
-    def draw_cards(self):
+    def draw_cards(self, screen):
         for index, card_surface in enumerate(self.cards_surfaces):
             card_surface = self.draw_card_content(card_surface, index)
             self.cards_surface.blit(card_surface, (index * self.cards_width, 0))
 
+        if self.selected_card is not None:
+            screen.blit(
+                self.cards_surfaces[self.selected_card],
+                (
+                    self.selected_card * self.cards_width + self.cards_surface_x,
+                    self.cards_surface_y,
+                ),
+            )
+            if self.card_fade_alpha >= 0:
+                self.card_fade_alpha -= 1
+
     def draw_card_content(self, card_surface, index):
-
-        card_surface.set_alpha(255)
-
         content_rect = pygame.Rect(
             (self.card_padding, self.card_padding),
             (
@@ -121,6 +133,36 @@ class CardsList:
 
             x_pos += word_text.get_width()
 
+        # Increment Text
+        if self.cards_content[index]["card_type"] == "increment":
+            if "Increase" in self.cards_content[index]["title"]:
+                number_text = self.card_description_font.render(
+                    f"+{self.cards_content[index]['increment']}%", True, "red"
+                )
+            else:
+                number_text = self.card_description_font.render(
+                    f"-{self.cards_content[index]['increment']}%", True, "yellow"
+                )
+
+            name_text = self.card_description_font.render(
+                f"{self.cards_content[index]['increment_name']}:", True, (255, 255, 255)
+            )
+            card_surface.blit(name_text, (20, y_pos + 120))
+            card_surface.blit(
+                number_text,
+                (name_text.get_width() + 25, y_pos + 120),
+            )
+
+            player_text = self.card_description_font.render(
+                f"{eval(self.cards_content[index]['player_stat'])}",
+                True,
+                (255, 255, 255),
+            )
+            card_surface.blit(
+                player_text,
+                (name_text.get_width() + number_text.get_width() + 30, y_pos + 120),
+            )
+
         # Button
 
         button_width, button_height = (226, 50)
@@ -128,13 +170,19 @@ class CardsList:
             20, 480 - button_height - 20, button_width, button_height
         )
 
-        if button_rect.collidepoint(
-            pygame.mouse.get_pos()[0] - self.cards_surface_x - index * self.cards_width,
-            pygame.mouse.get_pos()[1] - self.cards_surface_y,
+        if (
+            button_rect.collidepoint(
+                pygame.mouse.get_pos()[0]
+                - self.cards_surface_x
+                - index * self.cards_width,
+                pygame.mouse.get_pos()[1] - self.cards_surface_y,
+            )
+            and self.selected_card is None
         ):
             hover = True
             if pygame.mouse.get_pressed()[0]:
                 print(self.cards_content[index]["exec_code"])
+                self.selected_card = index
 
                 exec(self.cards_content[index]["exec_code"])
 
@@ -178,7 +226,7 @@ class CardsList:
 
     def draw(self, screen):
         self.draw_surface(screen)
-        self.draw_cards()
+        self.draw_cards(screen)
 
 
 ##############################
@@ -206,6 +254,8 @@ class NightUpgrade:
                 "increment",
                 "Increases your health by _%",
                 "self.player.max_health += int((self.player.max_health / 100) * ?); self.player.health_value += int((self.player.max_health / 100) * ?)",
+                "health",
+                "self.player.max_health",
             ],
             "strength_increase": [
                 "Strength Increase",
@@ -213,6 +263,8 @@ class NightUpgrade:
                 "increment",
                 "Increases your strength by _%",
                 "self.player.strength += self.player.strength / 100 * ?",
+                "strength",
+                "self.player.strength",
             ],
             "speed_increase": [
                 "Speed Increase",
@@ -220,6 +272,8 @@ class NightUpgrade:
                 "increment",
                 "Increases your speed by _%",
                 "self.player.speed_multiplier += self.player.speed_multiplier / 100 * ?",
+                "speed",
+                "self.player.speed_multiplier",
             ],
             "hunger_decrease": [
                 "Hunger Decrease",
@@ -227,6 +281,8 @@ class NightUpgrade:
                 "increment",
                 "Decreases your metabolic rate by _%",
                 "self.player.food_multiplier -= self.player.food_multiplier / 100 * ?",
+                "hunger",
+                "self.player.food_multiplier",
             ],
             # "investment": [
             #     "Invest in the next night",
@@ -260,6 +316,9 @@ class NightUpgrade:
                         "increment_text": f"{self.options[choice][3].replace('_', str(increment))}",
                         "increment": increment,
                         "exec_code": f"{self.options[choice][4].replace('?', str(increment))}",
+                        "card_type": "increment",
+                        "increment_name": self.options[choice][5],
+                        "player_stat": self.options[choice][6],
                     }
                 )
 

@@ -1,7 +1,6 @@
 #                    TODO
 # --------------------------------------------- [✘]
 # ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze <-- die
-# ! Na consumeren van de kaart mooie leuke toffe gave animatie. [✘]
 # ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
 # ! Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✘]
 # ! Meer (soorten) kaarten [✘]
@@ -33,6 +32,7 @@
 # * We gaan hiernaa voor deze volgende wederzetsze stap gaan wij hiernaa gaan we de kaarten met schermvergroting oplossen en fixen en oplossen. [✓]
 # * Toepassing van de kaarten aambachtelijk pikant maken Max De bakker 2025: "Ik heb hier vrij weinig aan toe te voegen, nou top afvinken joh, ja gaan we het echt zo doen, als ik dingen ga zeggen dan ja uhh, oke.". [✓]
 # * Kaarten afbeeldingen tekenen (libresprite!!!!!!!@]) netjes gedaan zeg [✓]
+# * Na consumeren van de kaart mooie leuke toffe gave animatie. "hebben we alvast wat dopamine binnen." [✓]
 # --------------------------------------------
 
 import numpy
