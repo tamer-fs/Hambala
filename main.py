@@ -5,7 +5,6 @@
 # ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
 # ! Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✘]
 # ! Meer (soorten) kaarten [✘]
-# ! Kaarten afbeeldingen tekenen (libresprite!!!!!!!@]) [✘]
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -33,6 +32,7 @@
 # * Schermvergroting met kaarten. [✓]
 # * We gaan hiernaa voor deze volgende wederzetsze stap gaan wij hiernaa gaan we de kaarten met schermvergroting oplossen en fixen en oplossen. [✓]
 # * Toepassing van de kaarten aambachtelijk pikant maken Max De bakker 2025: "Ik heb hier vrij weinig aan toe te voegen, nou top afvinken joh, ja gaan we het echt zo doen, als ik dingen ga zeggen dan ja uhh, oke.". [✓]
+# * Kaarten afbeeldingen tekenen (libresprite!!!!!!!@]) netjes gedaan zeg [✓]
 # --------------------------------------------
 
 import numpy
@@ -887,7 +887,7 @@ while playing:
             (-28, -2),
             5,
         )
-        
+
         player_hp_bar.max_value = player.max_health
 
         player_sprint_bar.update(player.energy_value)
