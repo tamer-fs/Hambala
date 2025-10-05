@@ -1,9 +1,7 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Systeem voor bepaalde upgrades per nachten [✘] deze deze <-- deze <-- die
 # ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
-# ! Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✘]
-# ! Meer (soorten) kaarten [✘]
+# ! Meer soorten kaarten maken [✘]
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -33,6 +31,9 @@
 # * Toepassing van de kaarten aambachtelijk pikant maken Max De bakker 2025: "Ik heb hier vrij weinig aan toe te voegen, nou top afvinken joh, ja gaan we het echt zo doen, als ik dingen ga zeggen dan ja uhh, oke.". [✓]
 # * Kaarten afbeeldingen tekenen (libresprite!!!!!!!@]) netjes gedaan zeg [✓]
 # * Na consumeren van de kaart mooie leuke toffe gave animatie. "hebben we alvast wat dopamine binnen." [✓]
+# * Systeem voor bepaalde upgrades per nachten [✓] deze deze <-- deze <-- die
+# * Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✓]
+# * Meer (soorten) kaarten [✓]
 # --------------------------------------------
 
 import numpy
@@ -1010,7 +1011,7 @@ while playing:
             pause_menu_opened = (
                 making_upgrade_choice  # pause game when making upgrade choice
             )
-        ui_clock.draw(screen, night_upgrade, making_upgrade_choice)
+        ui_clock.draw(screen, night_upgrade, making_upgrade_choice, dt)
 
         scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
         scrolly += int((player.y - int((screenHeight - 48) / 2) - scrolly) / 5)

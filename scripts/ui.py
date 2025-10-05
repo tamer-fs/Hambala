@@ -17,6 +17,7 @@ class CardsList:
         self.screen = screen
         self.cards_content = cards_content
 
+        self.making_choice = True
         self.selected_card = None  # None als nog niet gekozen, anders 0 1 2
 
         self.card_fade_alpha = 255
@@ -59,6 +60,7 @@ class CardsList:
             "assets/Font/SpaceMono-Regular.ttf", 16
         )
         self.card_button_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 14)
+        self.big_number_font = pygame.font.Font("assets/Font/SpaceMono-Bold.ttf", 55)
 
     def draw_surface(self, screen):
         self.cards_surface_x = int(
@@ -67,15 +69,18 @@ class CardsList:
         self.cards_surface_y = int(
             (screen.get_height() / 2) - (self.cards_surface.get_height() / 2)
         )
-        self.cards_surface.set_alpha(self.card_fade_alpha)
+        self.cards_surface.set_alpha(max(self.card_fade_alpha, 0))
         screen.blit(self.cards_surface, (self.cards_surface_x, self.cards_surface_y))
 
-    def draw_cards(self, screen):
+    def draw_cards(self, screen, dt):
         for index, card_surface in enumerate(self.cards_surfaces):
             card_surface = self.draw_card_content(card_surface, index)
             self.cards_surface.blit(card_surface, (index * self.cards_width, 0))
 
         if self.selected_card is not None:
+            self.cards_surfaces[self.selected_card].set_alpha(
+                max(min((self.card_fade_alpha + 200) * 2, 255), 0)
+            )
             screen.blit(
                 self.cards_surfaces[self.selected_card],
                 (
@@ -83,8 +88,11 @@ class CardsList:
                     self.cards_surface_y,
                 ),
             )
-            if self.card_fade_alpha >= 0:
-                self.card_fade_alpha -= 1
+            if self.card_fade_alpha >= -255:
+                self.card_fade_alpha -= 2.5 * dt
+            else:
+                self.selected_card = None
+                self.card_fade_alpha = 255
 
     def draw_card_content(self, card_surface, index):
         content_rect = pygame.Rect(
@@ -111,56 +119,86 @@ class CardsList:
             (int((self.cards_width - title_text.get_width()) / 2), 30),
         )
 
-        # Description Text
-
-        text = self.cards_content[index]["description"]
-        words = text.split(" ")
-        x_pos = 0
-        y_pos = 0
-        for word in words:
-            word_text = self.card_description_font.render(
-                f"{word} ", True, (255, 255, 255)
-            )
-
-            if 20 + x_pos + word_text.get_width() >= content_rect.width:
-                y_pos += 20
-                x_pos = 0
-
-            card_surface.blit(
-                word_text,
-                (20 + x_pos, 80 + y_pos),
-            )
-
-            x_pos += word_text.get_width()
-
-        # Increment Text
-        if self.cards_content[index]["card_type"] == "increment":
-            if "Increase" in self.cards_content[index]["title"]:
-                number_text = self.card_description_font.render(
-                    f"+{self.cards_content[index]['increment']}%", True, "red"
-                )
-            else:
-                number_text = self.card_description_font.render(
-                    f"-{self.cards_content[index]['increment']}%", True, "yellow"
+        if not self.selected_card == index:
+            text = self.cards_content[index]["description"]
+            words = text.split(" ")
+            x_pos = 0
+            y_pos = 0
+            for word in words:
+                word_text = self.card_description_font.render(
+                    f"{word} ", True, (255, 255, 255)
                 )
 
-            name_text = self.card_description_font.render(
-                f"{self.cards_content[index]['increment_name']}:", True, (255, 255, 255)
-            )
-            card_surface.blit(name_text, (20, y_pos + 120))
-            card_surface.blit(
-                number_text,
-                (name_text.get_width() + 25, y_pos + 120),
-            )
+                if 20 + x_pos + word_text.get_width() >= content_rect.width:
+                    y_pos += 20
+                    x_pos = 0
 
-            player_text = self.card_description_font.render(
+                card_surface.blit(
+                    word_text,
+                    (20 + x_pos, 80 + y_pos),
+                )
+
+                x_pos += word_text.get_width()
+
+            # Increment Text
+            if self.cards_content[index]["card_type"] == "increment":
+                if "Increase" in self.cards_content[index]["title"]:
+                    number_text = self.card_description_font.render(
+                        f"+{self.cards_content[index]['increment']}%", True, "green"
+                    )
+                else:
+                    number_text = self.card_description_font.render(
+                        f"-{self.cards_content[index]['increment']}%", True, "green"
+                    )
+
+                name_text = self.card_description_font.render(
+                    f"{self.cards_content[index]['increment_name']}:",
+                    True,
+                    (255, 255, 255),
+                )
+                card_surface.blit(name_text, (20, y_pos + 120))
+                card_surface.blit(
+                    number_text,
+                    (name_text.get_width() + 25, y_pos + 120),
+                )
+
+                player_text = self.card_description_font.render(
+                    f"currently: {eval(self.cards_content[index]['player_stat'])}",
+                    True,
+                    (255, 255, 255),
+                )
+                card_surface.blit(
+                    player_text,
+                    (20, y_pos + 144),
+                )
+
+        else:
+            currently_text = self.card_description_font.render(
+                "currently", True, (255, 255, 255)
+            )
+            current_text = self.big_number_font.render(
                 f"{eval(self.cards_content[index]['player_stat'])}",
                 True,
                 (255, 255, 255),
             )
             card_surface.blit(
-                player_text,
-                (name_text.get_width() + number_text.get_width() + 30, y_pos + 120),
+                currently_text,
+                (
+                    int(
+                        (card_surface.get_width() / 2)
+                        - (currently_text.get_width() / 2)
+                    ),
+                    int((480 / 2) - (currently_text.get_height() / 2)) - 40,
+                ),
+            )
+            card_surface.blit(
+                current_text,
+                (
+                    int(
+                        (card_surface.get_width() / 2) - (current_text.get_width() / 2)
+                    ),
+                    int((480 / 2) - (current_text.get_height() / 2)),
+                ),
             )
 
         # Button
@@ -181,8 +219,8 @@ class CardsList:
         ):
             hover = True
             if pygame.mouse.get_pressed()[0]:
-                print(self.cards_content[index]["exec_code"])
                 self.selected_card = index
+                self.making_choice = False
 
                 exec(self.cards_content[index]["exec_code"])
 
@@ -211,8 +249,11 @@ class CardsList:
             card_surface, accent_color, button_rect, border_radius=6, width=3
         )
 
+        upgrade_text = (
+            "UPGRADE RECEIVED" if self.selected_card == index else "GET UPGRADE"
+        )
         button_text = self.card_button_font.render(
-            "GET UPGRADE", True, (33, 37, 41) if hover else accent_color
+            upgrade_text, True, (33, 37, 41) if hover else accent_color
         )
         card_surface.blit(
             button_text,
@@ -224,9 +265,9 @@ class CardsList:
 
         return card_surface
 
-    def draw(self, screen):
+    def draw(self, screen, dt):
         self.draw_surface(screen)
-        self.draw_cards(screen)
+        self.draw_cards(screen, dt)
 
 
 ##############################
@@ -293,6 +334,8 @@ class NightUpgrade:
 
         self.choices = []
 
+        self.cards_list = None
+
     def start_choice(self, night_count):
         self.options_pool = list(self.options.keys())
         self.choices = []
@@ -305,7 +348,6 @@ class NightUpgrade:
         self.cards_content = []
 
         for choice in self.choices:
-            print(self.options[choice])
             if self.options[choice][2] == "increment":
                 increment = random.randint(1, 11 * min(night_count + 1, 100))
                 self.cards_content.append(
@@ -322,12 +364,11 @@ class NightUpgrade:
                     }
                 )
 
-        print(self.cards_content)
         self.cards_list = CardsList(self.screen, self.cards_content, self.player)
 
-    def draw(self, screen):
+    def draw(self, screen, dt):
         if not self.show_night_count:
-            self.cards_list.draw(screen)
+            self.cards_list.draw(screen, dt)
 
 
 ##############################
@@ -390,7 +431,7 @@ class Clock:
             "assets/Font/SpaceMono-Bold.ttf", 150
         )
 
-    def draw(self, screen, night_upgrade, making_upgrade_choice):
+    def draw(self, screen, night_upgrade, making_upgrade_choice, dt):
 
         if not self.in_transition:
             if self.night_time:
@@ -542,9 +583,9 @@ class Clock:
 
         if time.perf_counter() - self.night_count_fade_perf >= 0.05:
             if self.show_night_count:
-                self.night_count_alpha = min(self.night_count_alpha + 1, 200)
+                self.night_count_alpha = min(self.night_count_alpha + 2.5 * dt, 200)
             else:
-                self.night_count_alpha = max(self.night_count_alpha - 1, 0)
+                self.night_count_alpha = max(self.night_count_alpha - 2.5 * dt, 0)
             self.night_count_perf = time.perf_counter()
 
         if self.night_count_alpha > 0:
@@ -574,7 +615,7 @@ class Clock:
         screen.blit(self.fade_in_surface, (0, 0))
 
         if making_upgrade_choice:
-            night_upgrade.draw(screen)
+            night_upgrade.draw(screen, dt)
 
     def update(
         self, sky_color, is_night, night_count, night_upgrade, making_upgrade_choice
@@ -586,6 +627,14 @@ class Clock:
             self.sky_color[3], 1
         )  # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
         self.night_time = True if self.time_ticks >= 100 else False
+
+        if (
+            making_upgrade_choice
+            and night_upgrade.cards_list is not None
+            and night_upgrade.cards_list.selected_card is None
+            and night_upgrade.cards_list.making_choice == False
+        ):
+            making_upgrade_choice = False
 
         if self.night_time != self.prev_night_time:
             self.in_transition = True
