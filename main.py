@@ -1,7 +1,6 @@
 #                    TODO
 # --------------------------------------------- [✘]
 # ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
-# ! Meer soorten kaarten maken [✘]
 # -------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -34,6 +33,7 @@
 # * Systeem voor bepaalde upgrades per nachten [✓] deze deze <-- deze <-- die
 # * Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✓]
 # * Meer (soorten) kaarten [✓]
+# * Nieuw soort kaart maken [✓]
 # --------------------------------------------
 
 import numpy
@@ -710,9 +710,10 @@ while playing:
                     if hasattr(event, "key"):
                         if not pause_menu_opened:
                             if event.key == pygame.K_CAPSLOCK:
-                                main_inventory.backpack_visible = (
-                                    not main_inventory.backpack_visible
-                                )
+                                if player.backpack_unlocked:
+                                    main_inventory.backpack_visible = (
+                                        not main_inventory.backpack_visible
+                                    )
 
             if event.type == pygame.VIDEORESIZE:
                 # update res voor alle menu's
@@ -1005,7 +1006,12 @@ while playing:
             is_night = False
 
         night_count, making_upgrade_choice = ui_clock.update(
-            sky_color, is_night, night_count, night_upgrade, making_upgrade_choice
+            sky_color,
+            is_night,
+            night_count,
+            night_upgrade,
+            making_upgrade_choice,
+            player,
         )
         if making_upgrade_choice != pause_menu_opened:
             pause_menu_opened = (

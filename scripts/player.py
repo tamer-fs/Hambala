@@ -15,6 +15,8 @@ class Player:
         self.speed = 0.10
         self.speed_multiplier = 1
         self.food_multiplier = 1
+        self.backpack_unlocked = False
+        self.increment_boost = 0
         self.idle_frames = ["idle1", "idle2", "idle3", "idle4", "idle5", "idle6"]
         self.idle_frame = 0
         self.walk_frames = ["walk1", "walk2", "walk3", "walk4", "walk5", "walk6"]

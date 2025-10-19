@@ -173,33 +173,63 @@ class CardsList:
                 )
 
         else:
-            currently_text = self.card_description_font.render(
-                "currently", True, (255, 255, 255)
-            )
-            current_text = self.big_number_font.render(
-                f"{eval(self.cards_content[index]['player_stat'])}",
-                True,
-                (255, 255, 255),
-            )
-            card_surface.blit(
-                currently_text,
-                (
-                    int(
-                        (card_surface.get_width() / 2)
-                        - (currently_text.get_width() / 2)
+            if self.cards_content[index]["card_type"] == "increment":
+                currently_text = self.card_description_font.render(
+                    "currently", True, (255, 255, 255)
+                )
+                current_text = self.big_number_font.render(
+                    f"{eval(self.cards_content[index]['player_stat'])}",
+                    True,
+                    (255, 255, 255),
+                )
+                card_surface.blit(
+                    currently_text,
+                    (
+                        int(
+                            (card_surface.get_width() / 2)
+                            - (currently_text.get_width() / 2)
+                        ),
+                        int((480 / 2) - (currently_text.get_height() / 2)) - 40,
                     ),
-                    int((480 / 2) - (currently_text.get_height() / 2)) - 40,
-                ),
-            )
-            card_surface.blit(
-                current_text,
-                (
-                    int(
-                        (card_surface.get_width() / 2) - (current_text.get_width() / 2)
+                )
+                card_surface.blit(
+                    current_text,
+                    (
+                        int(
+                            (card_surface.get_width() / 2)
+                            - (current_text.get_width() / 2)
+                        ),
+                        int((480 / 2) - (current_text.get_height() / 2)),
                     ),
-                    int((480 / 2) - (current_text.get_height() / 2)),
-                ),
-            )
+                )
+
+            elif self.cards_content[index]["card_type"] == "unlock":
+                unlock_text1 = self.card_description_font.render(
+                    "You can open your", True, (255, 255, 255)
+                )
+                unlock_text2 = self.card_description_font.render(
+                    "backpack with [CAPS]", True, (255, 255, 255)
+                )
+                card_surface.blit(
+                    unlock_text1,
+                    (
+                        int(
+                            (card_surface.get_width() / 2)
+                            - (unlock_text1.get_width() / 2)
+                        ),
+                        int((480 / 2) - (unlock_text1.get_height() / 2)) - 40,
+                    ),
+                )
+                card_surface.blit(
+                    unlock_text2,
+                    (
+                        int(
+                            (card_surface.get_width() / 2)
+                            - (unlock_text2.get_width() / 2)
+                        ),
+                        int((480 / 2) - (unlock_text2.get_height() / 2)),
+                    ),
+                )
 
         # Button
 
@@ -232,6 +262,8 @@ class CardsList:
             "speed_increase": (251, 242, 54),
             "strength_increase": (238, 195, 154),
             "hunger_decrease": (240, 146, 101),
+            "backpack_expansion": (240, 146, 101),
+            "increment_increase": (251, 242, 54),
         }[self.cards_content[index]["code"]]
 
         button_surface = pygame.surface.Surface(button_rect.size, pygame.SRCALPHA)
@@ -325,31 +357,69 @@ class NightUpgrade:
                 "hunger",
                 "self.player.food_multiplier",
             ],
-            # "investment": [
-            #     "Invest in the next night",
-            #     "Next night you will have one more choice to choose out of.",
-            #     "self.player.card_choices += 1",
-            # ],
+            "backpack_expansion": [
+                "Backpack Expansion",
+                "Epische beschrijving en coole tekst om de kaart er opgevuld uit te laten zien!!!",
+                "unlock",
+                "Adds a two extra rows of inventory space",
+                "self.player.backpack_unlocked = True",
+            ],
+            "increment_increase": [
+                "Increment Increase",
+                "Triple avarage incremenents for the next night.",
+                "increment",
+                "Increases increments for the next night by _%",
+                "self.player.increment_boost = ?",
+                "increment_boost",
+                "self.player.increment_boost",
+            ],
         }
 
         self.choices = []
 
+        self.increment_increase = False  # als increment_increase kaart gekozen is, True
+
+        self.late_upgrade_cards = {"backpack_expansion": 2}
+
         self.cards_list = None
 
-    def start_choice(self, night_count):
+    def start_choice(self, night_count, player):
         self.options_pool = list(self.options.keys())
         self.choices = []
+
+        if player.increment_boost == 200:
+            self.increment_increase = True
+            player.increment_boost = 0
+            print("Nu met increment boost!!!!!")
+
+        if player.backpack_unlocked:
+            self.options_pool.remove("backpack_expansion")
+
+        for option in self.options_pool:
+            if option in self.late_upgrade_cards:
+                if night_count < self.late_upgrade_cards[option]:
+                    self.options_pool.remove(option)
 
         for _ in range(3):
             new_choice = random.choice(self.options_pool)
             self.choices.append(new_choice)
             self.options_pool.remove(new_choice)
 
+        # new_choice = "backpack_expansion"
+        # self.choices.append(new_choice)
+        # # self.options_pool.remove(new_choice)
+
         self.cards_content = []
 
         for choice in self.choices:
             if self.options[choice][2] == "increment":
                 increment = random.randint(1, 11 * min(night_count + 1, 100))
+                if self.increment_increase:
+                    increment *= 2
+
+                if choice == "increment_increase":
+                    increment = 200  # =x2
+
                 self.cards_content.append(
                     {
                         "code": choice,
@@ -363,6 +433,20 @@ class NightUpgrade:
                         "player_stat": self.options[choice][6],
                     }
                 )
+            elif self.options[choice][2] == "unlock":
+                self.cards_content.append(
+                    {
+                        "code": choice,
+                        "title": self.options[choice][0],
+                        "description": self.options[choice][1],
+                        "unlock_text": f"{self.options[choice][3]}",
+                        "exec_code": f"{self.options[choice][4]}",
+                        "card_type": "unlock",
+                    }
+                )
+
+        if self.increment_increase:
+            self.increment_increase = False
 
         self.cards_list = CardsList(self.screen, self.cards_content, self.player)
 
@@ -618,7 +702,13 @@ class Clock:
             night_upgrade.draw(screen, dt)
 
     def update(
-        self, sky_color, is_night, night_count, night_upgrade, making_upgrade_choice
+        self,
+        sky_color,
+        is_night,
+        night_count,
+        night_upgrade,
+        making_upgrade_choice,
+        player,
     ):
         self.night_count = night_count
         self.is_night = is_night
@@ -645,7 +735,7 @@ class Clock:
                 self.night_count += 1
                 self.night_count_perf_counter = time.perf_counter()
                 self.show_night_count = True
-                night_upgrade.start_choice(self.night_count)
+                night_upgrade.start_choice(self.night_count, player)
                 making_upgrade_choice = True
 
         night_upgrade.show_night_count = self.show_night_count
