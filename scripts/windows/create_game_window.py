@@ -153,6 +153,8 @@ class CreateGameWindow:
                             "game_name": self.name_input.input_entry.get_text(),
                             "game_difficulty": self.difficulty,
                             "time": 0,
+                            "night_count": 0,
+                            "is_night": False,
                             "animal_dict": animal.return_animal_dict(),
                             "alive_enemies": [],
                             "player": {
@@ -161,6 +163,12 @@ class CreateGameWindow:
                                 "energy_value": 100,
                                 "food_value": 10000,
                                 "health_value": 10,
+                                "max_health": 10,
+                                "strength": 1,
+                                "speed_multiplier": 1,
+                                "food_multiplier": 1,
+                                "backpack_unlocked": False,
+                                "increment_boost": 0,
                             },
                             "inventory": {
                                 "block_fill": {
@@ -239,6 +247,9 @@ class CreateGameWindow:
                         plant_spawn_chance = 3
                         seed = self.seed_input.input_entry.get_text()
                         filtered_seed = ""
+
+                        if seed == "":  # niks ingevuld als seed
+                            seed = str(random.randint(0, 100) * random.randint(0, 5))
 
                         for character in seed:
                             if character.isdigit():

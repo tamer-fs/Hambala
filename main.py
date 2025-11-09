@@ -1,7 +1,10 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Opslaan aangepaste dingen player [✘] (aambachtelijk, triomfantelijk)
-# -------------------------------------------- [✓]
+# ! Meer kaarten?!?!?! [✘]
+# ! Game balancen [✘]
+# ! Dood gaan [✘]
+# ! Optimalisatie [✘]
+# --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
 # * Pause screen resize fixen. [✓]
@@ -34,6 +37,9 @@
 # * Na consumeren van de kaart mooie leuke toffe gave beeld weghalen. [✓]
 # * Meer (soorten) kaarten [✓]
 # * Nieuw soort kaart maken [✓]
+# * Opslaan aangepaste dingen player [✓] (aambachtelijk, triomfantelijk)
+# * allemaal gare dag en nacht opslaan dagen dingen oplossen, oplossen, oplossen, oplossen, oplossen, op los sen [✓]
+# * kaarten afronden [✓]
 # --------------------------------------------
 
 import numpy
@@ -154,6 +160,7 @@ playing = True
 plant_spawn_chance = 3
 
 pause_menu_opened = False
+game_paused = False
 
 stamina_icon = pygame.image.load("assets/icons/stamina.png").convert_alpha()
 hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
@@ -325,6 +332,8 @@ def save_world():
         dict_copy = copy.copy(json_dict)
 
         dict_copy["time"] = sky_color[3]
+        dict_copy["night_count"] = night_count
+        dict_copy["is_night"] = is_night
 
         dict_copy["animal_dict"] = animals.return_animal_dict()
         dict_copy["alive_enemies"] = enemies.return_enemies_list()
@@ -334,6 +343,14 @@ def save_world():
         dict_copy["player"]["energy_value"] = player.energy_value
         dict_copy["player"]["food_value"] = player.food_value
         dict_copy["player"]["health_value"] = player.health_value
+
+        # card stats
+        dict_copy["player"]["max_health"] = player.max_health
+        dict_copy["player"]["strength"] = player.strength
+        dict_copy["player"]["speed_multiplier"] = player.speed_multiplier
+        dict_copy["player"]["food_multiplier"] = player.food_multiplier
+        dict_copy["player"]["backpack_unlocked"] = player.backpack_unlocked
+        dict_copy["player"]["increment_boost"] = player.increment_boost
 
         dict_copy["inventory"]["block_fill"] = main_inventory.block_fill
         dict_copy["inventory"]["item_count_dict"] = main_inventory.item_count_dict
@@ -361,6 +378,8 @@ def load_world(folder_name, sky_color):
     dict_copy = copy.copy(json_dict)
 
     sky_clr = [sky_color[0], sky_color[1], sky_color[2], dict_copy["time"]]
+    night_count = dict_copy["night_count"]
+    is_night = dict_copy["is_night"]
 
     animals.convert_animal_json_dict(dict_copy["animal_dict"])
 
@@ -371,6 +390,14 @@ def load_world(folder_name, sky_color):
     player.energy_value = dict_copy["player"]["energy_value"]
     player.food_value = dict_copy["player"]["food_value"]
     player.health_value = dict_copy["player"]["health_value"]
+
+    # card stats
+    player.max_health = dict_copy["player"]["max_health"]
+    player.strength = dict_copy["player"]["strength"]
+    player.speed_multiplier = dict_copy["player"]["speed_multiplier"]
+    player.food_multiplier = dict_copy["player"]["food_multiplier"]
+    player.backpack_unlocked = dict_copy["player"]["backpack_unlocked"]
+    player.increment_boost = dict_copy["player"]["increment_boost"]
 
     block_fill_copy = {}
     for key in dict_copy["inventory"]["block_fill"].keys():
@@ -402,7 +429,9 @@ def load_world(folder_name, sky_color):
     ).reshape(map_w, map_h)
     plants = plants.astype(int)
 
-    return sky_clr, world, world_rotation, plants
+    ui_clock.load_world(night_count, sky_clr)
+
+    return sky_clr, world, world_rotation, plants, night_count, is_night
 
 
 while playing:
@@ -426,8 +455,8 @@ while playing:
                 selected_world  # zodat de wereld ook opgeslagen kan worden (no shit)
             )
 
-            sky_color, world, world_rotation, plants = load_world(
-                selected_world, sky_color
+            sky_color, world, world_rotation, plants, night_count, is_night = (
+                load_world(selected_world, sky_color)
             )
 
         if current_game_state != "TITLE":
@@ -494,8 +523,8 @@ while playing:
         if selected_world != "":
             # wereld laad basis gangsters
             loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
-            sky_color, world, world_rotation, plants = load_world(
-                selected_world, sky_color
+            sky_color, world, world_rotation, plants, night_count, is_night = (
+                load_world(selected_world, sky_color)
             )
 
         for event in events:
@@ -564,8 +593,8 @@ while playing:
 
         if current_game_state == "GAME":
 
-            sky_color, world, world_rotation, plants = load_world(
-                loaded_world, sky_color
+            sky_color, world, world_rotation, plants, night_count, is_night = (
+                load_world(loaded_world, sky_color)
             )
 
         torch_animation_frame, torch_update_frame = render_world(
@@ -621,8 +650,8 @@ while playing:
                 black_surface.set_alpha(100)
 
         if current_game_state == "GAME":
-            sky_color, world, world_rotation, plants = load_world(
-                loaded_world, sky_color
+            sky_color, world, world_rotation, plants, night_count, is_night = (
+                load_world(loaded_world, sky_color)
             )
 
         torch_animation_frame, torch_update_frame = render_world(
@@ -665,6 +694,7 @@ while playing:
                 if event.key == pygame.K_ESCAPE:
                     pause_menu_window.update_res(screen)
                     pause_menu_opened = not pause_menu_opened
+                    print(pause_menu_opened)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
@@ -679,7 +709,7 @@ while playing:
                 or event.type == pygame.JOYBUTTONDOWN
                 or event.type == pygame.JOYHATMOTION
             ):
-                if not pause_menu_opened:
+                if not pause_menu_opened and not game_paused:
                     if not joystick_input and hasattr(event, "y"):
                         main_inventory.mouse_update(
                             event.y, joystick_input, joystick, joystick_btn_dict
@@ -708,7 +738,7 @@ while playing:
                         main_inventory.backpack_visible = False
                 else:
                     if hasattr(event, "key"):
-                        if not pause_menu_opened:
+                        if not pause_menu_opened and not game_paused:
                             if event.key == pygame.K_CAPSLOCK:
                                 if player.backpack_unlocked:
                                     main_inventory.backpack_visible = (
@@ -790,7 +820,7 @@ while playing:
         )
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             particles = animals.update(plants, player, particles, dt)
 
         prev_player_x = player.x
@@ -834,7 +864,7 @@ while playing:
 
         particles, particle_perf = spawn_particles(particle_perf, player, particles)
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             del_list = []
 
             for i, particle in enumerate(particles):
@@ -899,7 +929,7 @@ while playing:
 
         main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             player.walking(
                 keys,
                 deltaT,
@@ -934,7 +964,7 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             particles = enemies.update(
                 enemies_spawn,
                 player,
@@ -948,7 +978,7 @@ while playing:
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             if time.perf_counter() - sky_time > 0.01:
                 if not is_night:
                     sky_color = [
@@ -1013,10 +1043,10 @@ while playing:
             making_upgrade_choice,
             player,
         )
-        if making_upgrade_choice != pause_menu_opened:
-            pause_menu_opened = (
-                making_upgrade_choice  # pause game when making upgrade choice
-            )
+        if making_upgrade_choice != game_paused:
+            game_paused = making_upgrade_choice
+            # pause_menu_opened = making_upgrade_choice  pause game when making upgrade choice
+
         ui_clock.draw(screen, night_upgrade, making_upgrade_choice, dt)
 
         scrollx += int((player.x - int((screenWidth - 48) / 2) - scrollx) / 5)
@@ -1027,7 +1057,7 @@ while playing:
         scrolly = max(scrolly, 0)
         scrolly = min(scrolly, 16 * map_h - screenHeight)
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             main_inventory.update(
                 pygame.mouse.get_pressed(),
                 pygame.mouse.get_pos(),
@@ -1057,7 +1087,7 @@ while playing:
             enemies,
         )
 
-        if not pause_menu_opened:
+        if not pause_menu_opened and not game_paused:
             main_crafting_table.update(
                 keys,
                 pygame.mouse.get_pos(),

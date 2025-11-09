@@ -163,7 +163,7 @@ class CardsList:
                 )
 
                 player_text = self.card_description_font.render(
-                    f"currently: {eval(self.cards_content[index]['player_stat'])}",
+                    f"currently: {round(eval(self.cards_content[index]['player_stat']), 2)}",
                     True,
                     (255, 255, 255),
                 )
@@ -172,13 +172,13 @@ class CardsList:
                     (20, y_pos + 144),
                 )
 
-        else:
+        else:  # als dit de geselecteerde kaart is
             if self.cards_content[index]["card_type"] == "increment":
                 currently_text = self.card_description_font.render(
                     "currently", True, (255, 255, 255)
                 )
                 current_text = self.big_number_font.render(
-                    f"{eval(self.cards_content[index]['player_stat'])}",
+                    f"{round(eval(self.cards_content[index]['player_stat']), 2)}",
                     True,
                     (255, 255, 255),
                 )
@@ -701,6 +701,16 @@ class Clock:
         if making_upgrade_choice:
             night_upgrade.draw(screen, dt)
 
+    def load_world(self, night_count, sky_color):
+        self.sky_color = sky_color
+        self.time_ticks = max(
+            self.sky_color[3], 1
+        )  # from 1 (most day) to 200 (most night), night starts at 100. time ticks cannot be 0
+        self.night_time = True if self.time_ticks >= 100 else False
+        self.prev_night_time = self.night_time
+        self.night_count = night_count
+        print(self.prev_night_time, self.night_time, self.night_count)
+
     def update(
         self,
         sky_color,
@@ -727,12 +737,14 @@ class Clock:
             making_upgrade_choice = False
 
         if self.night_time != self.prev_night_time:
+            print(self.night_time, self.prev_night_time)
             self.in_transition = True
             self.transition_direction = 1 if self.night_time else -1
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
             if self.night_time:
                 self.night_count += 1
+                print("NIGHT COUNT += 1 AAAAA en kaarten")
                 self.night_count_perf_counter = time.perf_counter()
                 self.show_night_count = True
                 night_upgrade.start_choice(self.night_count, player)
