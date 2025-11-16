@@ -113,6 +113,7 @@ from scripts.windows.title_window import *
 from scripts.windows.create_game_window import *
 from scripts.windows.load_save_window import *
 from scripts.windows.pause_menu_window import *
+from scripts.windows.death_menu_window import *
 from scripts.windows.main_settings_window import *
 
 import json
@@ -161,6 +162,7 @@ plant_spawn_chance = 3
 
 pause_menu_opened = False
 game_paused = False
+player_died = False  # player died menu screen open
 
 stamina_icon = pygame.image.load("assets/icons/stamina.png").convert_alpha()
 hunger_icon = pygame.image.load("assets/icons/hunger_icon.png").convert_alpha()
@@ -316,11 +318,18 @@ title_window = TitleWindow(screen)
 create_game_window = CreateGameWindow(screen)
 load_save_window = LoadSaveWindow(screen)
 pause_menu_window = PauseMenuWindow(screen)
+death_menu_window = DeathMenuWindow(screen)
 settings_window = MainSettingsWindow(screen)
 
 black_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
 black_surface.fill((0, 0, 0))
 black_surface.set_alpha(100)
+
+red_surface = pygame.Surface((screenWidth, screenHeight), pygame.SRCALPHA)
+red_surface.fill((255, 0, 0))
+red_surface.set_alpha(100)
+
+seed = None
 
 
 def save_world():
@@ -380,6 +389,7 @@ def load_world(folder_name, sky_color):
     sky_clr = [sky_color[0], sky_color[1], sky_color[2], dict_copy["time"]]
     night_count = dict_copy["night_count"]
     is_night = dict_copy["is_night"]
+    seed = dict_copy["seed"]
 
     animals.convert_animal_json_dict(dict_copy["animal_dict"])
 
@@ -431,7 +441,7 @@ def load_world(folder_name, sky_color):
 
     ui_clock.load_world(night_count, sky_clr)
 
-    return sky_clr, world, world_rotation, plants, night_count, is_night
+    return sky_clr, world, world_rotation, plants, night_count, is_night, seed
 
 
 while playing:
@@ -455,7 +465,7 @@ while playing:
                 selected_world  # zodat de wereld ook opgeslagen kan worden (no shit)
             )
 
-            sky_color, world, world_rotation, plants, night_count, is_night = (
+            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
                 load_world(selected_world, sky_color)
             )
 
@@ -478,6 +488,12 @@ while playing:
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
 
+                red_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                red_surface.fill((0, 0, 0))
+                red_surface.set_alpha(100)
+
         torch_animation_frame, torch_update_frame = render_world(
             screen,
             world,
@@ -494,7 +510,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt)
+        particles = animals.update(plants, player, particles, dt, attack=False)
 
         screen.blit(black_surface, (0, 0))
 
@@ -523,7 +539,7 @@ while playing:
         if selected_world != "":
             # wereld laad basis gangsters
             loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
-            sky_color, world, world_rotation, plants, night_count, is_night = (
+            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
                 load_world(selected_world, sky_color)
             )
 
@@ -537,6 +553,12 @@ while playing:
                 )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
+
+                red_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                red_surface.fill((0, 0, 0))
+                red_surface.set_alpha(100)
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -554,7 +576,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt)
+        particles = animals.update(plants, player, particles, dt, attack=False)
 
         screen.blit(black_surface, (0, 0))
 
@@ -591,9 +613,15 @@ while playing:
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
 
+                red_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                red_surface.fill((0, 0, 0))
+                red_surface.set_alpha(100)
+
         if current_game_state == "GAME":
 
-            sky_color, world, world_rotation, plants, night_count, is_night = (
+            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
                 load_world(loaded_world, sky_color)
             )
 
@@ -613,7 +641,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt)
+        particles = animals.update(plants, player, particles, dt, attack=False)
 
         screen.blit(black_surface, (0, 0))
 
@@ -649,8 +677,14 @@ while playing:
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
 
+                red_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                red_surface.fill((0, 0, 0))
+                red_surface.set_alpha(100)
+
         if current_game_state == "GAME":
-            sky_color, world, world_rotation, plants, night_count, is_night = (
+            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
                 load_world(loaded_world, sky_color)
             )
 
@@ -670,7 +704,7 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt)
+        particles = animals.update(plants, player, particles, dt, attack=False)
 
         screen.blit(black_surface, (0, 0))
 
@@ -709,7 +743,7 @@ while playing:
                 or event.type == pygame.JOYBUTTONDOWN
                 or event.type == pygame.JOYHATMOTION
             ):
-                if not pause_menu_opened and not game_paused:
+                if not pause_menu_opened and not game_paused and not player_died:
                     if not joystick_input and hasattr(event, "y"):
                         main_inventory.mouse_update(
                             event.y, joystick_input, joystick, joystick_btn_dict
@@ -738,7 +772,7 @@ while playing:
                         main_inventory.backpack_visible = False
                 else:
                     if hasattr(event, "key"):
-                        if not pause_menu_opened and not game_paused:
+                        if not pause_menu_opened and not game_paused and not player:
                             if event.key == pygame.K_CAPSLOCK:
                                 if player.backpack_unlocked:
                                     main_inventory.backpack_visible = (
@@ -778,6 +812,12 @@ while playing:
                 )
                 black_surface.fill((0, 0, 0))
                 black_surface.set_alpha(100)
+
+                red_surface = pygame.Surface(
+                    (screenWidth, screenHeight), pygame.SRCALPHA
+                )
+                red_surface.fill((0, 0, 0))
+                red_surface.set_alpha(100)
 
         if not game_size_set:
             screenWidth, screenHeight = screen.get_size()
@@ -820,7 +860,7 @@ while playing:
         )
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             particles = animals.update(plants, player, particles, dt)
 
         prev_player_x = player.x
@@ -864,7 +904,7 @@ while playing:
 
         particles, particle_perf = spawn_particles(particle_perf, player, particles)
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             del_list = []
 
             for i, particle in enumerate(particles):
@@ -929,7 +969,7 @@ while playing:
 
         main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             player.walking(
                 keys,
                 deltaT,
@@ -940,7 +980,7 @@ while playing:
                 plants,
                 dt,
             )
-            particles = player.update(
+            particles, player_died = player.update(
                 plants,
                 keys,
                 screen,
@@ -964,7 +1004,7 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             particles = enemies.update(
                 enemies_spawn,
                 player,
@@ -978,7 +1018,7 @@ while playing:
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             if time.perf_counter() - sky_time > 0.01:
                 if not is_night:
                     sky_color = [
@@ -1057,7 +1097,7 @@ while playing:
         scrolly = max(scrolly, 0)
         scrolly = min(scrolly, 16 * map_h - screenHeight)
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             main_inventory.update(
                 pygame.mouse.get_pressed(),
                 pygame.mouse.get_pos(),
@@ -1087,7 +1127,7 @@ while playing:
             enemies,
         )
 
-        if not pause_menu_opened and not game_paused:
+        if not pause_menu_opened and not game_paused and not player_died:
             main_crafting_table.update(
                 keys,
                 pygame.mouse.get_pos(),
@@ -1098,8 +1138,7 @@ while playing:
                 joystick_btn_dict,
             )
 
-    if pause_menu_opened and not making_upgrade_choice:
-        # print("ik ben blij")
+    if (pause_menu_opened and not making_upgrade_choice) and not player_died:
         screen.blit(black_surface, (0, 0))
 
         pause_menu_opened, save_game, quit_game, to_title = pause_menu_window.update(
@@ -1116,6 +1155,182 @@ while playing:
         if to_title:
             load_save_window.update_game_dirs()
             current_game_state = "TITLE"
+
+    if player_died:
+        game_paused = True
+        screen.blit(red_surface, (0, 0))
+
+        player_died, restart_game, to_title = death_menu_window.update(
+            events, deltaT, night_count
+        )
+        death_menu_window.draw()
+
+        if player_died == False:
+            # tijdelijk <-- tijdelijk
+            player.health = 10
+
+        if restart_game:  # reset de hele wereld
+            folder_name = loaded_world
+
+            animal = Animal(random.randint(25, 45), screenWidth, screenHeight)
+
+            # create world and save world data in txt files
+            map_w, map_h = 150, 150
+            plant_spawn_chance = 3
+
+            game_name = ""
+
+            with open(os.path.join("saves", str(folder_name), "save.json")) as f:
+                old_save_json = json.loads(f.read())
+
+            current_game_state = "GAME"
+            save_json = {
+                "time": 0,
+                "night_count": 0,
+                "is_night": False,
+                "animal_dict": animal.return_animal_dict(),
+                "alive_enemies": [],
+                "player": {
+                    "x": 1176.0,
+                    "y": 1176.0,
+                    "energy_value": 100,
+                    "food_value": 10000,
+                    "health_value": 10,
+                    "max_health": 10,
+                    "strength": 1,
+                    "speed_multiplier": 1,
+                    "food_multiplier": 1,
+                    "backpack_unlocked": False,
+                    "increment_boost": 0,
+                },
+                "inventory": {
+                    "block_fill": {
+                        "0": "axe ",
+                        "1": "pickaxe ",
+                        "2": "sword ",
+                        "3": "",
+                        "4": "",
+                        "5": "",
+                        "6": "",
+                        "7": "",
+                        "8": "",
+                        "9": "",
+                        "10": "",
+                        "11": "",
+                        "12": "",
+                        "13": "",
+                        "14": "",
+                        "15": "",
+                        "16": "",
+                        "17": "",
+                        "18": "",
+                        "19": "",
+                        "20": "",
+                        "21": "",
+                        "22": "",
+                        "23": "",
+                        "24": "",
+                        "25": "",
+                        "26": "",
+                    },
+                    "item_count_dict": {
+                        "0": 1,
+                        "1": 1,
+                        "2": 1,
+                        "3": 0,
+                        "4": 0,
+                        "5": 0,
+                        "6": 0,
+                        "7": 0,
+                        "8": 0,
+                        "9": 0,
+                        "10": 0,
+                        "11": 0,
+                        "12": 0,
+                        "13": 0,
+                        "14": 0,
+                        "15": 0,
+                        "16": 0,
+                        "17": 0,
+                        "18": 0,
+                        "19": 0,
+                        "20": 0,
+                        "21": 0,
+                        "22": 0,
+                        "23": 0,
+                        "24": 0,
+                        "25": 0,
+                        "26": 0,
+                    },
+                },
+            }
+
+            old_save_json = old_save_json | save_json
+
+            # create save.json
+            with open(
+                os.path.join("saves", str(folder_name), "save.json"),
+                "w",
+            ) as f:
+                f.write(json.dumps(old_save_json))
+
+            filtered_seed = ""
+            for character in seed:
+                if character.isdigit():
+                    filtered_seed = filtered_seed + str(character)
+                else:
+                    filtered_seed = filtered_seed + str(ord(character))
+            print(filtered_seed)
+            filtered_seed = int(filtered_seed)
+
+            plants, world, world_rotation = create_world(
+                map_w,
+                map_h,
+                plant_spawn_chance,
+                filtered_seed,
+            )
+
+            with open(
+                os.path.join("saves", str(folder_name), "world.txt"),
+                "w",
+            ) as f:
+                numpy.savetxt(f, world.astype(int), fmt="%i")
+
+            with open(
+                os.path.join("saves", str(folder_name), "world_rotation.txt"),
+                "w",
+            ) as f:
+                numpy.savetxt(f, world_rotation.astype(int), fmt="%i")
+
+            with open(
+                os.path.join("saves", str(folder_name), "plants.txt"),
+                "w",
+            ) as f:
+                numpy.savetxt(f, plants.astype(int), fmt="%i")
+
+            with open("last_played.txt", "w") as f:
+                f.write(folder_name)
+
+            selected_world = folder_name
+
+            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
+                load_world(selected_world, sky_color)
+            )
+
+        if to_title:
+            save_world()
+            load_save_window.update_game_dirs()
+            current_game_state = "TITLE"
+
+        # if save_game:
+        #     save_world()
+
+        # if quit_game:
+        #     playing = False
+
+        # if to_title:
+        #     load_save_window.update_game_dirs()
+        #     current_game_state = "TITLE"
 
     cursor_rect.topleft = pygame.mouse.get_pos()
     if (

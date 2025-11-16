@@ -294,7 +294,7 @@ class Animal:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, player, particles, dt):
+    def update(self, plants, player, particles, dt, attack=True):
         animal_delete_list = []
         if self.animal_dict is None:
             return particles
@@ -423,20 +423,21 @@ class Animal:
                 animal[4] = False
 
             # bear attack player
-            if animal[20]:
-                if (
-                    get_distance(
-                        animal_rect.x, animal_rect.y, player.x + 16, player.y + 16
-                    )
-                    < 30
-                ):
-                    if time.perf_counter() - animal[18] > 1.5:
-                        animal[18] = time.perf_counter()
-                        player.health_value -= animal_damage
-                        player.health_value = max(0, player.health_value)
-                        pygame.mixer.Sound.play(self.damage_sound)
-                        for _ in range(15):
-                            particles.append(HitParticle(player.x, player.y))
+            if attack:
+                if animal[20]:
+                    if (
+                        get_distance(
+                            animal_rect.x, animal_rect.y, player.x + 16, player.y + 16
+                        )
+                        < 30
+                    ):
+                        if time.perf_counter() - animal[18] > 1.5:
+                            animal[18] = time.perf_counter()
+                            player.health_value -= animal_damage
+                            player.health_value = max(0, player.health_value)
+                            pygame.mixer.Sound.play(self.damage_sound)
+                            for _ in range(15):
+                                particles.append(HitParticle(player.x, player.y))
 
             if animal_hp <= 0:
                 animal_delete_list.append(animal_key)

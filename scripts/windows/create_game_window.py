@@ -147,12 +147,22 @@ class CreateGameWindow:
                         random.randint(25, 45), self.screen_width, self.screen_height
                     )
 
+                    # create world and save world data in txt files
+                    map_w, map_h = 150, 150
+                    plant_spawn_chance = 3
+                    seed = self.seed_input.input_entry.get_text()
+                    filtered_seed = ""
+
+                    if seed == "":  # niks ingevuld als seed
+                        seed = str(random.randint(0, 100) * random.randint(0, 5))
+
                     if self.can_create:
                         current_game_state = "GAME"
                         save_json = {
                             "game_name": self.name_input.input_entry.get_text(),
                             "game_difficulty": self.difficulty,
                             "time": 0,
+                            "seed": seed,
                             "night_count": 0,
                             "is_night": False,
                             "animal_dict": animal.return_animal_dict(),
@@ -241,15 +251,6 @@ class CreateGameWindow:
                             "w",
                         ) as f:
                             f.write(json.dumps(save_json))
-
-                        # create world and save world data in txt files
-                        map_w, map_h = 150, 150
-                        plant_spawn_chance = 3
-                        seed = self.seed_input.input_entry.get_text()
-                        filtered_seed = ""
-
-                        if seed == "":  # niks ingevuld als seed
-                            seed = str(random.randint(0, 100) * random.randint(0, 5))
 
                         for character in seed:
                             if character.isdigit():

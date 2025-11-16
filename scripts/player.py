@@ -708,7 +708,10 @@ class Player:
             else:
                 self.health_value -= 0.01
 
-        if self.health_value < 0:
+        died = False
+
+        if self.health_value <= 0:
+            died = True
             self.health_value = 0
 
-        return particles
+        return particles, died
