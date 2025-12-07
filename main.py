@@ -1,9 +1,13 @@
 #                    TODO
 # --------------------------------------------- [✘]
-# ! Meer kaarten?!?!?! [✘]
+# ! Meer kaarten?!?!?! (en kaarten tekeningen afmaken) [✘]
 # ! Game balancen [✘]
-# ! Dood gaan [✘]
 # ! Optimalisatie [✘]
+# ! Meer dieren (met andere skills) hond temmen [✘]
+# ! Meer planten/voedsel [✘]
+# ! Wapens die stuk kunnen [✘]
+# ! Boss fight per 10 nachten [✘]
+# ! Bouwen uitbreiden (wapen dingen, boogtoren) [✘]
 # --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -40,6 +44,7 @@
 # * Opslaan aangepaste dingen player [✓] (aambachtelijk, triomfantelijk)
 # * allemaal gare dag en nacht opslaan dagen dingen oplossen, oplossen, oplossen, oplossen, oplossen, op los sen [✓]
 # * kaarten afronden [✓]
+# * Dood gaan [✓]
 # --------------------------------------------
 
 import numpy

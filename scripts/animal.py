@@ -29,6 +29,7 @@ class Animal:
             "bearblue": "meat ",
             "bearbrown": "meat ",
             "ratwhite": "rat's tail ",
+            "porcupine": "porcupine spike ",
         }
         self.attack_delay = 2
 
@@ -43,29 +44,68 @@ class Animal:
             "wolfbluebrown",
             "wolfblack",
             "ratwhite",
+            "porcupine",
         ]
+
         for load_image in self.load_images:
-            for direction in ["front", "right", "back", "left"]:
-                for frame in range(1, 5):
-                    if not direction == "left":
-                        image = pygame.image.load(
-                            f"assets/{load_image}/{load_image}{direction}{str(frame)}.png"
-                        ).convert_alpha()
-                    else:
-                        image = pygame.image.load(
-                            f"assets/{load_image}/{load_image}right{str(frame)}.png"
-                        ).convert_alpha()
-                        image = pygame.transform.flip(image, True, False)
+            if load_image in [
+                "sheep",
+                "sheepbrown",
+                "bearblue",
+                "bearbrown",
+                "wolfblue",
+                "wolfwhite",
+                "wolfbluebrown",
+                "wolfblack",
+                "ratwhite",
+            ]:  # alle sprites met voor en achter plaatjes
+                for direction in ["front", "right", "back", "left"]:
+                    for frame in range(1, 5):
+                        if not direction == "left":
+                            image = pygame.image.load(
+                                f"assets/{load_image}/{load_image}{direction}{str(frame)}.png"
+                            ).convert_alpha()
+                        else:
+                            image = pygame.image.load(
+                                f"assets/{load_image}/{load_image}right{str(frame)}.png"
+                            ).convert_alpha()
+                            image = pygame.transform.flip(image, True, False)
 
-                    self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
-                        pygame.transform.smoothscale(image, (14, 14))
-                    )
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
+                            pygame.transform.smoothscale(image, (14, 14))
+                        )
 
-                    self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = image
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = (
+                            image
+                        )
 
-                    self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = (
-                        pygame.transform.scale(image, (18, 18))
-                    )
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = (
+                            pygame.transform.scale(image, (18, 18))
+                        )
+            if load_image == "porcupine":
+                for direction in ["right", "left"]:
+                    for frame in range(1, 5):
+                        if direction == "right":
+                            image = pygame.image.load(
+                                f"assets/{load_image}/walk{str(frame)}.png"
+                            ).convert_alpha()
+                        elif direction == "left":
+                            image = pygame.image.load(
+                                f"assets/{load_image}/walk{str(frame)}.png"
+                            ).convert_alpha()
+                            image = pygame.transform.flip(image, True, False)
+
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
+                            pygame.transform.smoothscale(image, (14, 14))
+                        )
+
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = (
+                            image
+                        )
+
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = (
+                            pygame.transform.scale(image, (18, 18))
+                        )
 
         self.rect = None
         self.animal_dict = {}
@@ -81,6 +121,7 @@ class Animal:
             "bearblue": 5,
             "bearbrown": 30,
             "ratwhite": 9,
+            "porcupine": 100000,
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -120,12 +161,16 @@ class Animal:
         else:
             hp = random.randint(100, 115)
 
+        direction_choices = ["left", "right", "front", "back"]
+        if animal_type in ["porcupine"]:
+            direction_choices = ["left", "right"]
+
         if not rect.x < -150 * 16 - 8 and not rect.x > 150 * 16 - 8:
             if not rect.y < -150 * 16 - 8 and not rect.y > 150 * 16 - 8:
                 self.animal_dict[x] = [
                     rect,  # ind 0
                     animal_type,  # 1
-                    random.choice(["left", "right", "front", "back"]),  # 2
+                    random.choice(direction_choices),  # 2
                     1,  # 3
                     random.choice([True, False]),  # 4
                     0,  # 5
@@ -133,7 +178,7 @@ class Animal:
                     [],  # 7
                     time.perf_counter(),  # 8
                     random.randint(6, 20),  # 9
-                    random.choice(["left", "right", "front", "back"]),
+                    random.choice(direction_choices),
                     1,  # 11
                     time.perf_counter(),  # 12
                     size,
@@ -231,7 +276,13 @@ class Animal:
             )
 
     def create_walk_plan(
-        self, max_steps, walking_speed, to_player=False, animal_rect=None
+        self,
+        max_steps,
+        walking_speed,
+        to_player=False,
+        animal_rect=None,
+        current_direction="right",
+        only_horizontal=False,
     ):
         return_list = []
         if to_player == False:
@@ -263,6 +314,7 @@ class Animal:
                 elif waypoint == "t":
                     return_list.append((0, -walk_speed))
                     direction = "back"
+
         else:
             # kijken of beer x groter kleiner dan player x en hetzelfde met y
             player_x, player_y = self.player.x + 24, self.player.y + 24
@@ -289,6 +341,8 @@ class Animal:
                 else:
                     direction = "back"
 
+        if direction in ["front", "back"] and only_horizontal:
+            direction = current_direction
         return return_list, direction
 
     def set_inventory(self, inventory):
@@ -335,7 +389,15 @@ class Animal:
                 else:
                     animal[4] = True
                     animal[6] = random.randint(30, 150)
-                    animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
+                    if not animal_type in ["porcupine"]:
+                        animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
+                    else:
+                        animal[7], animal[10] = self.create_walk_plan(
+                            animal[6],
+                            0.5,
+                            only_horizontal=True,
+                            current_direction=animal_direction,
+                        )
                 animal[8] = time.perf_counter()
 
             # print(dt)

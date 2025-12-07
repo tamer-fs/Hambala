@@ -938,6 +938,7 @@ class Inventory:
             "bow ": ["assets/bow/bow_item.png", 30],
             "wool ": ["assets/items/wool.png", 30],
             "string ": ["assets/items/string.png", 30],
+            "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
         }
 
         self.items_dict_small = {
@@ -960,6 +961,7 @@ class Inventory:
             "bow ": ["assets/bow/bow_item.png", 24],
             "wool ": ["assets/items/wool.png", 15],
             "string ": ["assets/items/string.png", 15],
+            "porcupine spike ": ["assets/items/porcupine_spike.png", 15],
         }
 
         for item in self.items_dict:
@@ -1547,6 +1549,8 @@ class Inventory:
                         self.description = "A handy ore."
                     elif self.block_fill[index] == "torch ":
                         self.description = "Primaly used to scare away zombies."
+                    elif self.block_fill[index] == "porcupine spike ":
+                        self.description = "Bla die bla die bla enzo"
                     else:
                         self.description = ""
             else:
@@ -1774,6 +1778,7 @@ class CraftingTable:
             "wool ": ["assets/items/wool.png", 30],
             "string ": ["assets/items/string.png", 30],
             "bow ": ["assets/bow/bow_item.png", 30],
+            "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
         }
 
         for item in self.items_dict:
@@ -2094,6 +2099,7 @@ class CraftingTable:
                         "fl",
                         "co",
                         "wo",
+                        "po",
                     ]:
                         # PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
                         if bool(self.block_fill[index]):
