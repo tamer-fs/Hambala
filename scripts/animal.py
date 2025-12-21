@@ -121,7 +121,7 @@ class Animal:
             "bearblue": 5,
             "bearbrown": 30,
             "ratwhite": 9,
-            "porcupine": 100000,
+            "porcupine": 10,
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -192,6 +192,8 @@ class Animal:
                     HealthBar((0, 0), (50, 5), 2, hp),  # hp bar 21
                     -1,  # last attack 22
                     hp,  # max hp 23
+                    rect.x,  # animal x 24
+                    rect.y,  # animal y 25
                 ]
 
     def return_animal_dict(self):
@@ -200,7 +202,7 @@ class Animal:
             rect = self.animal_dict[key][0]
 
             return_dict[key] = []
-            for x in range(24):
+            for x in range(26):
 
                 if x == 0:
                     return_dict[key].append([rect.x, rect.y, rect.w, rect.h])
@@ -255,6 +257,8 @@ class Animal:
             animal_size = animal[13]
             hp_bar = animal[21]
             last_attack = animal[22]
+            animal_x = animal[24]
+            animal_y = animal[25]
 
             if time.perf_counter() - last_attack < 10:
                 hp_bar.draw(screen, "black", "darkgray", "red", 2, 2)
@@ -268,12 +272,25 @@ class Animal:
             if not animal_walking:
                 animal[11] = 1
 
+            animal_rect.x = animal_x
+            animal_rect.y = animal_y
+
             screen.blit(
                 self.pic_dict[
                     f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"
                 ],
-                (animal_rect.x - scrollx, animal_rect.y - scrolly),
+                (animal_x - scrollx, animal_y - scrolly),
             )
+            # try:
+            #     if animal_direction == "right" and animal[7][animal[5]][0] > 0:
+            #         pygame.draw.circle(
+            #             screen,
+            #             (255, 0, 0),
+            #             (animal_x - scrollx, animal_y - scrolly),
+            #             8,
+            #         )
+            # except IndexError:
+            #     pass
 
     def create_walk_plan(
         self,
@@ -286,6 +303,8 @@ class Animal:
     ):
         return_list = []
         if to_player == False:
+            # waypoint = random.choice(["r", "br", "b"])
+            # waypoint = random.choice(["r"])
             waypoint = random.choice(["tl", "tr", "l", "r", "bl", "br", "b", "t"])
             direction = ""
             walk_speed = walking_speed
@@ -318,7 +337,7 @@ class Animal:
         else:
             # kijken of beer x groter kleiner dan player x en hetzelfde met y
             player_x, player_y = self.player.x + 24, self.player.y + 24
-            animal_x, animal_y = animal_rect.x + (animal_rect.w / 2), animal_rect.y + (
+            animal_x, animal_y = animal_x + (animal_rect.w / 2), animal_y + (
                 animal_rect.h / 2
             )
             x_diff = 0
@@ -374,12 +393,14 @@ class Animal:
             animal_damage = animal[19]  # amount of damage animal does
             hp_bar = animal[21]
             last_attack = animal[22]
+            animal_x = animal[24]
+            animal_y = animal[25]
 
             hp_bar.update(
                 animal_hp,
                 (
-                    animal_rect.x - self.scrollx - (animal_rect.w / 2) - 8,
-                    animal_rect.y - self.scrolly - 10,
+                    animal_x - self.scrollx - (animal_rect.w / 2) - 8,
+                    animal_y - self.scrolly - 10,
                 ),
             )
 
@@ -390,11 +411,14 @@ class Animal:
                     animal[4] = True
                     animal[6] = random.randint(30, 150)
                     if not animal_type in ["porcupine"]:
-                        animal[7], animal[10] = self.create_walk_plan(animal[6], 0.5)
+                        animal[7], animal[10] = self.create_walk_plan(
+                            animal[6], 0.5, to_player=False
+                        )
                     else:
                         animal[7], animal[10] = self.create_walk_plan(
                             animal[6],
                             0.5,
+                            to_player=False,
                             only_horizontal=True,
                             current_direction=animal_direction,
                         )
@@ -404,44 +428,43 @@ class Animal:
 
             if animal_walking:
                 if animal_path < animal_set_steps:
-                    prev_x, prev_y = animal_rect.x, animal_rect.y
-                    animal_rect.x += animal[7][animal[5]][0] * dt
-                    animal_rect.y += animal[7][animal[5]][1] * dt
+                    prev_x, prev_y = animal_x, animal_y
+                    animal[24] += animal[7][animal[5]][0] * dt
+                    animal[25] += animal[7][animal[5]][1] * dt
+                    # animal_x += animal[7][animal[5]][0] * dt * 10
+                    # animal_y += animal[7][animal[5]][1] * dt * 10
+
+                    # animal_x += 1
 
                     self.collision_tile = (
                         min(
-                            max(int((animal_rect.x + (animal_rect.w / 2)) / 16), 0),
+                            max(int((animal_x + (animal_rect.w / 2)) / 16), 0),
                             149,
                         ),
                         min(
-                            max(int((animal_rect.y + (animal_rect.h / 2)) / 16), 0),
+                            max(int((animal_y + (animal_rect.h / 2)) / 16), 0),
                             149,
                         ),
                     )
+
                     if plants[self.collision_tile[1], self.collision_tile[0]] == 139:
-                        animal_rect.x = prev_x
-                        animal_rect.y = prev_y
+                        animal_x = prev_x
+                        animal_y = prev_y
 
                     animal[5] += 1
                 else:
                     animal[4] = False
-                    animal[6] = []
+                    animal[7] = []
                     animal[5] = 0
 
-            on_tile = (int(animal_rect.x / 16), int(animal_rect.y / 16))
+            on_tile = (int(animal_x / 16), int(animal_y / 16))
 
-            if not animal_rect.x < -150 * 16 - 32 and not animal_rect.x > 150 * 16 - 32:
-                if (
-                    not animal_rect.y < -150 * 16 - 32
-                    and not animal_rect.y > 150 * 16 - 32
-                ):
+            if not animal_x < -150 * 16 - 32 and not animal_x > 150 * 16 - 32:
+                if not animal_y < -150 * 16 - 32 and not animal_y > 150 * 16 - 32:
                     if plants[on_tile[1] + 1, on_tile[0] + 1] in [127, 11] and hungry:
                         plants[on_tile[1] + 1, on_tile[0] + 1] = 0
 
-            if (
-                get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16)
-                < 35
-            ):
+            if get_distance(animal_x, animal_y, player.x + 16, player.y + 16) < 35:
                 if "rat" in animal_type:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
@@ -464,22 +487,28 @@ class Animal:
                         animal[4] = False
                     else:
                         animal[7], animal[10] = self.create_walk_plan(
-                            animal[6], 1.2, False
+                            animal[6],
+                            1.2,
+                            False,
+                            only_horizontal=animal_type in ["porcupine"],
+                            current_direction=animal_direction,
                         )
                     animal[15] -= random.randint(30, 40) * player.strength
-                    animal_rect.y += random.randint(-5, 5) * dt
-                    animal_rect.x += random.randint(-5, 5) * dt
+                    animal_y += random.randint(-5, 5) * dt
+                    animal_x += random.randint(-5, 5) * dt
                     player.hitting = False
 
-            if (
-                get_distance(animal_rect.x, animal_rect.y, player.x + 16, player.y + 16)
-                < 500
-            ):
+            if get_distance(animal_x, animal_y, player.x + 16, player.y + 16) < 500:
                 if animal[17] <= time.perf_counter() and animal[17] != 0:
                     animal[4] = True
                     animal[6] = random.randint(10, 20)
                     animal[7], animal[10] = self.create_walk_plan(
-                        animal[6], 1.2, True, animal_rect=animal[0]
+                        animal[6],
+                        1.2,
+                        True,
+                        animal_rect=animal[0],
+                        only_horizontal=animal_type in ["porcupine"],
+                        current_direction=animal_direction,
                     )
             else:
                 animal[4] = False
@@ -488,9 +517,7 @@ class Animal:
             if attack:
                 if animal[20]:
                     if (
-                        get_distance(
-                            animal_rect.x, animal_rect.y, player.x + 16, player.y + 16
-                        )
+                        get_distance(animal_x, animal_y, player.x + 16, player.y + 16)
                         < 30
                     ):
                         if time.perf_counter() - animal[18] > 1.5:
@@ -512,8 +539,8 @@ class Animal:
                         dropping_item = self.drop_item[animal_type]
                     self.inventory.dropped_items[len(self.inventory.dropped_items)] = [
                         dropping_item,
-                        animal_rect.x + random.choice([-60, 60, 55, -55]),
-                        animal_rect.y + random.choice([-60, 60, 55, -55]),
+                        animal_x + random.choice([-60, 60, 55, -55]),
+                        animal_y + random.choice([-60, 60, 55, -55]),
                         time.perf_counter(),
                     ]
                 else:
@@ -526,8 +553,8 @@ class Animal:
                             len(self.inventory.dropped_items)
                         ] = [
                             dropping_item,
-                            animal_rect.x + random.choice([-60, 60, 55, -55]),
-                            animal_rect.y + random.choice([-60, 60, 55, -55]),
+                            animal_x + random.choice([-60, 60, 55, -55]),
+                            animal_y + random.choice([-60, 60, 55, -55]),
                             time.perf_counter(),
                         ]
                 for _ in range(30):

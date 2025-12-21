@@ -1030,14 +1030,14 @@ while playing:
                         sky_color[0],
                         sky_color[1],
                         sky_color[2],
-                        sky_color[3] + 0.5,
+                        sky_color[3] + 0.05,
                     ]
                 else:
                     sky_color = [
                         sky_color[0],
                         sky_color[1],
                         sky_color[2],
-                        sky_color[3] - 0.5,
+                        sky_color[3] - 0.05,
                     ]
 
                 sky_time = time.perf_counter()
