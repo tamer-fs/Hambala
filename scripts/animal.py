@@ -89,23 +89,92 @@ class Animal:
                             image = pygame.image.load(
                                 f"assets/{load_image}/walk{str(frame)}.png"
                             ).convert_alpha()
+
+                            attack_image = pygame.image.load(
+                                f"assets/{load_image}/attack{str(frame)}.png"
+                            ).convert_alpha()
+
+                            if frame >= 3:
+                                spikes_image = pygame.image.load(
+                                    f"assets/{load_image}/stekels{str(frame - 2)}.png"
+                                ).convert_alpha()
+
+                            if frame >= 4:
+                                sleeping_image = pygame.image.load(
+                                    f"assets/{load_image}/liggen{str(frame - 3)}.png"
+                                ).convert_alpha()
+
                         elif direction == "left":
                             image = pygame.image.load(
                                 f"assets/{load_image}/walk{str(frame)}.png"
                             ).convert_alpha()
                             image = pygame.transform.flip(image, True, False)
 
-                        self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
-                            pygame.transform.smoothscale(image, (14, 14))
+                            attack_image = pygame.image.load(
+                                f"assets/{load_image}/attack{str(frame)}.png"
+                            ).convert_alpha()
+                            attack_image = pygame.transform.flip(
+                                attack_image, True, False
+                            )
+
+                            if frame >= 3:
+                                spikes_image = pygame.image.load(
+                                    f"assets/{load_image}/stekels{str(frame - 2)}.png"
+                                ).convert_alpha()
+                                spikes_image = pygame.transform.flip(
+                                    spikes_image, True, False
+                                )
+
+                            if frame >= 4:
+                                sleeping_image = spikes_image = pygame.image.load(
+                                    f"assets/{load_image}/liggen{str(frame - 3)}.png"
+                                ).convert_alpha()
+                                sleeping_image = pygame.transform.flip(
+                                    sleeping_image, True, False
+                                )
+
+                        # normale/loop images
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = (
+                            pygame.transform.scale(image, (26, 26))
                         )
 
-                        self.pic_dict[f"{load_image}{direction}{str(frame)}small"] = (
+                        self.pic_dict[f"{load_image}{direction}{str(frame)}tiny"] = (
                             image
                         )
 
                         self.pic_dict[f"{load_image}{direction}{str(frame)}big"] = (
-                            pygame.transform.scale(image, (18, 18))
+                            pygame.transform.scale(image, (32, 32))
                         )
+
+                        # attack images
+                        if frame >= 3:
+                            attack_image.blit(spikes_image, (0, 0))
+
+                        self.pic_dict[
+                            f"{load_image}{direction}{str(frame)}small_attack"
+                        ] = pygame.transform.scale(attack_image, (26, 26))
+
+                        self.pic_dict[
+                            f"{load_image}{direction}{str(frame)}tiny_attack"
+                        ] = attack_image
+
+                        self.pic_dict[
+                            f"{load_image}{direction}{str(frame)}big_attack"
+                        ] = pygame.transform.scale(attack_image, (32, 32))
+
+                        # sleeping images
+                        if frame >= 4:
+                            self.pic_dict[
+                                f"{load_image}{direction}{str(frame)}small_sleeping"
+                            ] = pygame.transform.scale(sleeping_image, (26, 26))
+
+                            self.pic_dict[
+                                f"{load_image}{direction}{str(frame)}tiny_sleeping"
+                            ] = sleeping_image
+
+                            self.pic_dict[
+                                f"{load_image}{direction}{str(frame)}big_sleeping"
+                            ] = pygame.transform.scale(sleeping_image, (32, 32))
 
         self.rect = None
         self.animal_dict = {}
@@ -121,7 +190,7 @@ class Animal:
             "bearblue": 5,
             "bearbrown": 30,
             "ratwhite": 9,
-            "porcupine": 10,
+            "porcupine": 1000,
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -194,6 +263,9 @@ class Animal:
                     hp,  # max hp 23
                     rect.x,  # animal x 24
                     rect.y,  # animal y 25
+                    -1,  # porcupine start attack timer 26
+                    False,  # porcupine attacking 27
+                    1,  # porcupine frame 28
                 ]
 
     def return_animal_dict(self):
@@ -202,7 +274,7 @@ class Animal:
             rect = self.animal_dict[key][0]
 
             return_dict[key] = []
-            for x in range(26):
+            for x in range(29):
 
                 if x == 0:
                     return_dict[key].append([rect.x, rect.y, rect.w, rect.h])
@@ -275,12 +347,28 @@ class Animal:
             animal_rect.x = animal_x
             animal_rect.y = animal_y
 
-            screen.blit(
-                self.pic_dict[
-                    f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"
-                ],
-                (animal_x - scrollx, animal_y - scrolly),
-            )
+            if animal[27] == False:
+                screen.blit(
+                    self.pic_dict[
+                        f"{animal_type}{animal_draw_direction}{animal[11] + 1}{animal_size}"
+                    ],
+                    (animal_x - scrollx, animal_y - scrolly),
+                )
+            else:  # stekelvarken aan het aanvallen
+                if animal[28] + 1 == 5:  # aan het slapen
+                    screen.blit(
+                        self.pic_dict[
+                            f"{animal_type}{animal_draw_direction}{animal[28]}{animal_size}_sleeping"
+                        ],
+                        (animal_x - scrollx, animal_y - scrolly),
+                    )
+                else:  # in aanval
+                    screen.blit(
+                        self.pic_dict[
+                            f"{animal_type}{animal_draw_direction}{animal[28] + 1}{animal_size}_attack"
+                        ],
+                        (animal_x - scrollx, animal_y - scrolly),
+                    )
             # try:
             #     if animal_direction == "right" and animal[7][animal[5]][0] > 0:
             #         pygame.draw.circle(
@@ -300,6 +388,8 @@ class Animal:
         animal_rect=None,
         current_direction="right",
         only_horizontal=False,
+        animal_x=0,
+        animal_y=0,
     ):
         return_list = []
         if to_player == False:
@@ -469,6 +559,15 @@ class Animal:
                     player.poisoned = True
                     player.poison_time = time.perf_counter()
 
+                if (
+                    "porcupine" in animal_type
+                    and not animal[27]
+                    and time.perf_counter() - animal[26] > 5
+                ):
+                    animal[27] = True
+                    animal[26] = time.perf_counter()
+                    animal[28] = 0
+
                 # player hitting animal
                 if player.hitting:
                     hp_bar.damage()
@@ -502,6 +601,7 @@ class Animal:
                 if animal[17] <= time.perf_counter() and animal[17] != 0:
                     animal[4] = True
                     animal[6] = random.randint(10, 20)
+                    # animal_x, animal_y = animal[24], animal[25]
                     animal[7], animal[10] = self.create_walk_plan(
                         animal[6],
                         1.2,
@@ -509,10 +609,31 @@ class Animal:
                         animal_rect=animal[0],
                         only_horizontal=animal_type in ["porcupine"],
                         current_direction=animal_direction,
+                        animal_x=animal_x,
+                        animal_y=animal_y,
                     )
             else:
                 animal[4] = False
 
+            if animal[27]:  # porcupine attacking
+                if time.perf_counter() - animal[26] > 0.1:
+                    animal[28] += 1
+                    animal[26] = time.perf_counter()
+                    if animal[28] == 4:
+                        if (
+                            get_distance(
+                                animal_x, animal_y, player.x + 16, player.y + 16
+                            )
+                            < 35
+                        ):
+                            player.health_value -= animal_damage
+                            player.health_value = max(0, player.health_value)
+                            pygame.mixer.Sound.play(self.damage_sound)
+                            for _ in range(15):
+                                particles.append(HitParticle(player.x, player.y))
+
+                    if animal[28] == 5:
+                        animal[27] = False
             # bear attack player
             if attack:
                 if animal[20]:
