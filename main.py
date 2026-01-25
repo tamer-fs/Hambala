@@ -7,7 +7,8 @@
 # ! Meer planten/voedsel [✘]
 # ! Wapens die stuk kunnen [✘]
 # ! Boss fight per 10 nachten [✘]
-# ! Bouwen uitbreiden (wapen dingen, boogtoren) [✘]
+# ! Bouwen uitbreiden (wapen dingen, boogtoren, stekels dingen) [✘]
+# ! lopen en aanvallen van beer fixen [/]
 # --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -45,6 +46,8 @@
 # * allemaal gare dag en nacht opslaan dagen dingen oplossen, oplossen, oplossen, oplossen, oplossen, op los sen [✓]
 # * kaarten afronden [✓]
 # * Dood gaan [✓]
+# * DIEREN SCHADE DOOR PIJL [✓]
+# * stekelvarken [✓]
 # --------------------------------------------
 
 import numpy
@@ -167,6 +170,7 @@ plant_spawn_chance = 3
 
 pause_menu_opened = False
 game_paused = False
+crafting_paused = False
 player_died = False  # player died menu screen open
 
 stamina_icon = pygame.image.load("assets/icons/stamina.png").convert_alpha()
@@ -515,7 +519,9 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt, attack=False)
+        particles = animals.update(
+            plants, player, particles, dt, player_bow, attack=False
+        )
 
         screen.blit(black_surface, (0, 0))
 
@@ -581,7 +587,9 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt, attack=False)
+        particles = animals.update(
+            plants, player, particles, dt, player_bow, attack=False
+        )
 
         screen.blit(black_surface, (0, 0))
 
@@ -646,7 +654,9 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt, attack=False)
+        particles = animals.update(
+            plants, player, particles, dt, player_bow, attack=False
+        )
 
         screen.blit(black_surface, (0, 0))
 
@@ -709,7 +719,9 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
-        particles = animals.update(plants, player, particles, dt, attack=False)
+        particles = animals.update(
+            plants, player, particles, dt, player_bow, attack=False
+        )
 
         screen.blit(black_surface, (0, 0))
 
@@ -729,6 +741,12 @@ while playing:
                 if event.key == pygame.K_4:
                     print("saving world...")
                     save_world()
+
+                if event.key == pygame.K_5:
+                    print("pausing game")
+                    game_paused = not game_paused
+                    print(game_paused)
+                    time.sleep(0.1)
 
                 if event.key == pygame.K_ESCAPE:
                     pause_menu_window.update_res(screen)
@@ -865,8 +883,15 @@ while playing:
         )
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
-        if not pause_menu_opened and not game_paused and not player_died:
-            particles = animals.update(plants, player, particles, dt)
+        if (
+            not pause_menu_opened
+            and not game_paused
+            and not player_died
+            and not crafting_paused
+        ):
+            particles = animals.update(
+                plants, player, particles, dt, player_bow, attack=False
+            )
 
         prev_player_x = player.x
         prev_player_y = player.y
@@ -909,7 +934,12 @@ while playing:
 
         particles, particle_perf = spawn_particles(particle_perf, player, particles)
 
-        if not pause_menu_opened and not game_paused and not player_died:
+        if (
+            not pause_menu_opened
+            and not game_paused
+            and not player_died
+            and not crafting_paused
+        ):
             del_list = []
 
             for i, particle in enumerate(particles):
@@ -974,7 +1004,12 @@ while playing:
 
         main_inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
 
-        if not pause_menu_opened and not game_paused and not player_died:
+        if (
+            not pause_menu_opened
+            and not game_paused
+            and not player_died
+            and not crafting_paused
+        ):
             player.walking(
                 keys,
                 deltaT,
@@ -1009,7 +1044,12 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
-        if not pause_menu_opened and not game_paused and not player_died:
+        if (
+            not pause_menu_opened
+            and not game_paused
+            and not player_died
+            and not crafting_paused
+        ):
             particles = enemies.update(
                 enemies_spawn,
                 player,
@@ -1023,8 +1063,13 @@ while playing:
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
-        if not pause_menu_opened and not game_paused and not player_died:
-            if time.perf_counter() - sky_time > 0.01:
+        if (
+            not pause_menu_opened
+            and not game_paused
+            and not player_died
+            and not crafting_paused
+        ):
+            if time.perf_counter() - sky_time > 0.05:
                 if not is_night:
                     sky_color = [
                         sky_color[0],
@@ -1090,7 +1135,7 @@ while playing:
         )
         if making_upgrade_choice != game_paused:
             game_paused = making_upgrade_choice
-            # pause_menu_opened = making_upgrade_choice  pause game when making upgrade choice
+        # pause_menu_opened = making_upgrade_choice  pause game when making upgrade choice
 
         ui_clock.draw(screen, night_upgrade, making_upgrade_choice, dt)
 
@@ -1133,7 +1178,7 @@ while playing:
         )
 
         if not pause_menu_opened and not game_paused and not player_died:
-            main_crafting_table.update(
+            crafting_paused = main_crafting_table.update(
                 keys,
                 pygame.mouse.get_pos(),
                 pygame.mouse.get_pressed(),

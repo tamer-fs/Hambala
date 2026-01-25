@@ -84,7 +84,7 @@ class Animal:
                         )
             if load_image == "porcupine":
                 for direction in ["right", "left"]:
-                    for frame in range(1, 5):
+                    for frame in range(1, 6):
                         if direction == "right":
                             image = pygame.image.load(
                                 f"assets/{load_image}/walk{str(frame)}.png"
@@ -165,16 +165,18 @@ class Animal:
                         # sleeping images
                         if frame >= 4:
                             self.pic_dict[
-                                f"{load_image}{direction}{str(frame)}small_sleeping"
+                                f"{load_image}{direction}{str(frame-3)}small_sleeping"
                             ] = pygame.transform.scale(sleeping_image, (26, 26))
 
                             self.pic_dict[
-                                f"{load_image}{direction}{str(frame)}tiny_sleeping"
+                                f"{load_image}{direction}{str(frame-3)}tiny_sleeping"
                             ] = sleeping_image
 
                             self.pic_dict[
-                                f"{load_image}{direction}{str(frame)}big_sleeping"
+                                f"{load_image}{direction}{str(frame-3)}big_sleeping"
                             ] = pygame.transform.scale(sleeping_image, (32, 32))
+
+        # print(self.pic_dict["porcupineright1small_sleeping"])
 
         self.rect = None
         self.animal_dict = {}
@@ -190,7 +192,7 @@ class Animal:
             "bearblue": 5,
             "bearbrown": 30,
             "ratwhite": 9,
-            "porcupine": 1000,
+            "porcupine": 6,
         }
         for animal in spawn_freq.keys():
             for _ in range(spawn_freq[animal]):
@@ -355,13 +357,16 @@ class Animal:
                     (animal_x - scrollx, animal_y - scrolly),
                 )
             else:  # stekelvarken aan het aanvallen
-                if animal[28] + 1 == 5:  # aan het slapen
+                if animal[28] + 1 > 4:  # aan het slapen
+                    # print(animal[28])
                     screen.blit(
                         self.pic_dict[
-                            f"{animal_type}{animal_draw_direction}{animal[28]}{animal_size}_sleeping"
+                            f"{animal_type}{animal_draw_direction}{round(animal[28]/4) % 2 + 1}{animal_size}_sleeping"
                         ],
                         (animal_x - scrollx, animal_y - scrolly),
                     )
+                    if animal[28] > 82:  # na 82 frames weer terug naar kunnen aanvallen
+                        animal[27] = False
                 else:  # in aanval
                     screen.blit(
                         self.pic_dict[
@@ -426,18 +431,65 @@ class Animal:
 
         else:
             # kijken of beer x groter kleiner dan player x en hetzelfde met y
-            player_x, player_y = self.player.x + 24, self.player.y + 24
-            animal_x, animal_y = animal_x + (animal_rect.w / 2), animal_y + (
-                animal_rect.h / 2
+            # player_x, player_y = self.player.x + 24, self.player.y + 24
+            # animal_x, animal_y = animal_x + (animal_rect.w / 2), animal_y + (
+            #     animal_rect.h / 2
+            # )
+            # x_diff = 0
+            # y_diff = 0
+            # x_diff = player_x - animal_x
+            # y_diff = player_y - animal_y
+            # step_x = min(x_diff / max_steps, 2.5)
+            # step_y = min(y_diff / max_steps, 2.5)
+            # for x in range(max_steps):
+            #     return_list.append((round(step_x), round(step_y)))
+
+            # if abs(x_diff) > abs(y_diff):
+            #     if abs(step_x) == step_x:  # is positive
+            #         direction = "right"
+            #     else:
+            #         direction = "left"
+            # else:
+            #     if abs(step_y) == step_y:
+            #         direction = "front"
+            #     else:
+            #         direction = "back"
+
+            # how many steps
+            max_steps = round(
+                get_distance(
+                    animal_rect.x,
+                    animal_rect.y,
+                    self.player.x,
+                    self.player.y,
+                )
+                * 2
             )
+
+            self_x = animal_rect.x
+            self_y = animal_rect.y
+            self_w = animal_rect.w
+            self_h = animal_rect.h
+
+            # get distance between player & enemy
+            x_diff = self_x - self.player.x
+            y_diff = self_y - self.player.y
+
+            player_x, player_y = self.player.x + 24, self.player.y + 24
+            self_x, self_y = self_x + (self_w / 2), self_y + (self_h / 2)
             x_diff = 0
             y_diff = 0
-            x_diff = player_x - animal_x
-            y_diff = player_y - animal_y
+            x_diff = player_x - self_x
+            y_diff = player_y - self_y
             step_x = min(x_diff / max_steps, 2.5)
             step_y = min(y_diff / max_steps, 2.5)
+
+            print(step_x < 0)
+
             for x in range(max_steps):
-                return_list.append((round(step_x), round(step_y)))
+                return_list.append(
+                    (step_x * walking_speed * 2, step_y * walking_speed * 2)
+                )
 
             if abs(x_diff) > abs(y_diff):
                 if abs(step_x) == step_x:  # is positive
@@ -452,12 +504,13 @@ class Animal:
 
         if direction in ["front", "back"] and only_horizontal:
             direction = current_direction
+
         return return_list, direction
 
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, player, particles, dt, attack=True):
+    def update(self, plants, player, particles, dt, player_bow, attack=True):
         animal_delete_list = []
         if self.animal_dict is None:
             return particles
@@ -633,7 +686,8 @@ class Animal:
                                 particles.append(HitParticle(player.x, player.y))
 
                     if animal[28] == 5:
-                        animal[27] = False
+                        pass
+                        # animal[27] = False
             # bear attack player
             if attack:
                 if animal[20]:
@@ -648,6 +702,36 @@ class Animal:
                             pygame.mixer.Sound.play(self.damage_sound)
                             for _ in range(15):
                                 particles.append(HitParticle(player.x, player.y))
+
+            # pijlen van player die animal raken
+            for arrow in player_bow.arrow_list:
+                if animal_rect.colliderect(arrow.rect) and arrow.can_damage:
+                    arrow.can_damage = False
+                    hp_bar.damage()
+                    animal[22] = time.perf_counter()
+                    if "bear" in animal_type:
+                        animal[18] = time.perf_counter() + self.attack_delay
+                        animal[20] = True
+                    pygame.mixer.Sound.play(self.damage_sound)
+                    # maak particles
+                    for _ in range(15):
+                        particles.append(HitParticle(animal[0].x, animal[0].y))
+                    animal[4] = True
+                    animal[6] = random.randint(300, 350)
+                    if animal_type in ["bearbrown", "bearblue"]:
+                        animal[17] = time.perf_counter() + 1
+                        animal[4] = False
+                    else:
+                        animal[7], animal[10] = self.create_walk_plan(
+                            animal[6],
+                            1.2,
+                            False,
+                            only_horizontal=animal_type in ["porcupine"],
+                            current_direction=animal_direction,
+                        )
+                    animal[15] -= random.randint(30, 40) * player.strength
+                    animal_y += random.randint(-5, 5) * dt
+                    animal_x += random.randint(-5, 5) * dt
 
             if animal_hp <= 0:
                 animal_delete_list.append(animal_key)

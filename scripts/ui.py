@@ -2228,3 +2228,5 @@ class CraftingTable:
                 recipe = ""
 
             time.sleep(0.1)
+
+        return self.opened
