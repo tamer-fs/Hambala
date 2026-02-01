@@ -6,6 +6,7 @@ import os
 from func import *
 from scripts.particle import *
 from scripts.placeItem import *
+from scripts.defence_buildings import *
 
 ##############################
 #           Card.            #
@@ -913,8 +914,9 @@ class Inventory:
         self.item_direction = -1
         self.item_speed = 0.3
 
-        self.placeable_items = ["torch ", "tomato ", "wood "]
+        self.placeable_items = ["torch ", "tomato ", "wood ", "bow tower "]
         self.can_place_item = False  # if currently held item can be placed or not
+        self.placed_defences_list = []
 
         self.pic_dict = {}
         self.pic_dict_small = {}
@@ -939,6 +941,8 @@ class Inventory:
             "wool ": ["assets/items/wool.png", 30],
             "string ": ["assets/items/string.png", 30],
             "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
+            "arrow ": ["assets/bow/arrow.png", 30],
+            "bow tower ": ["assets/food/12.png", 30],
         }
 
         self.items_dict_small = {
@@ -962,6 +966,8 @@ class Inventory:
             "wool ": ["assets/items/wool.png", 15],
             "string ": ["assets/items/string.png", 15],
             "porcupine spike ": ["assets/items/porcupine_spike.png", 15],
+            "arrow ": ["assets/bow/arrow.png", 16],
+            "bow tower ": ["assets/food/12.png", 16],
         }
 
         for item in self.items_dict:
@@ -1072,7 +1078,12 @@ class Inventory:
                 1 if i in self.given_items and self.given_items[i] != "" else 0
             )
 
-        self.item_code_dict = {"torch ": 138, "tomato ": 110, "wood ": 139}
+        self.item_code_dict = {
+            "torch ": 138,
+            "tomato ": 110,
+            "wood ": 139,
+            "bow tower ": 140,
+        }
 
         self.full_key_dict = {
             0: True,
@@ -1443,6 +1454,14 @@ class Inventory:
                         enemies=enemies,
                     )
 
+                    if self.item_code_dict[self.block_fill[self.selected_block]] in [
+                        140
+                    ]:
+                        new_defence = DefenceBuildings(
+                            mouse_tile[0], mouse_tile[1], "Bow"
+                        )
+                        self.placed_defences_list.append(new_defence)
+
                     if not type(placed_item) is bool:
                         plants = placed_item
                         # placed
@@ -1551,6 +1570,8 @@ class Inventory:
                         self.description = "Primaly used to scare away zombies."
                     elif self.block_fill[index] == "porcupine spike ":
                         self.description = "Bla die bla die bla enzo"
+                    elif self.block_fill[index] == "arrow ":
+                        self.description = "PIJLPIJLPIJLIJPIJLPIJLPIJL"
                     else:
                         self.description = ""
             else:
@@ -1779,6 +1800,7 @@ class CraftingTable:
             "string ": ["assets/items/string.png", 30],
             "bow ": ["assets/bow/bow_item.png", 30],
             "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
+            "arrow ": ["assets/bow/arrow.png", 30],
         }
 
         for item in self.items_dict:
@@ -1877,6 +1899,7 @@ class CraftingTable:
             " w  w  w ": "string ",
             "  w  w  w": "string ",
             "rrrl l l ": "bow ",
+            "p  l  l  ": [10, "arrow "],
         }
         self.mask_surf = pygame.Surface(
             (self.screen_width, self.screen_height), pygame.SRCALPHA, 32
@@ -1956,8 +1979,26 @@ class CraftingTable:
                 )
 
             if recipe in self.recipes:
-                preview_item = self.recipes[recipe]
+                if type(self.recipes[recipe]) is list:
+                    preview_item_count = self.recipes[recipe][0]
+                    preview_item = self.recipes[recipe][1]
+                else:
+                    preview_item_count = 1
+                    preview_item = self.recipes[recipe]
+
                 screen.blit(self.large_pic_dict[preview_item], self.preview_block)
+                if preview_item_count != 1:
+                    render_text_with_outline(
+                        preview_item_count,
+                        (
+                            self.preview_block.x + self.preview_block.w - 35,
+                            self.preview_block.y + self.preview_block.h - 35,
+                        ),
+                        "black",
+                        "white",
+                        self.count_font,
+                        screen,
+                    )
 
             self.inventory.draw(screen, pygame.mouse.get_pos(), scrollx, scrolly)
             self.inventory.update(
@@ -2100,6 +2141,7 @@ class CraftingTable:
                         "co",
                         "wo",
                         "po",
+                        "ar",
                     ]:
                         # PROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEMPROBLEEM
                         if bool(self.block_fill[index]):
@@ -2215,9 +2257,14 @@ class CraftingTable:
                     recipe += " "
 
             if recipe in self.recipes:
-                self.inventory.clicked_item = f"{self.recipes[recipe]}"
-                self.inventory.clicked_item_count = 1
-                self.inventory.holding_item = True
+                if type(self.recipes[recipe]) is list:
+                    self.inventory.clicked_item = f"{self.recipes[recipe][1]}"
+                    self.inventory.clicked_item_count = int(self.recipes[recipe][0])
+                    self.inventory.holding_item = True
+                else:
+                    self.inventory.clicked_item = f"{self.recipes[recipe]}"
+                    self.inventory.clicked_item_count = 1
+                    self.inventory.holding_item = True
 
                 for index, block in enumerate(self.blocks):
                     if self.block_fill[index] != "":

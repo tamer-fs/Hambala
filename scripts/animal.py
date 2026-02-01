@@ -484,8 +484,6 @@ class Animal:
             step_x = min(x_diff / max_steps, 2.5)
             step_y = min(y_diff / max_steps, 2.5)
 
-            print(step_x < 0)
-
             for x in range(max_steps):
                 return_list.append(
                     (step_x * walking_speed * 2, step_y * walking_speed * 2)
@@ -567,13 +565,11 @@ class Animal:
                         )
                 animal[8] = time.perf_counter()
 
-            # print(dt)
-
             if animal_walking:
                 if animal_path < animal_set_steps:
                     prev_x, prev_y = animal_x, animal_y
-                    animal[24] += animal[7][animal[5]][0] * dt
-                    animal[25] += animal[7][animal[5]][1] * dt
+                    animal[24] += animal[7][min(animal[5], len(animal[7])) - 1][0] * dt
+                    animal[25] += animal[7][min(animal[5], len(animal[7])) - 1][1] * dt
                     # animal_x += animal[7][animal[5]][0] * dt * 10
                     # animal_y += animal[7][animal[5]][1] * dt * 10
 
@@ -693,7 +689,7 @@ class Animal:
                 if animal[20]:
                     if (
                         get_distance(animal_x, animal_y, player.x + 16, player.y + 16)
-                        < 30
+                        < 100
                     ):
                         if time.perf_counter() - animal[18] > 1.5:
                             animal[18] = time.perf_counter()

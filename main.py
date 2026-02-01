@@ -8,7 +8,7 @@
 # ! Wapens die stuk kunnen [✘]
 # ! Boss fight per 10 nachten [✘]
 # ! Bouwen uitbreiden (wapen dingen, boogtoren, stekels dingen) [✘]
-# ! lopen en aanvallen van beer fixen [/]
+# ! Item duplicatie met items droppen en crafting table [✘]
 # --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -48,6 +48,7 @@
 # * Dood gaan [✓]
 # * DIEREN SCHADE DOOR PIJL [✓]
 # * stekelvarken [✓]
+# * lopen en aanvallen van beer fixen [✓]
 # --------------------------------------------
 
 import numpy
@@ -890,8 +891,12 @@ while playing:
             and not crafting_paused
         ):
             particles = animals.update(
-                plants, player, particles, dt, player_bow, attack=False
+                plants, player, particles, dt, player_bow, attack=True
             )
+
+        for defence in main_inventory.placed_defences_list:
+            defence.update()
+            defence.draw()
 
         prev_player_x = player.x
         prev_player_y = player.y
