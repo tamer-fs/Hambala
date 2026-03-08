@@ -374,6 +374,7 @@ class Enemies:
         player_bow,
         dt,
         plants,
+        defences,
     ):
         self.is_night = is_night
 
@@ -528,6 +529,62 @@ class Enemies:
                     round(angle),
                     dt,
                 )
+
+            # arrow from defence tower hitting enemy
+            for defence in defences:
+                if defence.building_type == "Bow":
+                    for arrow in defence.bow.arrow_list:
+                        if (
+                            self.alive_enemies[i]["rect"].colliderect(arrow.rect)
+                            and arrow.can_damage
+                        ):
+                            arrow.can_damage = False
+                            self.alive_enemies[i]["health_bar"].damage()
+                            self.alive_enemies[i]["last_attack"] = time.perf_counter()
+                            self.alive_enemies[i]["hp"] -= arrow.damage * 2
+                            for _ in range(15):
+                                particles.append(
+                                    HitParticle(
+                                        self.alive_enemies[i]["rect"].x
+                                        + (
+                                            self.enemies_size[
+                                                self.alive_enemies[i]["type"]
+                                            ][0]
+                                            / 2
+                                        ),
+                                        self.alive_enemies[i]["rect"].y
+                                        + (
+                                            self.enemies_size[
+                                                self.alive_enemies[i]["type"]
+                                            ][1]
+                                            / 2
+                                        ),
+                                        color="green",
+                                    )
+                                )
+                            if self.alive_enemies[i]["hp"] <= 0:
+                                pygame.mixer.Sound.play(self.damage_sound)
+                                for _ in range(50):
+                                    particles.append(
+                                        HitParticle(
+                                            self.alive_enemies[i]["rect"].x
+                                            + (
+                                                self.enemies_size[
+                                                    self.alive_enemies[i]["type"]
+                                                ][0]
+                                                / 2
+                                            ),
+                                            self.alive_enemies[i]["rect"].y
+                                            + (
+                                                self.enemies_size[
+                                                    self.alive_enemies[i]["type"]
+                                                ][1]
+                                                / 2
+                                            ),
+                                            color="green",
+                                        )
+                                    )
+                                self.alive_enemies.remove(self.alive_enemies[i])
 
             # arrow (by player) hitting zombie
             for arrow in player_bow.arrow_list:

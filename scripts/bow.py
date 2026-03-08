@@ -36,8 +36,8 @@ class Bow:
     def update(self, x, y, direction, dt):
         self.x = x
         self.y = y
-        self.width = self.bow_frames[self.direction][self.charge].get_width()
-        self.height = self.bow_frames[self.direction][self.charge].get_height()
+        self.width = self.bow_frames[int(self.direction)][self.charge].get_width()
+        self.height = self.bow_frames[int(self.direction)][self.charge].get_height()
 
         self.bow_rect.x = self.x - (self.width / 2)
         self.bow_rect.y = self.y - (self.height / 2)
@@ -57,11 +57,11 @@ class Bow:
     def start_charge(self):
         self.charging = True
 
-    def shoot_arrow(self):
+    def shoot_arrow(self, offset=2):
         self.arrow_list.append(
             Arrow(
                 self.size,
-                self.direction + random.randint(-2, 2),
+                self.direction + random.randint(-offset, offset),
                 self.charge,
                 self.x,
                 self.y,
@@ -75,7 +75,7 @@ class Bow:
 
     def draw(self, screen, scrollx, scrolly):
         screen.blit(
-            self.bow_frames[self.direction][self.charge],
+            self.bow_frames[int(self.direction)][self.charge],
             (self.bow_rect.x - scrollx, self.bow_rect.y - scrolly),
         )
         remove_indx = []

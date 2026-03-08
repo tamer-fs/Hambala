@@ -895,8 +895,8 @@ while playing:
             )
 
         for defence in main_inventory.placed_defences_list:
-            defence.update()
-            defence.draw()
+            defence.update(dt, enemies.alive_enemies)
+            defence.draw(screen, scrollx, scrolly)
 
         prev_player_x = player.x
         prev_player_y = player.y
@@ -1064,6 +1064,7 @@ while playing:
                 player_bow,
                 dt,
                 plants,
+                main_inventory.placed_defences_list,
             )
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
@@ -1080,14 +1081,14 @@ while playing:
                         sky_color[0],
                         sky_color[1],
                         sky_color[2],
-                        sky_color[3] + 0.05,
+                        sky_color[3] + 0.5,
                     ]
                 else:
                     sky_color = [
                         sky_color[0],
                         sky_color[1],
                         sky_color[2],
-                        sky_color[3] - 0.05,
+                        sky_color[3] - 0.5,
                     ]
 
                 sky_time = time.perf_counter()
