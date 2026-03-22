@@ -23,19 +23,46 @@ class DefenceBuildings:
         self.building_type = building_type  # types: "Bow"
         self.absolute_x = self.grid_x * 16 + 8
         self.absolute_y = self.grid_y * 16 + 8
+        self.bow = False
 
         if self.building_type == "Bow":
-            self.bow = Bow(size=64, unlimited_arrows=True)
+            self.bow = Bow(size=42, unlimited_arrows=True)
             self.charge_started = False
             self.charge_timer_set = False
             self.charge_delay_timer = -1
             self.charge_delay = 3  # 2-5
             self.bow_shoot_timer = -1
-            self.bow_shoot_delay = 6  # 0-6
+            self.bow_shoot_delay = 4  # 0-6
             self.max_shooting_range = 400
+            self.max_shoot_delay = 4
+            self.damage_multiplier = 1
+
+        if self.building_type == "Fast Bow":
+            self.bow = Bow(size=38, unlimited_arrows=True)
+            self.charge_started = False
+            self.charge_timer_set = False
+            self.charge_delay_timer = -1
+            self.charge_delay = 0  # 2-5
+            self.bow_shoot_timer = -1
+            self.bow_shoot_delay = 2  # 0-6
+            self.max_shooting_range = 200
+            self.max_shoot_delay = 2
+            self.damage_multiplier = 0.5
+
+        if self.building_type == "Sniper Bow":
+            self.bow = Bow(size=48, unlimited_arrows=True)
+            self.charge_started = False
+            self.charge_timer_set = False
+            self.charge_delay_timer = -1
+            self.charge_delay = 6  # 2-5
+            self.bow_shoot_timer = -1
+            self.bow_shoot_delay = 6  # 0-6
+            self.max_shooting_range = 600
+            self.max_shoot_delay = 6
+            self.damage_multiplier = 1.5
 
     def draw(self, screen, scrollx, scrolly):
-        if self.building_type == "Bow":
+        if self.bow:
             self.bow.draw(screen, scrollx, scrolly)
 
     def bow_update(self, dt, enemies):
@@ -86,11 +113,12 @@ class DefenceBuildings:
                 ):
                     self.bow.shoot_arrow(0)
                     self.charge_started = False
-                    self.bow_shoot_delay = 6
+                    self.bow_shoot_delay = self.max_shoot_delay
+
                     self.charge_timer_set = False
 
         self.bow.update(self.absolute_x, self.absolute_y, round(angle), dt)
 
     def update(self, dt, enemies):
-        if self.building_type == "Bow":
+        if self.bow:
             self.bow_update(dt, enemies)

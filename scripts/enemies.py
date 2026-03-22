@@ -532,7 +532,7 @@ class Enemies:
 
             # arrow from defence tower hitting enemy
             for defence in defences:
-                if defence.building_type == "Bow":
+                if defence.bow:
                     for arrow in defence.bow.arrow_list:
                         if (
                             self.alive_enemies[i]["rect"].colliderect(arrow.rect)
@@ -541,7 +541,7 @@ class Enemies:
                             arrow.can_damage = False
                             self.alive_enemies[i]["health_bar"].damage()
                             self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                            self.alive_enemies[i]["hp"] -= arrow.damage * 2
+                            self.alive_enemies[i]["hp"] -= arrow.damage * 2 * defence.damage_multiplier
                             for _ in range(15):
                                 particles.append(
                                     HitParticle(

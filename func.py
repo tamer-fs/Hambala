@@ -46,7 +46,7 @@ def get_distance(x1, y1, x2, y2):
 def load_img():
     images = {}
 
-    for x in range(141):
+    for x in range(143):
         if x not in [138]:
             if x > 99:
                 tile_num = str(x)

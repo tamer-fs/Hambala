@@ -451,7 +451,43 @@ def load_world(folder_name, sky_color):
 
     ui_clock.load_world(night_count, sky_clr)
 
-    return sky_clr, world, world_rotation, plants, night_count, is_night, seed
+    # load buildings
+    buildings = []
+    for y, row in enumerate(plants):
+        for x, value in enumerate(row):
+            match value:
+                # print(f"gebouw toegevoegd op: {x},{y}")
+                case 140:
+                    buildings.append(
+                        DefenceBuildings(
+                            x, y, random.choice("Bow")
+                        )
+                    )
+                case 141:
+                    buildings.append(
+                        DefenceBuildings(
+                            x, y, random.choice("Sniper Bow")
+                        )
+                    )
+                case 142:
+                    buildings.append(
+                        DefenceBuildings(
+                            x, y, random.choice("Fast Bow")
+                        )
+                    )
+
+
+
+    return (
+        sky_clr,
+        world,
+        world_rotation,
+        plants,
+        night_count,
+        is_night,
+        seed,
+        buildings,
+    )
 
 
 while playing:
@@ -475,9 +511,16 @@ while playing:
                 selected_world  # zodat de wereld ook opgeslagen kan worden (no shit)
             )
 
-            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
-                load_world(selected_world, sky_color)
-            )
+            (
+                sky_color,
+                world,
+                world_rotation,
+                plants,
+                night_count,
+                is_night,
+                seed,
+                main_inventory.placed_defences_list,
+            ) = load_world(selected_world, sky_color)
 
         if current_game_state != "TITLE":
             create_game_window.update_res(screen)
@@ -551,9 +594,16 @@ while playing:
         if selected_world != "":
             # wereld laad basis gangsters
             loaded_world = selected_world  # zodat de wereld ook opgeslagen kan worden
-            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
-                load_world(selected_world, sky_color)
-            )
+            (
+                sky_color,
+                world,
+                world_rotation,
+                plants,
+                night_count,
+                is_night,
+                seed,
+                main_inventory.placed_defences_list,
+            ) = load_world(selected_world, sky_color)
 
         for event in events:
             if event.type == pygame.VIDEORESIZE:
@@ -635,9 +685,16 @@ while playing:
 
         if current_game_state == "GAME":
 
-            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
-                load_world(loaded_world, sky_color)
-            )
+            (
+                sky_color,
+                world,
+                world_rotation,
+                plants,
+                night_count,
+                is_night,
+                seed,
+                main_inventory.placed_defences_list,
+            ) = load_world(loaded_world, sky_color)
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -700,9 +757,16 @@ while playing:
                 red_surface.set_alpha(100)
 
         if current_game_state == "GAME":
-            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
-                load_world(loaded_world, sky_color)
-            )
+            (
+                sky_color,
+                world,
+                world_rotation,
+                plants,
+                night_count,
+                is_night,
+                seed,
+                main_inventory.placed_defences_list,
+            ) = load_world(loaded_world, sky_color)
 
         torch_animation_frame, torch_update_frame = render_world(
             screen,
@@ -1369,9 +1433,16 @@ while playing:
 
             selected_world = folder_name
 
-            sky_color, world, world_rotation, plants, night_count, is_night, seed = (
-                load_world(selected_world, sky_color)
-            )
+            (
+                sky_color,
+                world,
+                world_rotation,
+                plants,
+                night_count,
+                is_night,
+                seed,
+                main_inventory.placed_defences_list,
+            ) = load_world(selected_world, sky_color)
 
         if to_title:
             save_world()

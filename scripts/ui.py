@@ -914,7 +914,14 @@ class Inventory:
         self.item_direction = -1
         self.item_speed = 0.3
 
-        self.placeable_items = ["torch ", "tomato ", "wood ", "bow tower "]
+        self.placeable_items = [
+            "torch ",
+            "tomato ",
+            "wood ",
+            "bow tower ",
+            "fast bow tower ",
+            "sniper bow tower ",
+        ]
         self.can_place_item = False  # if currently held item can be placed or not
         self.placed_defences_list = []
 
@@ -943,6 +950,8 @@ class Inventory:
             "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
             "arrow ": ["assets/bow/arrow.png", 30],
             "bow tower ": ["assets/food/12.png", 30],
+            "sniper bow tower ": ["assets/food/13.png", 30],
+            "fast bow tower ": ["assets/food/14.png", 30],
         }
 
         self.items_dict_small = {
@@ -968,6 +977,8 @@ class Inventory:
             "porcupine spike ": ["assets/items/porcupine_spike.png", 15],
             "arrow ": ["assets/bow/arrow.png", 16],
             "bow tower ": ["assets/food/12.png", 16],
+            "sniper bow tower ": ["assets/food/13.png", 16],
+            "fast bow tower ": ["assets/food/14.png", 16],
         }
 
         for item in self.items_dict:
@@ -1083,6 +1094,8 @@ class Inventory:
             "tomato ": 110,
             "wood ": 139,
             "bow tower ": 140,
+            "fast bow tower ": 142,
+            "sniper bow tower ": 141,
         }
 
         self.full_key_dict = {
@@ -1455,10 +1468,18 @@ class Inventory:
                     )
 
                     if self.item_code_dict[self.block_fill[self.selected_block]] in [
-                        140
+                        140,
+                        141,
+                        142,
                     ]:
                         new_defence = DefenceBuildings(
-                            mouse_tile[0], mouse_tile[1], "Bow"
+                            mouse_tile[0],
+                            mouse_tile[1],
+                            {140: "Bow", 141: "Sniper Bow", 142: "Fast Bow"}[
+                                self.item_code_dict[
+                                    self.block_fill[self.selected_block]
+                                ]
+                            ],
                         )
                         self.placed_defences_list.append(new_defence)
 
@@ -1572,6 +1593,12 @@ class Inventory:
                         self.description = "Bla die bla die bla enzo"
                     elif self.block_fill[index] == "arrow ":
                         self.description = "PIJLPIJLPIJLIJPIJLPIJLPIJL"
+                    elif self.block_fill[index] == "bow tower ":
+                        self.description = "basic boog toren"
+                    elif self.block_fill[index] == "fast bow tower ":
+                        self.description = "snelle boog toren"
+                    elif self.block_fill[index] == "sniper bow tower ":
+                        self.description = "sniper boog toren"
                     else:
                         self.description = ""
             else:
