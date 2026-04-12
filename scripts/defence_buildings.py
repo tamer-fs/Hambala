@@ -13,6 +13,8 @@ from scripts.bow import *
 # healing tower die je geneest als je in buurt staat
 # iets met porcupine spikes
 
+small_text_font = pygame.font.Font("assets/Font/Main.ttf", 16)
+
 
 class DefenceBuildings:
     def __init__(self, grid_x, grid_y, building_type):
@@ -24,6 +26,8 @@ class DefenceBuildings:
         self.absolute_x = self.grid_x * 16 + 8
         self.absolute_y = self.grid_y * 16 + 8
         self.bow = False
+        self.arrows_left = 12
+        self.max_arrows = 0
 
         if self.building_type == "Bow":
             self.bow = Bow(size=42, unlimited_arrows=True)
@@ -36,6 +40,7 @@ class DefenceBuildings:
             self.max_shooting_range = 400
             self.max_shoot_delay = 4
             self.damage_multiplier = 1
+            self.max_arrows = 60
 
         if self.building_type == "Fast Bow":
             self.bow = Bow(size=38, unlimited_arrows=True)
@@ -48,6 +53,7 @@ class DefenceBuildings:
             self.max_shooting_range = 200
             self.max_shoot_delay = 2
             self.damage_multiplier = 0.5
+            self.max_arrows = 120
 
         if self.building_type == "Sniper Bow":
             self.bow = Bow(size=48, unlimited_arrows=True)
@@ -60,10 +66,32 @@ class DefenceBuildings:
             self.max_shooting_range = 600
             self.max_shoot_delay = 6
             self.damage_multiplier = 1.5
+            self.max_arrows = 30
 
-    def draw(self, screen, scrollx, scrolly):
+    def draw(self, screen, scrollx, scrolly, player):
         if self.bow:
             self.bow.draw(screen, scrollx, scrolly)
+
+        if (
+            get_distance(player.x, player.y, self.grid_x * 16, self.grid_y * 16)
+            < 10 * 16
+        ):
+            # text voor hoe veel pijlen nog in boogtoren
+            text_width, text_height = small_text_font.size(
+                f"{str(self.arrows_left)}/{str(self.max_arrows)}"
+            )
+
+            render_text_with_outline(
+                f"{str(self.arrows_left)}/{str(self.max_arrows)}",
+                (
+                    self.absolute_x - scrollx - (text_width / 2),
+                    self.absolute_y - scrolly - 40,
+                ),
+                "black" if self.arrows_left > 0 else "white",
+                "white" if self.arrows_left > 0 else "red",
+                small_text_font,
+                screen,
+            )
 
     def bow_update(self, dt, enemies):
         angle = 20
@@ -81,7 +109,7 @@ class DefenceBuildings:
                 )
             closest_enemy = enemies[distances.index(min(distances))]
 
-            if min(distances) < self.max_shooting_range:
+            if min(distances) < self.max_shooting_range and self.arrows_left > 0:
 
                 # boog mikken
                 enemy_x, enemy_y = closest_enemy["rect"].x, closest_enemy["rect"].y
@@ -116,6 +144,8 @@ class DefenceBuildings:
                     self.bow_shoot_delay = self.max_shoot_delay
 
                     self.charge_timer_set = False
+
+                    self.arrows_left -= 1
 
         self.bow.update(self.absolute_x, self.absolute_y, round(angle), dt)
 

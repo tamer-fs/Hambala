@@ -949,9 +949,9 @@ class Inventory:
             "string ": ["assets/items/string.png", 30],
             "porcupine spike ": ["assets/items/porcupine_spike.png", 30],
             "arrow ": ["assets/bow/arrow.png", 30],
-            "bow tower ": ["assets/food/12.png", 30],
-            "sniper bow tower ": ["assets/food/13.png", 30],
-            "fast bow tower ": ["assets/food/14.png", 30],
+            "bow tower ": ["assets/floor/tile140.png", 30],
+            "sniper bow tower ": ["assets/floor/tile141.png", 30],
+            "fast bow tower ": ["assets/floor/tile142.png", 30],
         }
 
         self.items_dict_small = {
@@ -976,9 +976,9 @@ class Inventory:
             "string ": ["assets/items/string.png", 15],
             "porcupine spike ": ["assets/items/porcupine_spike.png", 15],
             "arrow ": ["assets/bow/arrow.png", 16],
-            "bow tower ": ["assets/food/12.png", 16],
-            "sniper bow tower ": ["assets/food/13.png", 16],
-            "fast bow tower ": ["assets/food/14.png", 16],
+            "bow tower ": ["assets/floor/tile140.png", 16],
+            "sniper bow tower ": ["assets/floor/tile141.png", 16],
+            "fast bow tower ": ["assets/floor/tile142.png", 16],
         }
 
         for item in self.items_dict:

@@ -459,25 +459,13 @@ def load_world(folder_name, sky_color):
             match value:
                 # print(f"gebouw toegevoegd op: {x},{y}")
                 case 140:
-                    buildings.append(
-                        DefenceBuildings(
-                            x, y, random.choice("Bow")
-                        )
-                    )
+                    buildings.append(DefenceBuildings(x, y, random.choice("Bow")))
                 case 141:
                     buildings.append(
-                        DefenceBuildings(
-                            x, y, random.choice("Sniper Bow")
-                        )
+                        DefenceBuildings(x, y, random.choice("Sniper Bow"))
                     )
                 case 142:
-                    buildings.append(
-                        DefenceBuildings(
-                            x, y, random.choice("Fast Bow")
-                        )
-                    )
-
-
+                    buildings.append(DefenceBuildings(x, y, random.choice("Fast Bow")))
 
     return (
         sky_clr,
@@ -961,7 +949,7 @@ while playing:
 
         for defence in main_inventory.placed_defences_list:
             defence.update(dt, enemies.alive_enemies)
-            defence.draw(screen, scrollx, scrolly)
+            defence.draw(screen, scrollx, scrolly, player)
 
         prev_player_x = player.x
         prev_player_y = player.y

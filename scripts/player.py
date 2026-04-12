@@ -11,6 +11,8 @@ class Player:
         self.x = x
         self.y = y
 
+        self.arrow_fill_timer = -1
+
         self.images = images
         self.speed = 0.10
         self.speed_multiplier = 1
@@ -477,6 +479,7 @@ class Player:
             pygame.mixer.Sound.play(self.damage_sound)
             self.damaging = False
 
+        self.interact_message = ""
         if plants[self.player_tile[1] + 1, self.player_tile[0] + 1] in [
             127,
             11,
@@ -489,6 +492,9 @@ class Player:
             61,
             138,
             139,
+            140,
+            141,
+            142,
         ]:
             self.on_interact = True
             plant = plants[self.player_tile[1] + 1, self.player_tile[0] + 1]
@@ -504,6 +510,12 @@ class Player:
                 self.interact_message = "Pick up torch"
             elif plant == 139:
                 self.interact_message = "Pick up wood"
+            elif plant == 140:
+                self.interact_message = "Add arrow(s)"
+            elif plant == 141:
+                self.interact_message = "Add arrow(s)"
+            elif plant == 142:
+                self.interact_message = "Add arrow(s)"
 
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
@@ -537,6 +549,32 @@ class Player:
             e_pressed = eval(joystick_btn_dict["north-btn"])
         else:
             e_pressed = keys[pygame.K_e]
+
+        if (
+            self.on_interact
+            and self.interact_message == "Add arrow(s)"
+            and e_pressed
+            and self.inventory.block_fill[self.inventory.selected_block] == "arrow "
+            and time.perf_counter() - self.arrow_fill_timer > 0.3
+        ):
+            self.arrow_fill_timer = time.perf_counter()
+
+            grid_y, grid_x = (self.player_tile[1] + 1, self.player_tile[0] + 1)
+            target_defence = None
+            for defence in self.inventory.placed_defences_list:
+                if defence.grid_x == grid_x and defence.grid_y == grid_y:
+                    target_defence = defence
+
+            if target_defence.arrows_left + 1 <= target_defence.max_arrows:
+
+                target_defence.arrows_left += 1
+
+                index = self.inventory.selected_block
+                arrow_count = self.inventory.item_count_dict[index]
+                self.inventory.item_count_dict[index] = arrow_count - 1
+
+                if arrow_count - 1 == 0:
+                    self.inventory.block_fill[index] = ""
 
         if (
             self.on_interact
