@@ -9,6 +9,7 @@
 # ! Boss fight per 10 nachten [✘]
 # ! Bouwen uitbreiden (wapen dingen, boogtoren, stekels dingen) [✘]
 # ! Item duplicatie met items droppen en crafting table [✘]
+# ! torens moeten vullen met pijlen
 # --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
