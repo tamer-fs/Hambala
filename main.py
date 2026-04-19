@@ -9,7 +9,7 @@
 # ! Boss fight per 10 nachten [✘]
 # ! Bouwen uitbreiden (wapen dingen, boogtoren, stekels dingen) [✘]
 # ! Item duplicatie met items droppen en crafting table [✘]
-# ! torens moeten vullen met pijlen
+# ! Pijlen kan je niet verplaatsen in inventory (iets ging fout met vervanging) [✘]
 # --------------------------------------------- [✓]
 # * Nachten overleefd fade-in/fade-uit [✓]
 # * Create game settings (seed, difficulty). [✓]
@@ -50,6 +50,7 @@
 # * DIEREN SCHADE DOOR PIJL [✓]
 # * stekelvarken [✓]
 # * lopen en aanvallen van beer fixen [✓]
+# * torens moeten vullen met pijlen [✓]
 # --------------------------------------------
 
 import numpy
@@ -375,6 +376,15 @@ def save_world():
         dict_copy["inventory"]["block_fill"] = main_inventory.block_fill
         dict_copy["inventory"]["item_count_dict"] = main_inventory.item_count_dict
 
+        defence_buildings_save_dict = {}
+
+        for defence in main_inventory.placed_defences_list:
+            defence_buildings_save_dict = defence.get_save_values(
+                defence_buildings_save_dict
+            )
+
+        dict_copy["defence_buildings"] = defence_buildings_save_dict
+
         f.write(json.dumps(dict_copy))  #! boos
 
     # WORLD
@@ -453,19 +463,27 @@ def load_world(folder_name, sky_color):
     ui_clock.load_world(night_count, sky_clr)
 
     # load buildings
+    defence_buildings_save_dict = dict_copy["defence_buildings"]
+
     buildings = []
     for y, row in enumerate(plants):
         for x, value in enumerate(row):
             match value:
                 # print(f"gebouw toegevoegd op: {x},{y}")
                 case 140:
-                    buildings.append(DefenceBuildings(x, y, random.choice("Bow")))
+                    building = DefenceBuildings(x, y, "Bow")
+                    building.set_save_values(defence_buildings_save_dict[str((x, y))])
+                    buildings.append(building)
+
                 case 141:
-                    buildings.append(
-                        DefenceBuildings(x, y, random.choice("Sniper Bow"))
-                    )
+                    building = DefenceBuildings(x, y, "Sniper Bow")
+                    building.set_save_values(defence_buildings_save_dict[str((x, y))])
+                    buildings.append(building)
+
                 case 142:
-                    buildings.append(DefenceBuildings(x, y, random.choice("Fast Bow")))
+                    building = DefenceBuildings(x, y, "Fast Bow")
+                    building.set_save_values(defence_buildings_save_dict[str((x, y))])
+                    buildings.append(building)
 
     return (
         sky_clr,
@@ -807,13 +825,16 @@ while playing:
                     pause_menu_opened = not pause_menu_opened
                     print(pause_menu_opened)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == pygame.BUTTON_LEFT:
-                    player_bow.start_charge()
+            if main_inventory.total_block_fill("arrow ") > 0:
 
-            if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == pygame.BUTTON_LEFT:
-                    player_bow.shoot_arrow()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == pygame.BUTTON_LEFT:
+                        player_bow.start_charge()
+
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == pygame.BUTTON_LEFT:
+                        main_inventory.remove_item("arrow ")
+                        player_bow.shoot_arrow()
 
             if (
                 event.type == pygame.MOUSEWHEEL
@@ -948,7 +969,13 @@ while playing:
             )
 
         for defence in main_inventory.placed_defences_list:
-            defence.update(dt, enemies.alive_enemies)
+            if (
+                not pause_menu_opened
+                and not game_paused
+                and not player_died
+                and not crafting_paused
+            ):
+                defence.update(dt, enemies.alive_enemies)
             defence.draw(screen, scrollx, scrolly, player)
 
         prev_player_x = player.x

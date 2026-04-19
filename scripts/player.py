@@ -510,12 +510,20 @@ class Player:
                 self.interact_message = "Pick up torch"
             elif plant == 139:
                 self.interact_message = "Pick up wood"
-            elif plant == 140:
+            elif (
+                plant in [140, 141, 142]
+                and self.inventory.block_fill[self.inventory.selected_block] == "arrow "
+            ):  # holding arrow
                 self.interact_message = "Add arrow(s)"
-            elif plant == 141:
-                self.interact_message = "Add arrow(s)"
-            elif plant == 142:
-                self.interact_message = "Add arrow(s)"
+            elif (
+                plant in [140, 141, 142]
+                and self.inventory.block_fill[self.inventory.selected_block] == "axe "
+            ):  # holding axe
+                self.interact_message = "Destroy tower"
+            elif plant in [140, 141, 142]:
+                self.interact_message = (
+                    "Hold arrow(s) to fill tower or axe to destroy tower"
+                )
 
             text_w, text_h = self.font.size(self.interact_message)
             self.interact_render = pygame.Surface(
@@ -652,6 +660,80 @@ class Player:
                 else:
                     self.inventory.add_item("stone ")
                 self.pickaxe_frame = 0
+
+        if (
+            self.on_interact
+            and self.interact_message == "Destroy tower"
+            and self.inventory.holding_axe
+        ):
+            pygame.draw.rect(
+                screen, pygame.Color("#212529"), self.stone_rect3, border_radius=26
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#c1121f"), self.stone_rect2, border_radius=20
+            )
+            pygame.draw.rect(
+                screen, pygame.Color("#0ead69"), self.stone_rect, border_radius=20
+            )
+            if e_pressed:
+                # boom hp gaat omlaag :( <-- wtf | : ) <-- goed
+                if time.perf_counter() - self.cooldown > 0.8:
+                    self.stone_rect.width -= (self.screen_size[0] / 4) / 4
+                    self.cooldown = time.perf_counter()
+                    # make particles
+                    for _ in range(15):
+                        particle_x = 0
+                        particle_y = 0
+                        if self.direction == "RIGHT":
+                            particle_x, particle_y = (
+                                self.x - 1 + 35,
+                                self.y - 1 + 5,
+                            )
+                        else:
+                            particle_x, particle_y = (
+                                self.x - 1 + 20 - 30,
+                                self.y - 1 + 5,
+                            )
+
+                        particles.append(
+                            HitParticle(particle_x, particle_y, pygame.Color("#422a0a"))
+                        )
+
+                # axe animatie
+                if time.perf_counter() - self.axe_cooldown > 0.4:
+                    self.axe_frame = (self.axe_frame + 1) % 2
+                    self.axe_cooldown = time.perf_counter()
+
+            elif not e_pressed:
+                self.stone_rect = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect2 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8 + 8, 100),
+                    (self.screen_size[0] / 4 - 16, 30),
+                )
+                self.stone_rect3 = pygame.Rect(
+                    (self.screen_size[0] / 2 - self.screen_size[0] / 8, 100 - 8),
+                    (self.screen_size[0] / 4, 46),
+                )
+                self.axe_frame = 0
+
+            if self.stone_rect.width <= 0:
+                plants[self.player_tile[1] + 1, self.player_tile[0] + 1] = 12
+                grid_y, grid_x = (self.player_tile[1] + 1, self.player_tile[0] + 1)
+
+                target_defence = None
+                target_index = 0
+                for i, defence in enumerate(self.inventory.placed_defences_list):
+                    if defence.grid_x == grid_x and defence.grid_y == grid_y:
+                        target_defence = defence
+                        target_index = i
+
+                # defence verwijderen
+                self.inventory.placed_defences_list.pop(target_index)
+                self.inventory.add_item("arrow ", target_defence.arrows_left)
+                self.axe_frame = 0
 
         if (
             self.on_interact

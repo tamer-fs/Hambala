@@ -1166,22 +1166,44 @@ class Inventory:
             )
             self.backpack_block_y += self.size[1] / 9
 
-    def add_item(self, item):
+    def remove_item(self, item):
+        for i, block in enumerate(list(self.block_fill.values())):
+            if block == item:
+                amount = self.item_count_dict[i]
+                if amount - 1 > 0:
+                    self.item_count_dict[i] = amount - 1
+                elif amount - 1 == 0:
+                    self.block_fill[i] = ""
+                    self.item_count_dict[i] = 0
+                break
+
+    def total_block_fill(self, item):
+
+        total_amount = 0
+
+        for i, block in enumerate(list(self.block_fill.values())):
+            if block == item:
+                total_amount += self.item_count_dict[i]
+
+        print(total_amount)
+        return total_amount
+
+    def add_item(self, item, amount=1):
         if not bool(self.block_fill[self.selected_block]):
             self.block_fill[self.selected_block] = item
-            self.item_count_dict[self.selected_block] += 1
+            self.item_count_dict[self.selected_block] += amount
         else:
             for x in range(27):
                 if not bool(self.block_fill[x]):
                     self.block_fill[x] = item
-                    self.item_count_dict[x] += 1
+                    self.item_count_dict[x] += amount
                     break
                 else:
                     if (
                         item not in self.not_stackable_items
                         and item == self.block_fill[x]
                     ):
-                        self.item_count_dict[x] += 1
+                        self.item_count_dict[x] += amount
                         break
 
     def get_player(self, player):

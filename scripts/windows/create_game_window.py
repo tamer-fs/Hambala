@@ -167,6 +167,7 @@ class CreateGameWindow:
                             "is_night": False,
                             "animal_dict": animal.return_animal_dict(),
                             "alive_enemies": [],
+                            "defence_buildings": {},
                             "player": {
                                 "x": 1176.0,
                                 "y": 1176.0,

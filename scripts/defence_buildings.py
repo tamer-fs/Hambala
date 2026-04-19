@@ -25,8 +25,10 @@ class DefenceBuildings:
         self.building_type = building_type  # types: "Bow"
         self.absolute_x = self.grid_x * 16 + 8
         self.absolute_y = self.grid_y * 16 + 8
+
+        # Bow
         self.bow = False
-        self.arrows_left = 12
+        self.arrows_left = 0
         self.max_arrows = 0
 
         if self.building_type == "Bow":
@@ -67,6 +69,26 @@ class DefenceBuildings:
             self.max_shoot_delay = 6
             self.damage_multiplier = 1.5
             self.max_arrows = 30
+
+    # buildings_save_dict = {(0,0) : {"building_type": "Bow", "arrows_left": 10}}
+
+    def get_save_values(self, defence_buildings_save_dict):
+
+        if self.building_type in ["Bow", "Fast Bow", "Sniper Bow"]:
+            defence_buildings_save_dict[str((self.grid_x, self.grid_y))] = {
+                "building_type": "Bow",
+                "arrows_left": self.arrows_left,
+            }
+
+        return defence_buildings_save_dict
+        # return (self.grid_x, self.grid_y): {
+        #     "building_type": "Bow",
+        #     "grid_position": (self.grid_x, self.grid_y),
+        #     "arrows_left": self.arrows_left}
+
+    def set_save_values(self, values):
+        if values["building_type"] in ["Bow", "Fast Bow", "Sniper Bow"]:
+            self.arrows_left = values["arrows_left"]
 
     def draw(self, screen, scrollx, scrolly, player):
         if self.bow:
