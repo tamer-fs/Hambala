@@ -571,7 +571,7 @@ while playing:
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
         particles = animals.update(
-            plants, player, particles, dt, player_bow, attack=False
+            plants, player, particles, dt, player_bow, scrollx, scrolly, attack=False
         )
 
         screen.blit(black_surface, (0, 0))
@@ -646,7 +646,7 @@ while playing:
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
         particles = animals.update(
-            plants, player, particles, dt, player_bow, attack=False
+            plants, player, particles, dt, player_bow, scrollx, scrolly, attack=False
         )
 
         screen.blit(black_surface, (0, 0))
@@ -720,7 +720,7 @@ while playing:
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
         particles = animals.update(
-            plants, player, particles, dt, player_bow, attack=False
+            plants, player, particles, dt, player_bow, scrollx, scrolly, attack=False
         )
 
         screen.blit(black_surface, (0, 0))
@@ -792,7 +792,7 @@ while playing:
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
         particles = animals.update(
-            plants, player, particles, dt, player_bow, attack=False
+            plants, player, particles, dt, player_bow, scrollx, scrolly, attack=False
         )
 
         screen.blit(black_surface, (0, 0))
@@ -827,14 +827,18 @@ while playing:
 
             if main_inventory.total_block_fill("arrow ") > 0:
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == pygame.BUTTON_LEFT:
-                        player_bow.start_charge()
+                if (
+                    main_inventory.block_fill[main_inventory.selected_block] == "bow "
+                    and not main_crafting_table.opened
+                ):
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == pygame.BUTTON_LEFT:
+                            player_bow.start_charge()
 
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == pygame.BUTTON_LEFT:
-                        main_inventory.remove_item("arrow ")
-                        player_bow.shoot_arrow()
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        if event.button == pygame.BUTTON_LEFT:
+                            main_inventory.remove_item("arrow ")
+                            player_bow.shoot_arrow()
 
             if (
                 event.type == pygame.MOUSEWHEEL
@@ -965,7 +969,7 @@ while playing:
             and not crafting_paused
         ):
             particles = animals.update(
-                plants, player, particles, dt, player_bow, attack=True
+                plants, player, particles, dt, player_bow, scrollx, scrolly, attack=True
             )
 
         for defence in main_inventory.placed_defences_list:

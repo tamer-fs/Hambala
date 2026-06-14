@@ -268,6 +268,8 @@ class Animal:
                     -1,  # porcupine start attack timer 26
                     False,  # porcupine attacking 27
                     1,  # porcupine frame 28
+                    False,  # tam (voor wolf) 29
+                    False,  # gecorrigeerd gelopen in frame 30
                 ]
 
     def return_animal_dict(self):
@@ -276,7 +278,7 @@ class Animal:
             rect = self.animal_dict[key][0]
 
             return_dict[key] = []
-            for x in range(29):
+            for x in range(31):
 
                 if x == 0:
                     return_dict[key].append([rect.x, rect.y, rect.w, rect.h])
@@ -334,7 +336,7 @@ class Animal:
             animal_x = animal[24]
             animal_y = animal[25]
 
-            if time.perf_counter() - last_attack < 10:
+            if time.perf_counter() - last_attack < 10 or animal[29]:
                 hp_bar.draw(screen, "black", "darkgray", "red", 2, 2)
 
             if (
@@ -374,6 +376,7 @@ class Animal:
                         ],
                         (animal_x - scrollx, animal_y - scrolly),
                     )
+
             # try:
             #     if animal_direction == "right" and animal[7][animal[5]][0] > 0:
             #         pygame.draw.circle(
@@ -508,7 +511,9 @@ class Animal:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-    def update(self, plants, player, particles, dt, player_bow, attack=True):
+    def update(
+        self, plants, player, particles, dt, player_bow, scrollx, scrolly, attack=True
+    ):
         animal_delete_list = []
         if self.animal_dict is None:
             return particles
@@ -590,6 +595,38 @@ class Animal:
                         animal_x = prev_x
                         animal_y = prev_y
 
+                    animal[30] = False
+                    #! WERKT NIET
+                    own_rect = pygame.Rect(
+                        (animal[24] - scrollx, animal[25] - scrolly),
+                        (animal[0].width, animal[0].height),
+                    )
+                    for loop_animal in self.animal_dict.keys():
+                        if (
+                            (
+                                own_rect.colliderect(
+                                    pygame.Rect(
+                                        self.animal_dict[loop_animal][24] - scrollx - 8,
+                                        self.animal_dict[loop_animal][25] - scrolly - 8,
+                                        self.animal_dict[loop_animal][0].width + 16,
+                                        self.animal_dict[loop_animal][0].height + 16,
+                                    )
+                                )
+                            )
+                            and (not self.animal_dict[loop_animal][30])
+                            and (loop_animal != animal_key)
+                        ):  # dieren overlappen dus niet bewegen
+                            # animal_x = 0
+                            # animal_y = 0
+                            animal[24] = prev_x
+                            animal[25] = prev_y
+                            animal[30] = True
+                            # print(
+                            #     "tegen elkaar aan gelopen :((",
+                            #     animal,
+                            #     loop_animal,
+                            # )
+
                     animal[5] += 1
                 else:
                     animal[4] = False
@@ -645,6 +682,31 @@ class Animal:
                     animal_y += random.randint(-5, 5) * dt
                     animal_x += random.randint(-5, 5) * dt
                     player.hitting = False
+
+            # dier wordt getemt
+            if get_distance(animal_x, animal_y, player.x + 16, player.y + 16) < 35:
+                animal[29] = True
+
+            if (
+                animal[29]
+                and get_distance(animal_x, animal_y, player.x + 16, player.y + 16) > 80
+            ):  # als dier tam is
+                animal[4] = True
+                animal[6] = random.randint(10, 20)
+                animal[7], animal[10] = self.create_walk_plan(
+                    animal[6],
+                    min(
+                        get_distance(animal_x, animal_y, player.x + 16, player.y + 16)
+                        / 60,
+                        1.8,
+                    ),
+                    True,
+                    animal_rect=animal[0],
+                    only_horizontal=animal_type in ["porcupine"],
+                    current_direction=animal_direction,
+                    animal_x=animal_x,
+                    animal_y=animal_y,
+                )
 
             if get_distance(animal_x, animal_y, player.x + 16, player.y + 16) < 500:
                 if animal[17] <= time.perf_counter() and animal[17] != 0:

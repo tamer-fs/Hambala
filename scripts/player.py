@@ -437,6 +437,8 @@ class Player:
 
         if self.bow_selected:
             player_bow.draw(screen, scrollx, scrolly)
+        else:
+            player_bow.draw_arrows(screen, scrollx, scrolly)
 
     def get_inventory(self, inventory):
         self.inventory = inventory
@@ -474,6 +476,8 @@ class Player:
 
         if self.bow_selected:
             player_bow.update(self.x + 48 / 2, self.y + 48 / 2, int(angle), dt)
+        else:
+            player_bow.update_arrows(dt)
 
         if self.damaging:
             pygame.mixer.Sound.play(self.damage_sound)
