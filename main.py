@@ -397,11 +397,11 @@ def save_world():
     with open(os.path.join("saves", str(loaded_world), "plants.txt"), "w") as f:
         numpy.savetxt(f, plants.astype(int), fmt="%i")
 
-    print("WERELD OPGESLAGEN!!!")
+    # print("WERELD OPGESLAGEN!!!")
 
 
 def load_world(folder_name, sky_color):
-    print("FOLDER NAME", folder_name)
+    # print("FOLDER NAME", folder_name)
     with open(os.path.join("saves", str(folder_name), "save.json")) as f:
         json_dict = json.loads(f.read())
 
@@ -442,9 +442,9 @@ def load_world(folder_name, sky_color):
 
     main_inventory.item_count_dict = item_count_copy
 
-    print(
-        "FOLDER NAME", folder_name, os.path.join("saves", str(folder_name), "world.txt")
-    )
+    # print(
+    # "FOLDER NAME", folder_name, os.path.join("saves", str(folder_name), "world.txt")
+    # )
     world = numpy.loadtxt(os.path.join("saves", str(folder_name), "world.txt")).reshape(
         map_w, map_h
     )
@@ -496,6 +496,8 @@ def load_world(folder_name, sky_color):
         buildings,
     )
 
+
+debug_time = {"events": 0, "world": 0, "player": 0, "ui": 0, "animals": 0, "enemies": 0}
 
 while playing:
     if current_game_state == "TITLE":
@@ -570,9 +572,11 @@ while playing:
 
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
 
+        start_time = time.perf_counter()
         particles = animals.update(
             plants, player, particles, dt, player_bow, scrollx, scrolly, attack=False
         )
+        debug_time["animals"] = time.perf_counter() - start_time
 
         screen.blit(black_surface, (0, 0))
 
@@ -804,6 +808,8 @@ while playing:
 
     elif current_game_state == "GAME":
         # peter pan
+        start_time = time.perf_counter()
+
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -811,19 +817,19 @@ while playing:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_4:
-                    print("saving world...")
+                    # print("saving world...")
                     save_world()
 
                 if event.key == pygame.K_5:
-                    print("pausing game")
+                    # print("pausing game")
                     game_paused = not game_paused
-                    print(game_paused)
+                    # print(game_paused)
                     time.sleep(0.1)
 
                 if event.key == pygame.K_ESCAPE:
                     pause_menu_window.update_res(screen)
                     pause_menu_opened = not pause_menu_opened
-                    print(pause_menu_opened)
+                    # print(pause_menu_opened)
 
             if main_inventory.total_block_fill("arrow ") > 0:
 
@@ -946,7 +952,11 @@ while playing:
 
             game_size_set = True
 
+        debug_time["events"] = time.perf_counter() - start_time
+        start_time = time.perf_counter()
+
         screen.fill((0, 0, 0))
+
         torch_animation_frame, torch_update_frame = render_world(
             screen,
             world,
@@ -960,6 +970,10 @@ while playing:
             torch_animation_frame,
             torch_update_frame,
         )
+
+        debug_time["world"] = time.perf_counter() - start_time
+        start_time = time.perf_counter()
+
         animals.draw(screen, scrollx + shake_x, scrolly + shake_y)
         enemies.draw_enemies(screen, scrollx + shake_x, scrolly + shake_y)
         if (
@@ -1054,6 +1068,8 @@ while playing:
 
         screen.blit(mask_surf, (0, 0))
 
+        start_time = time.perf_counter()
+
         player_sprint_bar.draw(
             screen,
             pygame.Color("#212529"),
@@ -1133,6 +1149,9 @@ while playing:
             shake_frame = 1
             # animals.hit = False
 
+        debug_time["player"] = time.perf_counter() - start_time
+
+        start_time = time.perf_counter()
         if (
             not pause_menu_opened
             and not game_paused
@@ -1150,6 +1169,7 @@ while playing:
                 plants,
                 main_inventory.placed_defences_list,
             )
+        debug_time["enemies"] = time.perf_counter() - start_time
 
         main_inventory.draw_holding_items(screen, (scrollx, scrolly))
 
@@ -1215,6 +1235,8 @@ while playing:
         elif sky_color[3] < 1:
             is_night = False
 
+        start_time = time.perf_counter()
+
         night_count, making_upgrade_choice = ui_clock.update(
             sky_color,
             is_night,
@@ -1277,6 +1299,8 @@ while playing:
                 (scrollx, scrolly),
                 joystick_btn_dict,
             )
+
+    debug_time["ui"] = time.perf_counter() - start_time
 
     if (pause_menu_opened and not making_upgrade_choice) and not player_died:
         screen.blit(black_surface, (0, 0))
@@ -1420,7 +1444,7 @@ while playing:
                     filtered_seed = filtered_seed + str(character)
                 else:
                     filtered_seed = filtered_seed + str(ord(character))
-            print(filtered_seed)
+            # print(filtered_seed)
             filtered_seed = int(filtered_seed)
 
             plants, world, world_rotation = create_world(
@@ -1504,10 +1528,17 @@ while playing:
     fps = clock.get_fps()
     if settings_window.show_fps:
         screen.blit(fps_font.render(str(int(fps)), True, (0, 0, 0)), (10, 10))
+
+    text = ""
+    for x in debug_time.keys():
+        text = text + f"{x}: {str(round(debug_time[x], 3))} , "
+    screen.blit(fps_font.render(text, True, (0, 0, 0)), (10, 60))
+
     pygame.display.update()
     max_fps = settings_window.max_fps_slider.get_current_value()
     deltaT = clock.tick(max_fps)
     dt = deltaT / 16
+
     # if joystick_input:
     #     if eval(joystick_btn_dict["d-pad-right"]):
     #         print("RIGHT")

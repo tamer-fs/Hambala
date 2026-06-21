@@ -595,7 +595,6 @@ class Animal:
                         animal_x = prev_x
                         animal_y = prev_y
 
-                    animal[30] = False
                     #! WERKT NIET
                     own_rect = pygame.Rect(
                         (animal[24] - scrollx, animal[25] - scrolly),
@@ -604,6 +603,9 @@ class Animal:
                     for loop_animal in self.animal_dict.keys():
                         if (
                             (
+                                self.animal_dict[loop_animal][29]
+                            )  # alleen getemde dieren uit elkaar houden
+                            and (
                                 own_rect.colliderect(
                                     pygame.Rect(
                                         self.animal_dict[loop_animal][24] - scrollx - 8,
@@ -613,14 +615,15 @@ class Animal:
                                     )
                                 )
                             )
-                            and (not self.animal_dict[loop_animal][30])
-                            and (loop_animal != animal_key)
+                            # and (not self.animal_dict[loop_animal][30])
+                            and (
+                                loop_animal != animal_key
+                            )  # dier is niet zichzelf aan het checken
                         ):  # dieren overlappen dus niet bewegen
                             # animal_x = 0
                             # animal_y = 0
-                            animal[24] = prev_x
-                            animal[25] = prev_y
-                            animal[30] = True
+                            self.animal_dict[animal_key][24] = prev_x
+                            self.animal_dict[animal_key][25] = prev_y
                             # print(
                             #     "tegen elkaar aan gelopen :((",
                             #     animal,

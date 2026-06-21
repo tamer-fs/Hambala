@@ -13,12 +13,12 @@ class Enemies:
     def __init__(self, strength, speed, health):
         self.strength = strength
         self.spawn_rate = {
-            "zombie": [100, 0],
-            "zombie-big": [20, 0],
-            "slime-green": [100, 1],
-            "slime-red": [100, 1],
-            "slime-white": [100, 1],
-            "slime-blue": [100, 1],
+            "zombie": [5, 0],
+            "zombie-big": [1, 0],
+            "slime-green": [5, 1],
+            "slime-red": [5, 1],
+            "slime-white": [5, 1],
+            "slime-blue": [5, 1],
         }
         self.speed = speed
         self.health = health
@@ -95,6 +95,7 @@ class Enemies:
             "slime-blue": {},
             "slime-white": {},
         }
+        self.imgs_size = {}
         self.num_of_frames = {
             "zombie": {
                 "idle": 7,
@@ -198,6 +199,12 @@ class Enemies:
         # self.imgs[enemy][load_img][f'{frame}right'] = pygame.transform.flip(pygame.image.load(f'./assets/{enemy}{load_img}{frame}.png').convert_alpha(), True, False)
         self.damage_sound = pygame.mixer.Sound("assets/sounds/damage.wav")
 
+        for enemy_type in self.imgs.keys():
+            self.imgs_size[enemy_type] = self.imgs[enemy_type][
+                list(self.imgs[enemy_type].keys())[0]
+            ]
+        self.spawn_counter = 0
+
     def spawn_enemies(self, enemy_count, enemy_type):
         spawn_side = random.choice(["top", "bottom", "left", "right"])
         spawn_x, spawn_y = 0, 0
@@ -217,9 +224,7 @@ class Enemies:
         add_enemy = {
             "type": enemy_type,
             "direction": random.choice(["right", "left"]),
-            "rect": self.imgs[enemy_type][
-                list(self.imgs[enemy_type].keys())[0]
-            ].get_rect(
+            "rect": self.imgs_size[enemy_type].get_rect(
                 topleft=(spawn_x, spawn_y)
             ),  # change (500, 500) later
             "hp": random.randint(
@@ -378,16 +383,18 @@ class Enemies:
     ):
         self.is_night = is_night
 
-        spawn_list = []
-        for spawn_enemy in self.spawn_rate:
-            if night_count >= self.spawn_rate[spawn_enemy][1]:
-                for amount in range(self.spawn_rate[spawn_enemy][0]):
-                    spawn_list.append(spawn_enemy)
-
-        if is_night:
+        if is_night and len(self.alive_enemies) < 50 and self.spawn_counter < 50:
             if self.zombie_spawn_perf <= time.perf_counter():
-                self.spawn_enemies(1, random.choice(spawn_list))
-                self.zombie_spawn_perf = time.perf_counter() + 0.25
+                spawn_list = []
+                for spawn_enemy in self.spawn_rate:
+                    if night_count >= self.spawn_rate[spawn_enemy][1]:
+                        for amount in range(self.spawn_rate[spawn_enemy][0]):
+                            spawn_list.append(spawn_enemy)
+
+                for spawn in spawn_list:
+                    self.spawn_enemies(1, spawn)
+                    self.spawn_counter += 1
+                self.zombie_spawn_perf = time.perf_counter() + 0
 
         for i, enemy in enumerate(self.alive_enemies):
             self.alive_enemies[i]["health_bar"].update(
@@ -541,7 +548,9 @@ class Enemies:
                             arrow.can_damage = False
                             self.alive_enemies[i]["health_bar"].damage()
                             self.alive_enemies[i]["last_attack"] = time.perf_counter()
-                            self.alive_enemies[i]["hp"] -= arrow.damage * 2 * defence.damage_multiplier
+                            self.alive_enemies[i]["hp"] -= (
+                                arrow.damage * 2 * defence.damage_multiplier
+                            )
                             for _ in range(15):
                                 particles.append(
                                     HitParticle(

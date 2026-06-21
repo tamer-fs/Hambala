@@ -391,7 +391,7 @@ class NightUpgrade:
         if player.increment_boost == 200:
             self.increment_increase = True
             player.increment_boost = 0
-            print("Nu met increment boost!!!!!")
+            # print("Nu met increment boost!!!!!")
 
         if player.backpack_unlocked:
             self.options_pool.remove("backpack_expansion")
@@ -710,7 +710,7 @@ class Clock:
         self.night_time = True if self.time_ticks >= 100 else False
         self.prev_night_time = self.night_time
         self.night_count = night_count
-        print(self.prev_night_time, self.night_time, self.night_count)
+        # print(self.prev_night_time, self.night_time, self.night_count)
 
     def update(
         self,
@@ -738,14 +738,14 @@ class Clock:
             making_upgrade_choice = False
 
         if self.night_time != self.prev_night_time:
-            print(self.night_time, self.prev_night_time)
+            # print(self.night_time, self.prev_night_time)
             self.in_transition = True
             self.transition_direction = 1 if self.night_time else -1
             self.transition_frame = 0 if self.night_time else self.max_transition_frame
             self.prev_night_time = self.night_time
             if self.night_time:
                 self.night_count += 1
-                print("NIGHT COUNT += 1 AAAAA en kaarten")
+                # print("NIGHT COUNT += 1 AAAAA en kaarten")
                 self.night_count_perf_counter = time.perf_counter()
                 self.show_night_count = True
                 night_upgrade.start_choice(self.night_count, player)
@@ -1185,7 +1185,6 @@ class Inventory:
             if block == item:
                 total_amount += self.item_count_dict[i]
 
-        print(total_amount)
         return total_amount
 
     def add_item(self, item, amount=1):
